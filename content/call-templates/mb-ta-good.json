@@ -1,0 +1,54 @@
+{
+  "id": "mb-ta-good",
+  "categoryId": "mid-bucket",
+  "language": "ta-en",
+  "quality": "good",
+  "customerName": "Divya Shankar",
+  "lines": [
+    { "speaker": "agent", "lang": "ta", "text": "Vanakkam madam, naan Kaveri Finance la irundhu pesaren. Divya Shankar madam kooda pesaren-aa?" },
+    { "speaker": "customer", "lang": "ta", "text": "ஆமா, Divya தான். சொல்லுங்க.", "roman": "Aama, Divya dhaan. Sollunga." },
+    { "speaker": "agent", "lang": "ta", "text": "Thank you madam. Verification kaaga unga date of birth sollunga please?" },
+    { "speaker": "customer", "lang": "ta", "text": "பன்னிரண்டு March, தொண்ணூத்தி ரெண்டு.", "roman": "Pannirendu March, thonnootthi rendu." },
+    { "speaker": "agent", "lang": "ta", "text": "Thank you madam. Unga personal loan la October, November rendu EMI pending, each nine thousand five hundred. Late charges serthu total overdue twenty thousand two hundred rupees. Edhunaala miss aachunu therinjikalaamaa?" },
+    { "speaker": "customer", "lang": "ta", "text": "September ல என் job போயிடுச்சு sir. இப்போ தான் புது job கிடைச்சிருக்கு, December first join பண்றேன்.", "roman": "September la en job poyiduchu sir. Ippo dhaan pudhu job kidaichirukku, December first join panren." },
+    { "speaker": "agent", "lang": "ta", "text": "Romba kashtamaana time madam, sorry to hear that. Pudhu job kidaichadhu nalla vishayam. Ippo realistic ah evvalavu pay panna mudiyum nu sollunga?" },
+    { "speaker": "customer", "lang": "ta", "text": "இப்போ கையில eight thousand இருக்கு. மீதி December salary வந்ததும் தான்.", "roman": "Ippo kaiyila eight thousand irukku. Meedhi December salary vandhadhum dhaan." },
+    { "speaker": "agent", "lang": "ta", "text": "Purinjidhu madam. Factual ah solren, overdue continue aana credit bureau ku report aagum, monthly late charges um add aagum. Adhanaala ippo eight thousand pay panni, meedhi twelve thousand two hundred December fifteen kulla pay panna, account regularise aagidum. Okay va?" },
+    { "speaker": "customer", "lang": "ta", "text": "சரி, அது முடியும். Eight thousand எப்போ கட்டணும்?", "roman": "Seri, adhu mudiyum. Eight thousand eppo kattanum?" },
+    { "speaker": "agent", "lang": "ta", "text": "November thirty kulla pannunga madam. UPI la direct ah pannuveengala, illa payment link venuma?" },
+    { "speaker": "customer", "lang": "ta", "text": "Link அனுப்புங்க, UPI ல பண்ணிடறேன்.", "roman": "Link anuppunga, UPI la pannidaren." },
+    { "speaker": "agent", "lang": "ta", "text": "Sure madam. Confirm panren: eight thousand rupees November thirty kulla payment link moolama, meedhi twelve thousand two hundred December fifteen kulla. Link ippove unga registered number ku anuppuren." },
+    { "speaker": "customer", "lang": "ta", "text": "சரி sir, thanks. புரிஞ்சுகிட்டதுக்கு.", "roman": "Seri sir, thanks. Purinjukittadhukku." },
+    { "speaker": "agent", "lang": "ta", "text": "Nandri madam, pudhu job ku all the best." }
+  ],
+  "analysis": {
+    "outcomeId": "partial",
+    "outcomeRationale": "Customer agreed to pay ₹8,000 of the ₹20,200 overdue by 30 November via payment link, with the balance by 15 December.",
+    "summary": "Borrower missed two EMIs after losing her job in September and joins a new job on 1 December. Agent assessed what she could pay now and agreed a ₹8,000 part-payment by 30 November with the ₹12,200 balance planned for 15 December.",
+    "observations": "Well-structured negotiation: DOB verification, clear breakdown of two EMIs plus charges, genuine empathy for the job loss, and a realistic two-step plan anchored to her new salary. Consequences were explained factually, not as pressure.",
+    "improvements": "Recording disclosure was missed at the start. Could also flag the restructuring option in case the new salary is delayed.",
+    "extractions": { "delay_reason": "job_loss", "ptp_amount": 8000, "ptp_date": "30 November", "payment_mode": "payment_link", "hardship": true },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted with Vanakkam and named Kaveri Finance.", "confidence": 0.97 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Verified date of birth before discussing the loan.", "confidence": 0.95 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "Never told the customer the call is recorded.", "confidence": 0.94 },
+      "ds_reason_delay": { "result": "pass", "line": 4, "rationale": "Asked why the EMIs were missed.", "confidence": 0.95 },
+      "ds_empathy": { "result": "pass", "line": 6, "rationale": "Acknowledged the difficult period and congratulated her on the new job.", "confidence": 0.94 },
+      "ds_ability_to_pay": { "result": "pass", "line": 6, "rationale": "Asked what she could realistically pay now.", "confidence": 0.95 },
+      "ng_state_dues": { "result": "pass", "line": 4, "rationale": "Stated two missed EMIs of ₹9,500 and total overdue of ₹20,200.", "confidence": 0.97 },
+      "ng_consequences": { "result": "pass", "line": 8, "rationale": "Explained credit bureau reporting and accruing charges factually.", "confidence": 0.92 },
+      "ng_options": { "result": "pass", "line": 8, "rationale": "Proposed a part-payment now and balance after the new salary.", "confidence": 0.95 },
+      "cp_no_threats": { "result": "pass", "line": 8, "rationale": "No coercive language; consequences framed as information.", "confidence": 0.94 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Courteous and supportive throughout.", "confidence": 0.96 },
+      "cp_no_third_party": { "result": "pass", "line": 3, "rationale": "Loan discussed only after DOB verification.", "confidence": 0.92 },
+      "cl_ptp_secured": { "result": "pass", "line": 10, "rationale": "₹8,000 by 30 November agreed, with balance date set.", "confidence": 0.94 },
+      "cl_payment_mode": { "result": "pass", "line": 11, "rationale": "Payment link paid via UPI confirmed.", "confidence": 0.94 },
+      "cl_recap": { "result": "pass", "line": 12, "rationale": "Recapped both amounts, both dates and the payment mode.", "confidence": 0.97 }
+    },
+    "moments": [
+      { "type": "hardship", "line": 5, "label": "Job loss in September" },
+      { "type": "ptp", "line": 9, "label": "Agreed ₹8,000 part-payment" },
+      { "type": "payment", "line": 12, "label": "Link sent; balance by 15 Dec" }
+    ]
+  }
+}

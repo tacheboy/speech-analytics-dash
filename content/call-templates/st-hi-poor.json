@@ -1,0 +1,49 @@
+{
+  "id": "st-hi-poor",
+  "categoryId": "settlement",
+  "language": "hi-en",
+  "quality": "poor",
+  "customerName": "Sandeep Rana",
+  "lines": [
+    { "speaker": "agent", "lang": "hi", "text": "Hello, main Kaveri Finance se bol raha hoon. Sandeep Rana ji baat kar rahe hain?" },
+    { "speaker": "customer", "lang": "hi", "text": "हाँ, बोल रहा हूँ। क्या बात है?", "roman": "Haan, bol raha hoon. Kya baat hai?" },
+    { "speaker": "agent", "lang": "hi", "text": "Aapke bike loan pe total fifty-eight thousand baaki hai. Forty thousand do aur case khatam. Yeh offer sirf aaj shaam tak hai." },
+    { "speaker": "customer", "lang": "hi", "text": "चालीस हज़ार एक साथ? मेरी नौकरी छूट गई थी, अभी मुश्किल से घर चल रहा है। मुझे सोचने का time चाहिए।", "roman": "Chaalees hazaar ek saath? Meri naukri chhoot gayi thi, abhi mushkil se ghar chal raha hai. Mujhe sochne ka time chahiye." },
+    { "speaker": "agent", "lang": "hi", "text": "Sochne ka time bahut diya aapko. Aaj nahi kiya toh offer cancel, aur hamari team aapke ghar aakar bike utha legi." },
+    { "speaker": "customer", "lang": "hi", "text": "आप ऐसे धमका नहीं सकते। और ये settlement करने से मेरे CIBIL पे क्या असर होगा?", "roman": "Aap aise dhamka nahi sakte. Aur ye settlement karne se mere CIBIL pe kya asar hoga?" },
+    { "speaker": "agent", "lang": "hi", "text": "Woh baad mein dekhna. Naukri gayi toh kya, loan lete waqt yaad nahi tha? Pehle paisa arrange karo." },
+    { "speaker": "customer", "lang": "hi", "text": "पहले letter में लिखकर दीजिए, तभी कुछ सोचूँगा।", "roman": "Pehle letter mein likhkar dijiye, tabhi kuch sochoonga." },
+    { "speaker": "agent", "lang": "hi", "text": "Letter payment ke baad milega, pehle paisa jama karo." },
+    { "speaker": "customer", "lang": "hi", "text": "तो फिर मुझे ये offer नहीं चाहिए। मैं ऐसे payment नहीं करूँगा।", "roman": "Toh phir mujhe ye offer nahi chahiye. Main aise payment nahi karoonga." },
+    { "speaker": "agent", "lang": "hi", "text": "Theek hai, phir aage jo action hoga uske zimmedar aap ho. Next week case legal ko de raha hoon." },
+    { "speaker": "customer", "lang": "hi", "text": "मैं RBI में complaint करूँगा। Phone रखिए।", "roman": "Main RBI mein complaint karoonga. Phone rakhiye." },
+    { "speaker": "agent", "lang": "hi", "text": "Jo karna hai karo. Shaam chhe baje tak offer hai, uske baad mat bolna bataya nahi." }
+  ],
+  "analysis": {
+    "outcomeId": "offer_rejected",
+    "outcomeRationale": "Customer rejected the ₹40,000 settlement after the agent refused a written letter before payment and threatened repossession and legal action.",
+    "summary": "Borrower with ₹58,000 outstanding on a bike loan, recently unemployed, was offered a ₹40,000 settlement with a same-day deadline. Agent threatened bike repossession and legal escalation, refused a pre-payment letter, and the customer rejected the offer and threatened an RBI complaint.",
+    "observations": "Multiple fair-practice breaches: fake same-day deadline, threat of a home visit to seize the bike, legal escalation threat, and humiliating remarks about the job loss. The customer's valid question on CIBIL impact was dismissed, and payment was demanded before any written settlement letter.",
+    "improvements": "Never demand settlement payment before issuing a written letter; explain 'settled' bureau reporting when asked; remove deadlines and repossession/legal threats; acknowledge job loss and offer time to decide. Escalate to compliance immediately given the RBI complaint risk.",
+    "extractions": { "call_intent": "settlement", "dispute_type": "none", "settlement_amount": 40000 },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted and named Kaveri Finance.", "confidence": 0.88 },
+      "op_rpc_verify": { "result": "pass", "line": 0, "rationale": "Borrower confirmed his name before the loan was discussed; no stronger check.", "confidence": 0.64 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "No recording disclosure.", "confidence": 0.96 },
+      "st_explain_terms": { "result": "fail", "line": 6, "rationale": "Brushed off the CIBIL question; never explained 'settled' reporting.", "confidence": 0.94 },
+      "st_written_confirmation": { "result": "fail", "line": 8, "rationale": "Said the letter comes only after payment.", "confidence": 0.97 },
+      "st_no_pressure": { "result": "fail", "line": 2, "rationale": "Same-day deadline ('sirf aaj shaam tak'), repeated at the close.", "confidence": 0.97 },
+      "cp_no_threats": { "result": "fail", "line": 4, "rationale": "Threatened a home visit to seize the bike and later legal escalation.", "confidence": 0.97 },
+      "cp_respectful": { "result": "fail", "line": 6, "rationale": "'Naukri gayi toh kya, loan lete waqt yaad nahi tha?' is humiliating.", "confidence": 0.93 },
+      "cp_no_third_party": { "result": "pass", "line": 1, "rationale": "Loan discussed only with the borrower.", "confidence": 0.88 },
+      "cl_next_step": { "result": "fail", "line": 10, "rationale": "Only next step given was a threat to hand the case to legal.", "confidence": 0.82 },
+      "cl_recap": { "result": "fail", "line": null, "rationale": "No recap; call ended on a deadline threat.", "confidence": 0.9 }
+    },
+    "moments": [
+      { "type": "hardship", "line": 3, "label": "Lost job, struggling to run home" },
+      { "type": "compliance_risk", "line": 4, "label": "Threat to seize bike at home" },
+      { "type": "objection", "line": 9, "label": "Settlement offer rejected" },
+      { "type": "compliance_risk", "line": 10, "label": "Legal escalation threat" }
+    ]
+  }
+}

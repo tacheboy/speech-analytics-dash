@@ -1,0 +1,53 @@
+{
+  "id": "mb-ta-poor",
+  "categoryId": "mid-bucket",
+  "language": "ta-en",
+  "quality": "poor",
+  "customerName": "Vignesh Rajan",
+  "lines": [
+    { "speaker": "agent", "lang": "ta", "text": "Hello, Kaveri Finance la irundhu. Vignesh Rajan ah pesradhu?" },
+    { "speaker": "customer", "lang": "ta", "text": "ஆமா, சொல்லுங்க.", "roman": "Aama, sollunga." },
+    { "speaker": "agent", "lang": "ta", "text": "Unga personal loan la moonu EMI pending, each six thousand two hundred. Total eighteen thousand six hundred plus charges. Moonu maasama enna panreenga?" },
+    { "speaker": "customer", "lang": "ta", "text": "Sir, அப்பாக்கு heart surgery ஆச்சு. எல்லா பணமும் hospital க்கு போயிடுச்சு.", "roman": "Sir, appaakku heart surgery aachu. Ella panamum hospital kku poyiduchu." },
+    { "speaker": "agent", "lang": "ta", "text": "Adhu ungaloda personal matter sir. Loan vaangumbodhu theriyaadhaa? Inniki saayangaalam kulla full amount kattanum." },
+    { "speaker": "customer", "lang": "ta", "text": "Full amount இப்போ முடியவே முடியாது. EMI கொஞ்சம் குறைக்க முடியுமா? Restructure மாதிரி ஏதாவது?", "roman": "Full amount ippo mudiyave mudiyaadhu. EMI konjam kuraikka mudiyumaa? Restructure maadhiri edhaavadhu?" },
+    { "speaker": "agent", "lang": "ta", "text": "Ellaarum idhe dhaan kekkuraanga. Kattalana unga office HR ku call panni solluvom, unga salary la irundhu eduppom." },
+    { "speaker": "customer", "lang": "ta", "text": "என் office க்கு call பண்ணுவீங்களா? இது harassment sir. நான் RBI ல complaint பண்ணுவேன்.", "roman": "En office kku call pannuveengalaa? Idhu harassment sir. Naan RBI la complaint pannuven." },
+    { "speaker": "agent", "lang": "ta", "text": "Pannunga. Namma legal team police complaint um kudupaanga, appo dhaan puriyum ungalukku." },
+    { "speaker": "customer", "lang": "ta", "text": "நான் கட்ட மாட்டேன்னு சொல்லல. Surgery முடிஞ்சு ரெண்டு மாசம் time கேக்கறேன், அவ்வளவுதான்.", "roman": "Naan katta maattennu sollala. Surgery mudinju rendu maasam time kekkaren, avvalavudhaan." },
+    { "speaker": "agent", "lang": "ta", "text": "Seri, restructure request podren. Aana approve aagum nu guarantee illa. Adhu varaikkum calls vandhutte irukkum." },
+    { "speaker": "customer", "lang": "ta", "text": "சரி, request போடுங்க. Hospital bills copy அனுப்பறேன்.", "roman": "Seri, request podunga. Hospital bills copy anuppuren." },
+    { "speaker": "agent", "lang": "en", "text": "Send it. Bye." }
+  ],
+  "analysis": {
+    "outcomeId": "restructure",
+    "outcomeRationale": "Customer asked for an EMI reduction after his father's heart surgery and the agent grudgingly raised a restructuring request.",
+    "summary": "Borrower has missed three EMIs (₹18,600 plus charges) after his father's heart surgery and asked for restructuring. Agent dismissed the hardship, threatened to call his employer's HR and file a police complaint, and only then raised the restructure request.",
+    "observations": "Critical RBI fair-practice violations: threatening to contact the employer and to involve the police, and belittling a medical emergency. The customer was cooperative and explicitly willing to pay; the outcome happened despite the agent, not because of him.",
+    "improvements": "Immediate compliance escalation and coaching. Verify identity properly, disclose recording, treat medical hardship as a restructuring lead from the start, and explain consequences only as factual bureau reporting. Never reference employers, salary deductions or police.",
+    "extractions": { "delay_reason": "medical", "ptp_amount": null, "ptp_date": null, "payment_mode": "none", "hardship": true },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Named Kaveri Finance, though with no real greeting.", "confidence": 0.7 },
+      "op_rpc_verify": { "result": "pass", "line": 0, "rationale": "Only confirmed the name before discussing dues; weak but present.", "confidence": 0.62 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "Recording never disclosed.", "confidence": 0.95 },
+      "ds_reason_delay": { "result": "fail", "line": 2, "rationale": "'What have you been doing for three months' is an accusation, not a genuine question about the reason.", "confidence": 0.7 },
+      "ds_empathy": { "result": "fail", "line": 4, "rationale": "Called the father's heart surgery a 'personal matter' and blamed the customer.", "confidence": 0.97 },
+      "ds_ability_to_pay": { "result": "fail", "line": 4, "rationale": "Demanded the full amount the same evening without assessing capacity.", "confidence": 0.92 },
+      "ng_state_dues": { "result": "pass", "line": 2, "rationale": "Stated three missed EMIs of ₹6,200 and ₹18,600 total.", "confidence": 0.9 },
+      "ng_consequences": { "result": "fail", "line": 6, "rationale": "Consequences framed as threats (employer, salary deduction, police) rather than factual bureau reporting.", "confidence": 0.9 },
+      "ng_options": { "result": "pass", "line": 10, "rationale": "Eventually raised a restructuring request, though only at the customer's insistence.", "confidence": 0.7 },
+      "cp_no_threats": { "result": "fail", "line": 6, "rationale": "Threatened to call the employer's HR and to file a police complaint.", "confidence": 0.98 },
+      "cp_respectful": { "result": "fail", "line": 8, "rationale": "Belittling and taunting language ('appo dhaan puriyum ungalukku').", "confidence": 0.94 },
+      "cp_no_third_party": { "result": "pass", "line": 6, "rationale": "Threatened to contact the employer but did not actually disclose details to anyone.", "confidence": 0.65 },
+      "cl_ptp_secured": { "result": "fail", "line": null, "rationale": "No amount or date agreed.", "confidence": 0.93 },
+      "cl_payment_mode": { "result": "fail", "line": null, "rationale": "Payment mode never discussed.", "confidence": 0.88 },
+      "cl_recap": { "result": "fail", "line": 12, "rationale": "Ended abruptly with no recap of the restructure request or next steps.", "confidence": 0.94 }
+    },
+    "moments": [
+      { "type": "hardship", "line": 3, "label": "Father's heart surgery" },
+      { "type": "compliance_risk", "line": 6, "label": "Threat to call employer HR" },
+      { "type": "compliance_risk", "line": 8, "label": "Police complaint threat" },
+      { "type": "objection", "line": 9, "label": "Asks for two months' time" }
+    ]
+  }
+}

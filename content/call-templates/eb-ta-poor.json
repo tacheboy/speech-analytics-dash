@@ -1,0 +1,51 @@
+{
+  "id": "eb-ta-poor",
+  "categoryId": "early-bucket",
+  "language": "ta-en",
+  "quality": "poor",
+  "customerName": "Senthil Kumar",
+  "lines": [
+    { "speaker": "agent", "lang": "ta", "text": "Hello, Kaveri Finance la irundhu pesaren. Senthil Kumar irukkaaraa?" },
+    { "speaker": "customer", "lang": "ta", "text": "அவர் வெளிய போயிருக்காரு. நான் அவர் wife பேசறேன். யாரு நீங்க?", "roman": "Avar veliya poyirukkaaru. Naan avar wife pesaren. Yaaru neenga?" },
+    { "speaker": "agent", "lang": "ta", "text": "Madam, unga husband bike loan EMI innum kattala, rendu vaaram aachu. Avara udane enakku call panna sollunga." },
+    { "speaker": "customer", "lang": "ta", "text": "இருங்க, அவரே வந்துட்டாரு... Hello, Senthil பேசறேன். என் wife கிட்ட ஏன் loan பத்தி சொல்றீங்க?", "roman": "Irunga, avare vandhuttaaru... Hello, Senthil pesaren. En wife kitta yen loan patthi solreenga?" },
+    { "speaker": "agent", "lang": "ta", "text": "Neenga phone edukkala sir, adhaan. Three thousand nine hundred rupees EMI, November second due. Yen innum kattala?" },
+    { "speaker": "customer", "lang": "ta", "text": "இந்த மாசம் கடை ல business ரொம்ப down. அடுத்த மாசம் தான் முடியும்.", "roman": "Indha maasam kadai la business romba down. Adutha maasam dhaan mudiyum." },
+    { "speaker": "agent", "lang": "ta", "text": "Adhellam enakku theriyadhu sir, ellaarum idhe kadhai dhaan solraanga. Late aana five hundred rupees late fee um varum, CIBIL score um kedum." },
+    { "speaker": "customer", "lang": "ta", "text": "Sir, மரியாதையா பேசுங்க. நான் வேணும்னு கட்டாம இல்ல.", "roman": "Sir, mariyaadhaiya pesunga. Naan venumnu kattaama illa." },
+    { "speaker": "agent", "lang": "ta", "text": "Indha week pay pannala na, namma field team unga veetukku varuvaanga, street la ellaarukkum theriyum. Legal notice um varum." },
+    { "speaker": "customer", "lang": "ta", "text": "இப்படி மிரட்டுனா ஒரு rupee கூட கட்ட மாட்டேன். Complaint பண்ணுவேன்.", "roman": "Ippadi mirattuna oru rupee kooda katta maatten. Complaint pannuven." },
+    { "speaker": "agent", "lang": "ta", "text": "Panni paarunga sir. Indha week kattalana bike um seize pannuvom." },
+    { "speaker": "customer", "lang": "ta", "text": "சரி பண்ணுங்க. நான் இப்போ pay பண்ண மாட்டேன். Phone வைக்கிறேன்.", "roman": "Seri pannunga. Naan ippo pay panna maatten. Phone vaikkiren." },
+    { "speaker": "agent", "lang": "ta", "text": "Seri sir, apparam ungalukku dhaan problem." }
+  ],
+  "analysis": {
+    "outcomeId": "refused",
+    "outcomeRationale": "After being threatened with a home visit, legal notice and bike seizure, the customer refused to pay and ended the call.",
+    "summary": "Agent disclosed the overdue EMI to the borrower's wife before reaching him, then dismissed his business-slowdown reason and threatened a field visit, legal notice and repossession. The borrower, who had offered to pay next month, refused outright and said he would complain.",
+    "observations": "Serious RBI fair-practice breaches: third-party disclosure to the spouse, threats of home visit with public shaming, legal action and seizure, and dismissive language. The customer was recoverable (offered next month) until the threats.",
+    "improvements": "Never discuss the loan with anyone but the verified borrower; ask for a callback time instead. Acknowledge the slowdown and convert 'next month' into a dated PTP or part-payment. Mandatory compliance coaching and call review before further collections calls.",
+    "extractions": { "delay_reason": "business_slowdown", "ptp_amount": null, "ptp_date": null, "payment_mode": "none" },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Named Kaveri Finance in the opening, though without a proper greeting.", "confidence": 0.75 },
+      "op_rpc_verify": { "result": "fail", "line": 2, "rationale": "Discussed the overdue EMI with the wife without verifying the borrower.", "confidence": 0.95 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "Recording never disclosed.", "confidence": 0.95 },
+      "pr_state_dues": { "result": "pass", "line": 4, "rationale": "Stated the ₹3,900 EMI and the 2 November due date to the borrower.", "confidence": 0.88 },
+      "pr_late_fee_info": { "result": "pass", "line": 6, "rationale": "Mentioned the ₹500 late fee and CIBIL impact, though in a dismissive tone.", "confidence": 0.62 },
+      "ds_reason_delay": { "result": "pass", "line": 4, "rationale": "Asked why the EMI was not paid.", "confidence": 0.8 },
+      "ds_empathy": { "result": "fail", "line": 6, "rationale": "Dismissed the business slowdown as 'the same story everyone tells'.", "confidence": 0.95 },
+      "cp_no_threats": { "result": "fail", "line": 8, "rationale": "Threatened a field-team home visit, neighbourhood shaming, legal notice and bike seizure.", "confidence": 0.98 },
+      "cp_respectful": { "result": "fail", "line": 6, "rationale": "Dismissive remarks; customer had to ask the agent to speak respectfully.", "confidence": 0.9 },
+      "cp_no_third_party": { "result": "fail", "line": 2, "rationale": "Disclosed the overdue loan to the borrower's wife.", "confidence": 0.96 },
+      "cl_ptp_secured": { "result": "fail", "line": 11, "rationale": "Customer refused to pay; no promise obtained.", "confidence": 0.95 },
+      "cl_payment_mode": { "result": "fail", "line": null, "rationale": "Payment mode never discussed.", "confidence": 0.9 },
+      "cl_recap": { "result": "fail", "line": 12, "rationale": "Call ended on a dismissive remark with no recap.", "confidence": 0.93 }
+    },
+    "moments": [
+      { "type": "compliance_risk", "line": 2, "label": "Loan disclosed to wife" },
+      { "type": "hardship", "line": 5, "label": "Shop business down" },
+      { "type": "compliance_risk", "line": 8, "label": "Threatened home visit and legal notice" },
+      { "type": "objection", "line": 11, "label": "Refused to pay after threats" }
+    ]
+  }
+}

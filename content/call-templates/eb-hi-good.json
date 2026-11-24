@@ -1,0 +1,52 @@
+{
+  "id": "eb-hi-good",
+  "categoryId": "early-bucket",
+  "language": "hi-en",
+  "quality": "good",
+  "customerName": "Rohit Verma",
+  "lines": [
+    { "speaker": "agent", "lang": "hi", "text": "Namaste, main Kaveri Finance se bol raha hoon. Kya meri baat Rohit Verma ji se ho rahi hai?" },
+    { "speaker": "customer", "lang": "hi", "text": "हाँ, मैं रोहित बोल रहा हूँ। बताइए।", "roman": "Haan, main Rohit bol raha hoon. Bataiye." },
+    { "speaker": "agent", "lang": "en", "text": "Thank you sir. Just to inform you, this call is being recorded for quality purposes. Verification ke liye, kya aap apne loan account ke last four digits bata sakte hain?" },
+    { "speaker": "customer", "lang": "hi", "text": "हाँ, four two seven one.", "roman": "Haan, four two seven one." },
+    { "speaker": "agent", "lang": "hi", "text": "Thank you Rohit ji. Aapka personal loan ka EMI, eight thousand four hundred rupees, jo fifth November ko due tha, abhi tak pending hai." },
+    { "speaker": "customer", "lang": "hi", "text": "हाँ मुझे पता है। इस बार salary late आई है, company में कुछ issue चल रहा था।", "roman": "Haan mujhe pata hai. Is baar salary late aayi hai, company mein kuch issue chal raha tha." },
+    { "speaker": "agent", "lang": "hi", "text": "Main samajh sakta hoon sir, aisa kabhi kabhi ho jata hai. Kya aapko andaza hai salary kab tak credit hogi?" },
+    { "speaker": "customer", "lang": "hi", "text": "अगले हफ्ते तक आ जानी चाहिए, शायद बीस तारीख तक।", "roman": "Agle hafte tak aa jaani chahiye, shayad bees taarikh tak." },
+    { "speaker": "agent", "lang": "en", "text": "Okay. Just so you are aware, after the grace period a late fee of five hundred rupees applies, and timely payment keeps your credit score healthy." },
+    { "speaker": "customer", "lang": "hi", "text": "ठीक है, मैं बीस तारीख को पूरा EMI भर दूँगा।", "roman": "Theek hai, main bees taarikh ko poora EMI bhar doonga." },
+    { "speaker": "agent", "lang": "hi", "text": "Bahut badhiya. Aap payment kaise karna chahenge, UPI se ya main aapko payment link bhej doon?" },
+    { "speaker": "customer", "lang": "hi", "text": "Link भेज दीजिए, UPI से कर दूँगा।", "roman": "Link bhej dijiye, UPI se kar doonga." },
+    { "speaker": "agent", "lang": "en", "text": "Sure sir. So to confirm, eight thousand four hundred rupees on twentieth November through the payment link, which I am sending to your registered number now." },
+    { "speaker": "customer", "lang": "hi", "text": "हाँ, ठीक है। धन्यवाद।", "roman": "Haan, theek hai. Dhanyavaad." },
+    { "speaker": "agent", "lang": "hi", "text": "Dhanyavaad Rohit ji, aapka din shubh ho." }
+  ],
+  "analysis": {
+    "outcomeId": "ptp",
+    "outcomeRationale": "Customer committed to paying the full EMI of ₹8,400 on 20 November via the payment link.",
+    "summary": "Borrower missed the November EMI because his salary was delayed. Agent verified identity, stated dues, explained the late fee factually, and secured a dated promise-to-pay with a payment link.",
+    "observations": "Textbook early-bucket call: verification and recording disclosure up front, empathetic acknowledgement before negotiating, and a clear recap at the end.",
+    "improvements": "Could confirm the registered mobile number before sending the link.",
+    "extractions": { "delay_reason": "salary_delay", "ptp_amount": 8400, "ptp_date": "20 November", "payment_mode": "payment_link" },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Agent greeted and named Kaveri Finance in the first line.", "confidence": 0.97 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Asked for the last four digits of the loan account before discussing dues.", "confidence": 0.95 },
+      "op_recording_disclosure": { "result": "pass", "line": 2, "rationale": "Explicitly stated that the call is recorded.", "confidence": 0.98 },
+      "pr_state_dues": { "result": "pass", "line": 4, "rationale": "Stated ₹8,400 EMI and the 5 November due date.", "confidence": 0.96 },
+      "pr_late_fee_info": { "result": "pass", "line": 8, "rationale": "Mentioned the ₹500 late fee and credit score impact factually.", "confidence": 0.9 },
+      "ds_reason_delay": { "result": "pass", "line": 6, "rationale": "Asked when the salary would be credited after the customer mentioned the delay.", "confidence": 0.82 },
+      "ds_empathy": { "result": "pass", "line": 6, "rationale": "Acknowledged that such delays happen before moving on.", "confidence": 0.88 },
+      "cp_no_threats": { "result": "pass", "line": 8, "rationale": "Consequences explained without any intimidation.", "confidence": 0.93 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Polite tone throughout the call.", "confidence": 0.95 },
+      "cp_no_third_party": { "result": "pass", "line": 1, "rationale": "Loan discussed only after the borrower confirmed his identity.", "confidence": 0.9 },
+      "cl_ptp_secured": { "result": "pass", "line": 9, "rationale": "Customer promised the full EMI on the 20th.", "confidence": 0.96 },
+      "cl_payment_mode": { "result": "pass", "line": 11, "rationale": "Payment via link using UPI confirmed.", "confidence": 0.94 },
+      "cl_recap": { "result": "pass", "line": 12, "rationale": "Agent repeated amount, date and mode before closing.", "confidence": 0.97 }
+    },
+    "moments": [
+      { "type": "hardship", "line": 5, "label": "Salary delayed" },
+      { "type": "ptp", "line": 9, "label": "PTP ₹8,400 on 20 Nov" },
+      { "type": "payment", "line": 12, "label": "Payment link sent" }
+    ]
+  }
+}

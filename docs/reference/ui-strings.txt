@@ -1,0 +1,1081 @@
+group-[.toast]:text-muted-foreground
+Close
+Toggle Sidebar
+Add New Agent
+Full Name
+Enter agent's full name
+Email Address
+agent@company.com
+Cancel
+Add Agent
+Agent created successfully
+Some uploads failed. Please retry failed files.
+Please wait for uploads to complete
+Upload Call Recording
+Category
+Select a category...
+Agent
+Search agents...
+No agents found.
+Create New Agent
+Recording Files
+Click to upload
+MP3, WAV, M4A up to 50MB
+Failed
+No trend
+Category created
+Category updated
+Category deleted
+Category cloned
+Calls
+Select a category to browse calls or view all recordings
+Avg Score
+Success Rate
+Actions
+View analytics
+Configuration
+Clone category
+Edit category
+Delete category
+View All Recordings
+No categories found
+There are currently no call categories available.
+Name
+e.g., Renewals
+Description
+What calls belong in this category?
+Icon
+Analysis instructions (optional)
+Optional custom instructions for analysis
+Open list
+Add call to a lab list
+Destination list
+Create a new list
+Loading lists…
+List name
+e.g. Calls to review
+Call deleted
+Call queued for re-processing
+Call queued for re-analysis
+Audio link copied
+Could not copy the audio link. Please try again.
+Delete this call?
+rdp-caption_label
+text-sm font-medium
+Today
+Yesterday
+Last 7 Days
+Last 14 Days
+Last 30 Days
+This Week
+Last Week
+This Month
+Last Month
+Last 3 Months
+This Quarter
+Last Quarter
+Year to Date
+Last Year
+7 Days Ago
+30 Days Ago
+Start of Week
+Start of Month
+Start of Quarter
+Start of Year
+Start
+End
+Date
+Remove Filter
+Apply
+Excellent (90+)
+Good (70–89)
+Fair (50–69)
+Poor (<50)
+< 2 min
+2–5 min
+5–10 min
+10–20 min
+20+ min
+Selected
+Search agent names…
+Agents
+Uploaders
+Tags
+Reset filters
+Quality score
+Duration
+Outcome
+Analysis status
+Analyzed
+Processing
+Team
+LLM Cost Breakdown
+Total
+No cost breakdown available
+Pending feedback
+Clear all filters
+Rows per page:
+Retry
+Uploaded by
+Cost
+All scores
+Excellent (90-100)
+Good (70-89)
+Fair (50-69)
+All durations
+2-5 min
+5-10 min
+10+ min
+Choose a destination category
+No calls with transcripts are available to re-analyze.
+Add filtered calls to a lab list
+A list holds up to 50 calls. Narrow your filters to continue.
+Filter by
+More
+Analysis Status
+Uploaded By
+Filtered by
+Category not found
+The call category you are looking for does not exist.
+Back to Calls
+All agents
+No agents found
+Search teams...
+No teams found
+Quick calls
+Brief calls
+Standard calls
+> 10 min
+Long calls
+All calls
+Show everything
+Reviewed & scored
+In progress
+Needs a retry
+Filter outcomes...
+No outcomes found
+Search tags...
+No tags found
+Anyone
+Search uploaders...
+No uploaders found
+Step 0
+Blocked
+No extraction fields configured yet.
+Text
+Enum
+Number
+Yes/No
+Field created
+Field updated
+Field deleted
+Add at least one enum option
+Extraction Fields
+Add Field
+No extraction fields defined. Add fields to extract structured data from calls.
+Field
+Enum Options
+Extraction Resolution Order
+Flow
+Dependency Graph
+Flow Overview
+Step 0: Base fields
+Layered rule steps
+Blocked checks
+Depends on
+none
+Blocked fields (won't run)
+Unable to load extraction plan.
+Configure how this field should be extracted from calls. Enum fields can include optional hints to improve selection quality.
+Field Name (identifier)
+e.g., product_type, location, budget
+Used internally and in extraction rules.
+Display Name
+e.g., Product Type, Location, Budget
+Shown across dashboards and tables.
+Field Type
+Dropdown (Fixed Options)
+Required field
+Edit allowed values in a dedicated editor.
+Description (LLM hint)
+Describe what this field represents to help the AI extract it correctly
+Save Changes
+Edit Enum Options
+Add every allowed value and optional hint so extraction chooses the right option.
+Value (e.g., sales)
+Hint (optional)
+Done
+equals
+not equals
+greater than
+less than
+greater or equal
+less or equal
+is one of
+is not one of
+is success
+is not success
+is not NA
+is empty (nullish)
+is not empty
+Rule saved
+Rule deleted
+Invalid JSON expression
+Builder
+JSON
+Match strategy
+ALL conditions
+ANY condition
+No conditions yet. Add one to start targeting.
+Yes / True
+Boolean true
+No / False
+Boolean false
+Select field
+Select operator
+Select value
+JSONLogic Expression
+{"==": [{"var": "extractions.field_name"}, "value"]}
+Delete targeting rule?
+Reset
+Section created
+Section updated
+Criterion created
+Criterion updated
+Criterion deleted
+No analysis sections configured yet.
+Section
+Criteria
+Criteria Questions
+Add Criterion
+No criteria in this section yet.
+Section name
+e.g., Discovery
+Criterion question
+e.g., Did the rep confirm timeline and budget?
+Criterion slug
+Criterion context (optional)
+Optional extra guidance for this criterion that will be passed to the LLM.
+Outcome created
+Outcome updated
+Outcome deleted
+Add Outcome
+Status
+Success
+Not Applicable
+Standard
+Edit Outcome
+No outcomes configured
+Add the labels the analysis should choose from for this category.
+Define an outcome label, status, and description used during call analysis.
+Label
+e.g., Qualified Lead
+Describe when this outcome should be selected
+Delete Outcome
+Possible Outcomes
+Sections & Criteria
+Extraction
+Targeting
+All
+Sections
+Extractions
+Targeting Rules
+Add Rule
+No extraction fields defined
+Add extraction fields in the Extraction tab before creating targeting rules.
+No sections, tags, or extraction fields available for targeting.
+Target
+Rule
+All available targets already have rules configured.
+Target Type
+Select target type
+Select target
+Unpublished changes
+Draft matches published
+New call analyses use the active published version.
+Unpublished Changes
+No unpublished changes detected.
+Published
+Draft
+Config Versions
+Published snapshots for this category. Restoring a version updates the editable draft.
+Version
+No versions published yet.
+Active
+Close Preview
+View the analysis configuration for this category
+Outcomes exported as CSV
+Sections & criteria exported as CSV
+No audio file available for this call
+Change playback speed
+Transcript
+No transcript available
+The transcript is still being generated or is unavailable.
+0% score
+100% score
+Criteria Analysis
+children
+Feedback submitted
+Response submitted
+Message updated
+Open
+Acknowledged
+Resolved
+Leave Feedback
+Write your feedback for the agent...
+Write a reply...
+No feedback yet.
+Use the form above to leave feedback for the agent.
+Acknowledge Feedback
+Acknowledging this feedback will close the thread. You won't be able to add further comments after it's closed.
+Failed to generate report
+Failed to start report generation
+Email report
+Add email address
+Add
+Report generation failed
+Report emailed
+Report ready
+YES
+Voxxi
+View on Voxxi
+Call Recording
+Call Observations
+Call Audit
+Feedback
+Confidential
+Call deleted successfully
+Call sent for re-processing successfully
+Call sent for re-analysis successfully
+Tags updated
+Report downloaded
+Call not found
+The call recording you are looking for does not exist or has been deleted.
+Back to Category
+Call Details
+LLM Cost
+Overall Score
+Search by name, slug, or description...
+No tags found.
+Link copied to clipboard
+No call link available
+Copy public call link
+Download started
+No audio file available
+Download recording
+Re-process full call (transcription + analysis)
+Re-analyze call (keep existing transcript)
+Delete call recording
+Are you sure?
+This action cannot be undone. This will permanently delete the call recording and all associated data.
+Delete and Refund
+Delete
+Summary
+Audit
+Data
+Summary information will be available once analysis is complete.
+Value
+Not extracted
+Refresh Page
+Agent added successfully
+View performance metrics for your team agents
+Search agents
+Any call volume
+At least 1 call
+At least 5 calls
+At least 10 calls
+At least 25 calls
+Active only
+Active filters:
+Most Recent Call
+Avg Quality
+Recent (3)
+Performance Trend
+Date Added
+Clear filters
+Team Name
+Enter team name
+Enter team description (optional)
+Teams
+Manage teams and agents
+Date Created
+No teams yet
+Create your first team to organize agents.
+Edit team
+Delete team
+Delete Team
+Please select at least one agent
+Add Team Members
+Team updated successfully
+Team deleted successfully
+Agent removed from team
+Manage Team Members
+Member
+Email
+No agents yet
+Add agents to this team to get started.
+Remove agent
+Remove Agent
+Are you sure you want to remove this agent from the team?
+Remove
+Team not found
+The team you're looking for doesn't exist.
+Back to Teams
+Invite New User
+user@example.com
+Role
+Observer
+Admin
+Invitation sent
+An email invitation has been sent.
+Failed to send invitation
+Invitation cancelled
+Users
+Manage team access, roles, and invitations.
+Include Agents
+Calls Uploaded
+No users found
+Invited By
+Expires
+No pending invitations
+Invite users to your organization to get started.
+Remove user from organization
+YYYY
+Last 7 days
+Last 14 days
+Last 30 days
+Compare
+Select...
+Update
+Enter a valid number of credits.
+Billing & usage
+Your minute balance and recent usage.
+Add Credits
+Add analysis minutes to this workspace.
+Credits
+Note (optional)
+e.g. Manual allocation
+Deduct Credits
+Remove credits directly without creating a usage event.
+Overview
+Usage log
+Credit history
+Available balance
+min left
+Balance unavailable
+Used in 14 days
+min
+At this pace
+No minutes left
+Usage by category
+min total
+Minutes used
+Avg / call
+calls
+min / call
+No category usage for this date range.
+Daily usage
+Minutes billed each day, split by category.
+No usage
+No daily usage in this date range.
+See when minutes were billed and what they were used for.
+Period
+Last 90 days
+All time
+Custom dates
+Dates
+All categories
+Team member
+Billed
+Reprocessed
+Deleted call
+Previous
+Next
+No usage in this period
+Show all activity
+Try again
+Date added
+Reason
+Credits added
+No credit packs yet
+New packs will appear here when credits are added.
+Spend
+AI operations
+LLM spend
+A bounded view of model spend, request volume, and telemetry health. All metrics use the same UTC reporting window.
+Select organization
+USD
+INR
+Cost data could not be loaded
+The report query failed. Retry the request, or check the server logs if the problem continues.
+No LLM activity in this period
+Choose a wider date range or switch organizations to inspect another report.
+Reset to last 30 days
+Reporting overview
+Total spend
+Cost per call
+Cost per recording min
+Weighted across recorded time
+Request success
+Review telemetry completeness
+Daily movement
+Cost / min
+Requests
+Cost drivers
+Where spend and request volume originate.
+Pipeline steps
+Models
+Step
+Share
+Cache hit
+Model
+Cost by call length
+Weighted cost per recorded minute.
+Cache
+Requests with a cache read
+Latency
+P95 request duration
+Provider-priced requests
+Local estimates are not included in this coverage count. Recorded success does not include failures before telemetry starts.
+Audio Error
+Failed to load audio file. Please check the URL.
+Comparison data loaded successfully!
+Error
+Invalid JSON file. Please upload a valid comparison result.
+Playback Error
+Failed to play audio.
+Compare Transcription Models
+Upload a comparison result JSON to view side-by-side transcriptions
+Gemini 3 Flash Preview
+Voxtral Small 24B
+Comparison Stats
+Upload Comparison Results
+Upload the JSON file generated by the comparison script to view the results
+Organization created
+Organization updated
+Organization deleted
+Organizations
+Manage organizations and their members
+Search organizations...
+Create Organization
+Add a new organization.
+Acme Corp
+Slug
+acme-corp
+Edit Organization
+Update organization details.
+Delete Organization
+Member added
+Member removed
+Role updated
+Credit batch added
+Auth method unlinked
+Enter a valid number of minutes
+Password updated
+Session revoked
+Organization not found.
+Back to Organizations
+Billing
+Total Calls
+Avg Quality Score
+Calls scoring 70+
+Members
+Active members
+Call agents
+Active teams
+Categories
+Call categories
+Minutes Remaining
+Search members...
+All roles
+Owner
+Sessions
+Auth Methods
+Joined
+Banned
+Active Sessions
+No active sessions
+Linked Accounts
+No linked accounts
+Must keep at least 1 auth method
+Credit Batches
+No credit batches yet
+Enable credit purchases
+Allow self-serve credit purchase in Billing.
+Enable org admin configuration editing
+Allow org owners and admins to create categories and edit analysis configuration.
+Add Member
+User
+Select a user
+Remove Member
+Ban User
+Reason (optional)
+e.g. Policy violation
+Set Password
+New Password
+Enter new password
+Minimum 8 characters
+Add Minute Batch
+Minutes
+Note (Optional)
+e.g. Monthly allocation, Purchase order #123
+Total Organizations
+Total Users
+Manage organizations, users, and settings
+Monitor AI model usage and costs
+Test custom sections against saved call transcripts
+Admin Dashboard
+Platform overview and admin tools
+Quick Links
+Matched by call, section, and parameter ID. Missing calls, missing analyses, and added or removed parameters are shown as “No result,” not N/A.
+Parameter
+Other run
+Selected run
+Change
+Could not complete action
+Call list saved
+Call list deleted
+Experiment saved
+Experiment deleted
+Experiment started
+App admin tool
+Analysis Parameter Lab
+Build a call sample, test your own criteria, then review the results.
+Organization
+Choose an organization
+Call lists and experiments belong to a single organization.
+Call lists
+Save up to 50 calls per list. Add more from any category in this organization.
+e.g. September support sample
+Selected calls
+Search below to add calls.
+Find calls
+Search by agent, outcome, ID, or category
+No transcript
+No matching calls.
+Next 50
+No call lists yet
+Create a list here or add filtered calls from a category’s Bulk actions menu.
+Edit list
+Unavailable
+This list is empty.
+Choose a call list to inspect it, or create your first sample.
+Experiments
+Define sections and criteria to test against saved transcripts.
+Experiment name
+e.g. Revised discovery criteria
+What should the agent have done?
+Add guidance
+Additional guidance (optional)
+What counts as evidence?
+Saving a draft never changes earlier runs.
+No experiments yet
+Create a set of criteria to evaluate against your call samples.
+Edit
+Select an experiment
+Review its criteria or start a run on a call list or single call.
+Results
+Runs keep the criteria and transcripts used at launch.
+No runs yet
+Choose an experiment to start an analysis.
+Compare runs
+Compare parameter results with another completed run of this experiment on the same call list.
+Choose a run
+Loading comparison…
+Parameter rates
+Pass, fail, and N/A are percentages of calls with a result for that parameter. Pending or failed analyses are excluded.
+Pass
+Fail
+Filter calls by parameter
+All parameters
+Result
+Passed
+Clear filter
+No calls match this filter
+Try a different parameter or result to see matching calls.
+Select a run
+Review section scores, criterion decisions, and the transcript each run used.
+Choose saved calls from this organization. This will not change their production analysis.
+Single call
+Call list
+Choose a list
+Create a call list first, or switch to a single call.
+Find a call
+No calls with transcripts on this page.
+User added to organization
+User deleted
+Orphan Users
+Users who don't belong to any organization
+Search by name or email...
+Created
+Add to Organization
+Select an organization
+Delete User
+My Dashboard
+Your personal performance overview.
+Review and respond to feedback from your manager.
+View →
+My Calls
+My Avg Score
+Score vs Team Avg
+Recent Calls
+Your latest analyzed calls
+Score
+No calls found yet.
+Dashboard
+Welcome back! Here's what's happening with your call insights.
+Avg. Quality Score
+Tag
+Quick Actions
+Upload Call
+Add a recording for analysis
+Browse All Calls
+View your call history
+Manage Agents
+View and coach your team
+Analytics Explorer
+Explore categories, teams, and tags
+The latest calls uploaded to the platform
+No recent calls found.
+Upload your first call
+Analytics
+Overview and drilldown by category, team, and tag.
+Volume
+Quality
+Action
+Direct assignments
+Call Volume
+Outcome Distribution
+Share of outcomes across all analyzed calls in this slice
+Duration Distribution
+Call length segmentation to understand conversation profile
+Agent Leaderboard
+Ranked by quality score, then success rate, then call volume
+No agent performance data available.
+Calls Duration
+Quality Analysis
+Agent Performance
+Insights and performance trends
+Config version
+All versions
+Total Calls Analyzed
+text-[#005f50]
+text-[#1f6d39]
+text-[#096f91]
+text-[#765000]
+No distribution data available.
+Avg
+No calls found
+There are no analyzed calls in this slice for the selected filters.
+Copy is not supported in this browser. Use Download PNG.
+Quick report copied to clipboard.
+Failed to copy quick report image.
+Quick report downloaded.
+Failed to download quick report image.
+No significant failures detected.
+No agent data available.
+All sections performing well.
+Sentiment and result breakdown
+Quality score and success rate over time
+Quality Score
+Agents Audited
+Ordered by quality score, success rate, then call volume.
+No audited agents in this slice.
+Highest Quality
+Highest Success
+Highest Volume
+Quality Improvement Hub
+Filter by criteria...
+Failure Rate
+Agent Distribution
+Analysis
+Click agent name to view their calls in this category
+View all calls for this agent
+Show All Agents
+No failures detected
+Everything looks good for this slice in the selected period.
+Compare agent KPIs against category benchmarks and identify coaching targets.
+Avg Success
+Rank
+Trend
+NA vs avg
+Performance Profile
+Open Patterns
+Successes
+Systemic
+No failure patterns available for this agent.
+Perfect Quality Performance
+This agent has not failed any criteria above the team average.
+Performance Insights
+No agent data
+No agent performance data is available for this slice and period.
+Agent performance quick report copied to clipboard.
+Agent performance quick report downloaded.
+Voxxi Quick Report
+Generated On
+Agent Performance Leaderboard
+Confidential analytics snapshot for internal use.
+View Call
+Success rate
+Share of outcomes by label for the full scope.
+Other
+Coaching Areas
+See detailed coaching signals below
+Recent Improvements
+No recent improvements detected.
+Recent Regressions
+No recent regressions detected.
+Areas for Improvement
+For high-volume criteria, this section shows recent examples. Use the call links for full coverage.
+More Opportunities to Improve
+Consistent Strengths
+NA vs average
+Focus areas are prioritized below based on consistency and recent trends.
+Review examples below
+Consistently Needs Work
+For high-volume criteria, this view shows recent examples. Open "View all failed calls" for the complete set.
+No consistent improvement areas found.
+View all failed calls
+More to Review
+Agent Score
+Call outcomes across full available scope
+Grouped By Section
+No consistent strengths found.
+No coaching data
+No coaching insights available for the selected scope and period.
+actionable insights
+The world's most advanced call analytics platform for high-performance teams.
+© 2026 VoxxiLabs Technology Pvt. Ltd. All rights reserved.
+Welcome back
+Sign in to your account to continue
+Login Failed
+Failed to sign in with Google. Please try again.
+Failed to sign in with Microsoft. Please try again.
+Or continue with email
+Invalid email or password. Please try again.
+you@example.com
+Password
+Forgot password?
+Enter your password
+Terms of Service
+Privacy Policy
+Check your email
+try again
+Forgot your password?
+Enter your email address and we'll send you a link to reset your password.
+Something went wrong. Please try again.
+Invalid or expired link
+This password reset link is invalid or has expired. Please request a new one.
+Request New Link
+Password reset
+Your password has been successfully reset.
+Sign In
+Set new password
+Enter your new password below.
+Passwords don't match
+Please make sure both passwords are the same.
+Password too short
+Password must be at least 8 characters long.
+Failed to reset password. The link may have expired.
+Confirm Password
+Confirm new password
+Invited by
+Invitation accepted
+Welcome to the organization!
+Failed to accept invitation
+Invitation declined
+Failed to decline invitation
+Login failed
+Invalid email or password.
+Sign up failed
+Could not create account.
+Invalid Invitation
+Go to Login
+Wrong Account
+This invitation is for a different account. Please sign out and try again.
+Go to Dashboard
+Sign Out
+You've been invited
+Accept the invitation to join this organization on Voxxi.
+You've been invited to join this organization on Voxxi.
+Failed to sign in with Google.
+Failed to sign in with Microsoft.
+Your name
+Oops! Page not found
+Return to Home
+Select the organization you'd like to work with.
+You're not part of an organization yet
+New to Voxxi?
+Get in touch and we'll set up your organization.
+Your team already uses Voxxi?
+Ask your admin to send you an invite.
+Don't see your organization? Ask your admin to send you an invite.
+Permission Denied
+You do not have access to this page.
+My Report Card
+Your performance insights, strengths, and areas for improvement.
+Select category
+Call Date
+Account unlinked
+Sign-in method removed from your account.
+Profile updated
+Your changes have been saved.
+Passwords don't match.
+Password changed
+Your password has been changed successfully.
+Password set
+You can now sign in with your email and password.
+That session has been signed out.
+Other sessions revoked
+All other devices have been signed out.
+Settings
+Your account, security, and sign-in preferences
+Profile
+Photo
+Synced from your sign-in provider
+Contact support to change your email address
+You don't have a password yet. Add one to sign in with your email and password as an alternative to social login.
+Current Password
+Current password
+Confirm password
+Passwords do not match
+Ways you can sign in to your account. At least one method must stay linked.
+Google
+Microsoft
+This is your only sign-in method. Link another one before removing it.
+Devices where you're currently signed in.
+No active sessions found.
+Current
+Member since
+Sign-in methods
+Active sessions
+Security
+Workspace controls
+Read-only access
+Invite teammates, set roles, and review pending invitations.
+Create labels that make calls easier to filter and analyze.
+Check your available minutes and see usage by category.
+Integrations
+Create API keys and send call events to external systems.
+Workspace status
+Pending invites
+Tag created
+Tag updated
+Tag deleted
+Slug must use lowercase slash-separated segments with letters, numbers, and hyphens
+Display name is required
+Configure the labels used to organize and filter calls.
+Create Tag
+rsd/only/publication
+e.g. rsd/only/publication
+e.g. Publication Only
+Optional description
+rsd
+rsd/only
+Remove tag from all calls
+Remove from Calls
+Edit Tag
+Tag display name
+Assignable to calls
+Enable this to allow manual assignment of this tag to calls.
+Expand all
+Collapse all
+No tags configured yet.
+Remove from all calls
+View calls
+Edit tag
+Delete tag
+Create API Key
+Key Name
+e.g., Production CRM Integration
+Give your API key a descriptive name to identify its purpose.
+Call Events
+Call analysis completed
+Call analysis failed
+Call ingestion failed
+Configure endpoint URL, active state, and subscribed events.
+Endpoint URL
+https://your-app.com/webhooks/voxxi
+Must be a valid HTTPS URL that accepts POST requests.
+Active immediately
+Subscribed events
+Select at least one event.
+API key created successfully
+API key revoked
+Copied to clipboard
+Failed to copy
+API Keys
+Key Prefix
+Last Used
+No API keys
+Create an API key to enable external integrations with your organization.
+Revoked
+Revoke API Key
+API Key
+Use this key to authenticate API requests. Store it securely.
+Webhook created successfully
+Webhook deleted
+Never sent
+Webhooks
+Search endpoint URL or event
+Paused
+Events
+Last Delivery
+No webhooks configured
+Set up a webhook to receive real-time notifications when call analysis completes.
+No webhooks match your filters
+Try a different search or set filter to all.
+Delete Webhook
+Webhook Signing Secret
+Use this secret to verify webhook signatures. Store it securely.
+Manage API access and event delivery for external systems.
+Secret rotated - copy it now
+Webhook updated
+Test webhook delivered successfully
+Webhook details
+Delivery History
+Endpoint Configuration
+Webhook ID
+Subscribed Events
+Implementation Guide
+How to verify webhook signatures
+Verify webhook signatures using the X-Voxxi-Signature header:
+const signature = crypto
+  .createHmac('sha256', webhookSecret)
+  .update(\
+Send Test
+Signing secret and rotation
+Signing Secret
+Delivery Logs
+Recent webhook attempts
+Event
+Code
+Sent
+No delivery logs
+No webhook attempts for the selected filter.
+test
+Clear
+Status Code
+Response Body
+Payload
+No delivery selected
+Click a row to view details
+Send Test Webhook
+Event Type
+Edit Webhook
+Webhook not found
+The selected webhook does not exist, or it may have been deleted.
+Back to Webhooks
+Login
+This call does not exist or is no longer available.
+Call Sections
+No outcome available.
+No call observation available.
+No audit data available.
+Signed out
+You have been successfully signed out.
+Failed to sign out. Please try again.
+Admin View
+Home
+Exit
+Back to App

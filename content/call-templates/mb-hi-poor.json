@@ -1,0 +1,54 @@
+{
+  "id": "mb-hi-poor",
+  "categoryId": "mid-bucket",
+  "language": "hi-en",
+  "quality": "poor",
+  "customerName": "Manoj Tyagi",
+  "lines": [
+    { "speaker": "agent", "lang": "hi", "text": "Haan Manoj Tyagi? Kaveri Finance. Aapki do EMI pending hain, total eighteen thousand four hundred." },
+    { "speaker": "customer", "lang": "hi", "text": "जी, मैं Manoj हूँ। देखिए, मेरी माँ का operation हुआ था, दो महीने से सारा पैसा hospital में जा रहा है।", "roman": "Ji, main Manoj hoon. Dekhiye, meri maa ka operation hua tha, do mahine se saara paisa hospital mein ja raha hai." },
+    { "speaker": "agent", "lang": "hi", "text": "Sir yeh sab mujhe mat batao, har koi koi na koi problem batata hai. Payment kab karoge?" },
+    { "speaker": "customer", "lang": "hi", "text": "अभी full EMI possible नहीं है। क्या EMI कम हो सकती है? Tenure बढ़ा दीजिए।", "roman": "Abhi full EMI possible nahi hai. Kya EMI kam ho sakti hai? Tenure badha dijiye." },
+    { "speaker": "agent", "lang": "hi", "text": "Restructuring itna easy nahi hota. Pehle overdue clear karo, phir dekhenge." },
+    { "speaker": "customer", "lang": "hi", "text": "पर मेरे पास अभी अठारह हज़ार नहीं हैं। Maximum चार हज़ार कर सकता हूँ।", "roman": "Par mere paas abhi athaarah hazaar nahi hain. Maximum chaar hazaar kar sakta hoon." },
+    { "speaker": "agent", "lang": "hi", "text": "Dekho, aise nahi chalega. Payment nahi hua toh hum aapke office HR ko call karenge, aur aapke references ko bhi batayenge ki aap loan nahi bhar rahe." },
+    { "speaker": "customer", "lang": "hi", "text": "ये ठीक नहीं है, आप मेरे office में call नहीं कर सकते। मुझे restructuring की request डालनी है, बस।", "roman": "Ye theek nahi hai, aap mere office mein call nahi kar sakte. Mujhe restructuring ki request daalni hai, bas." },
+    { "speaker": "agent", "lang": "hi", "text": "Theek hai, request daal deta hoon, par approve hoga ki nahi pata nahi. Medical documents email karne padenge." },
+    { "speaker": "customer", "lang": "hi", "text": "ठीक है, मैं आज शाम तक hospital के bills email कर दूँगा।", "roman": "Theek hai, main aaj shaam tak hospital ke bills email kar doonga." },
+    { "speaker": "agent", "lang": "hi", "text": "Aur jo four thousand bola, woh kab doge?" },
+    { "speaker": "customer", "lang": "hi", "text": "शुक्रवार तक कर दूँगा।", "roman": "Shukravaar tak kar doonga." },
+    { "speaker": "agent", "lang": "hi", "text": "Okay. Link aa jayega, usse kar dena." },
+    { "speaker": "customer", "lang": "hi", "text": "ठीक है।", "roman": "Theek hai." }
+  ],
+  "analysis": {
+    "outcomeId": "restructure",
+    "outcomeRationale": "Customer insisted on an EMI restructuring request citing his mother's surgery; the agent reluctantly raised it pending medical documents.",
+    "summary": "Borrower is two EMIs (₹18,400) behind after his mother's operation and asked for lower EMIs. Agent was dismissive, threatened to call his employer's HR and references, and only raised the restructuring request after the customer pushed back.",
+    "observations": "Major compliance concern: threatening to contact the employer and references is an RBI fair-practice breach. No greeting, verification or recording disclosure, and the medical hardship was brushed off ('har koi problem batata hai'). The ₹4,000 Friday payment came from the customer, not from any assessment by the agent.",
+    "improvements": "Open with a greeting, verification and recording disclosure; acknowledge the medical hardship; explain the restructuring process and timeline clearly; never threaten workplace or reference contact. Route this call to compliance review.",
+    "extractions": { "delay_reason": "medical", "ptp_amount": 4000, "ptp_date": "Friday", "payment_mode": "payment_link", "hardship": true },
+    "criteria": {
+      "op_greet_company": { "result": "fail", "line": 0, "rationale": "No greeting or self-introduction, just 'Haan Manoj Tyagi? Kaveri Finance.'", "confidence": 0.85 },
+      "op_rpc_verify": { "result": "fail", "line": 0, "rationale": "Stated dues in the same breath as the name, before any confirmation.", "confidence": 0.9 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "No recording disclosure.", "confidence": 0.96 },
+      "ds_reason_delay": { "result": "fail", "line": 2, "rationale": "Never asked why; cut off the customer's explanation.", "confidence": 0.86 },
+      "ds_empathy": { "result": "fail", "line": 2, "rationale": "'Yeh sab mujhe mat batao' in response to a medical emergency.", "confidence": 0.97 },
+      "ds_ability_to_pay": { "result": "fail", "line": 5, "rationale": "Customer volunteered ₹4,000; agent did not assess capacity.", "confidence": 0.8 },
+      "ng_state_dues": { "result": "pass", "line": 0, "rationale": "Stated two pending EMIs totalling ₹18,400.", "confidence": 0.9 },
+      "ng_consequences": { "result": "fail", "line": 6, "rationale": "Consequences framed as employer/reference calls rather than bureau reporting or charges.", "confidence": 0.88 },
+      "ng_options": { "result": "pass", "line": 8, "rationale": "Raised the restructuring request, though reluctantly.", "confidence": 0.68 },
+      "cp_no_threats": { "result": "fail", "line": 6, "rationale": "Threatened to call the customer's HR and references.", "confidence": 0.97 },
+      "cp_respectful": { "result": "fail", "line": 2, "rationale": "Dismissive and belittling about the customer's hardship.", "confidence": 0.9 },
+      "cp_no_third_party": { "result": "fail", "line": 6, "rationale": "Stated intent to tell employer and references about the default.", "confidence": 0.8 },
+      "cl_ptp_secured": { "result": "pass", "line": 11, "rationale": "₹4,000 by Friday committed, though the date is loosely defined.", "confidence": 0.66 },
+      "cl_payment_mode": { "result": "pass", "line": 12, "rationale": "Payment link mentioned and acknowledged.", "confidence": 0.62 },
+      "cl_recap": { "result": "fail", "line": 12, "rationale": "No recap of the amount, date, restructuring request or documents.", "confidence": 0.9 }
+    },
+    "moments": [
+      { "type": "hardship", "line": 1, "label": "Mother's operation" },
+      { "type": "objection", "line": 3, "label": "Asks to reduce EMI / extend tenure" },
+      { "type": "compliance_risk", "line": 6, "label": "Threat to call HR and references" },
+      { "type": "ptp", "line": 11, "label": "₹4,000 by Friday" }
+    ]
+  }
+}

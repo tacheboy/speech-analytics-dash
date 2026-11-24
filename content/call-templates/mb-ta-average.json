@@ -1,0 +1,57 @@
+{
+  "id": "mb-ta-average",
+  "categoryId": "mid-bucket",
+  "language": "ta-en",
+  "quality": "average",
+  "customerName": "Ganesh Murugan",
+  "lines": [
+    { "speaker": "agent", "lang": "ta", "text": "Vanakkam sir, Kaveri Finance la irundhu pesaren. Ganesh Murugan sir ah?" },
+    { "speaker": "customer", "lang": "ta", "text": "ஆமா, Ganesh தான்.", "roman": "Aama, Ganesh dhaan." },
+    { "speaker": "agent", "lang": "ta", "text": "Sir, verification kaaga unga bike loan account last four digits sollunga." },
+    { "speaker": "customer", "lang": "ta", "text": "Three three zero five. என்ன விஷயம்?", "roman": "Three three zero five. Enna vishayam?" },
+    { "speaker": "agent", "lang": "ta", "text": "Sir, unga account la October, November rendu EMI pending, four thousand six hundred each, plus bounce charges twelve hundred. Total ten thousand four hundred rupees overdue. Yen pay pannala sir?" },
+    { "speaker": "customer", "lang": "ta", "text": "என்ன? October EMI நான் branch ல cash ஆ கட்டினேன். Receipt கூட என் கிட்ட இருக்கு. அப்புறம் எதுக்கு bounce charge?", "roman": "Enna? October EMI naan branch la cash aa kattinen. Receipt kooda en kitta irukku. Appuram edhukku bounce charge?" },
+    { "speaker": "agent", "lang": "ta", "text": "Sir, system la adhu reflect aagala. Pay pannalana CIBIL la report aagum, charges um add aagite irukkum." },
+    { "speaker": "customer", "lang": "ta", "text": "Sir நான் சொல்றதை கேளுங்க. October பத்தாம் தேதி Anna Nagar branch ல கட்டினேன். உங்க mistake க்கு நான் ஏன் charge கட்டணும்?", "roman": "Sir naan solradha kelunga. October patthaam thedhi Anna Nagar branch la kattinen. Unga mistake kku naan yen charge kattanum?" },
+    { "speaker": "agent", "lang": "ta", "text": "Seri sir, naan idha dispute ah raise panren. Receipt copy WhatsApp la anuppunga. Seven working days la check panni solluvaanga." },
+    { "speaker": "customer", "lang": "ta", "text": "Complaint number ஏதாவது குடுங்க.", "roman": "Complaint number edhaavadhu kudunga." },
+    { "speaker": "agent", "lang": "ta", "text": "Number system la generate aagum sir, SMS la varum. Adhu varaikkum November EMI four thousand six hundred mattum kattiduveengala?" },
+    { "speaker": "customer", "lang": "ta", "text": "Dispute clear ஆகுற வரைக்கும் ஒண்ணும் கட்ட மாட்டேன். அது வரைக்கும் calls வராதுல்ல?", "roman": "Dispute clear aagura varaikkum onnum katta maatten. Adhu varaikkum calls varaadhulla?" },
+    { "speaker": "agent", "lang": "ta", "text": "Adhu naan solla mudiyaadhu sir, regular follow-up calls varalaam." },
+    { "speaker": "customer", "lang": "ta", "text": "இது சரியில்ல. சரி, receipt அனுப்புறேன்.", "roman": "Idhu sariyilla. Seri, receipt anuppuren." },
+    { "speaker": "agent", "lang": "ta", "text": "Okay sir. Appo neenga receipt anuppunga, dispute seven working days la review aagum, adhukku appuram thirumba call panrom. Thank you." }
+  ],
+  "analysis": {
+    "outcomeId": "dispute",
+    "outcomeRationale": "Customer disputes the October EMI and bounce charges, saying he paid in cash at the Anna Nagar branch and holds a receipt.",
+    "summary": "Borrower says the October EMI was paid in cash at the branch on 10 October and the ₹1,200 bounce charges are wrong. Agent raised a dispute with a 7-working-day review but gave no reference number and could not confirm a pause in collection calls.",
+    "observations": "Verification, dues breakdown and closing recap were solid. But the agent responded to the dispute by citing CIBIL reporting before hearing the customer out, never gave a reference number, and left the customer expecting continued calls during review, which hurt trust.",
+    "improvements": "Acknowledge the cash payment claim before quoting consequences, generate and read out the dispute reference on the call, and confirm that follow-ups on the disputed amount pause during review. Ask what the customer can pay on the undisputed November EMI rather than demanding it in full.",
+    "extractions": { "delay_reason": "dispute", "ptp_amount": null, "ptp_date": null, "payment_mode": "none", "hardship": false },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted and named Kaveri Finance.", "confidence": 0.96 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Asked for last four digits of the loan account.", "confidence": 0.95 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "Recording never disclosed.", "confidence": 0.94 },
+      "ds_reason_delay": { "result": "pass", "line": 4, "rationale": "Asked why the EMIs were not paid.", "confidence": 0.92 },
+      "ds_empathy": { "result": "fail", "line": 6, "rationale": "Answered the customer's frustration with CIBIL consequences instead of acknowledging it.", "confidence": 0.85 },
+      "ds_ability_to_pay": { "result": "fail", "line": 10, "rationale": "Demanded the full November EMI without asking what the customer could pay.", "confidence": 0.72 },
+      "ng_state_dues": { "result": "pass", "line": 4, "rationale": "Stated two missed EMIs, ₹1,200 bounce charges and ₹10,400 total.", "confidence": 0.96 },
+      "ng_consequences": { "result": "pass", "line": 6, "rationale": "Mentioned CIBIL reporting and accruing charges factually, though poorly timed.", "confidence": 0.7 },
+      "ng_options": { "result": "pass", "line": 10, "rationale": "Offered paying only the undisputed November EMI while the dispute is reviewed.", "confidence": 0.78 },
+      "dp_log_ticket": { "result": "fail", "line": 10, "rationale": "Raised the dispute but did not share a reference number despite being asked.", "confidence": 0.88 },
+      "dp_timeline": { "result": "pass", "line": 8, "rationale": "Gave a seven-working-day review timeline.", "confidence": 0.9 },
+      "dp_pause_collection": { "result": "fail", "line": 12, "rationale": "Said regular follow-up calls may continue during the review.", "confidence": 0.93 },
+      "cp_no_threats": { "result": "pass", "line": 6, "rationale": "No threats; consequences stated as facts.", "confidence": 0.85 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Polite throughout, though somewhat dismissive at first.", "confidence": 0.78 },
+      "cp_no_third_party": { "result": "pass", "line": 3, "rationale": "Spoke only with the verified borrower.", "confidence": 0.92 },
+      "cl_ptp_secured": { "result": "fail", "line": 11, "rationale": "No amount or date committed; customer will not pay until the dispute clears.", "confidence": 0.9 },
+      "cl_payment_mode": { "result": "na", "line": null, "rationale": "No payment agreed, so payment mode does not apply.", "confidence": 0.8 },
+      "cl_recap": { "result": "pass", "line": 14, "rationale": "Recapped receipt submission, 7-day review and callback.", "confidence": 0.86 }
+    },
+    "moments": [
+      { "type": "dispute", "line": 5, "label": "Claims October EMI paid in cash" },
+      { "type": "dispute", "line": 9, "label": "Asked for complaint number" },
+      { "type": "objection", "line": 11, "label": "Won't pay until dispute clears" }
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "id": "eb-hi-average",
+  "categoryId": "early-bucket",
+  "language": "hi-en",
+  "quality": "average",
+  "customerName": "Sunita Sharma",
+  "lines": [
+    { "speaker": "agent", "lang": "hi", "text": "Hello, main Kaveri Finance se bol raha hoon. Kya Sunita Sharma ji baat kar rahi hain?" },
+    { "speaker": "customer", "lang": "hi", "text": "हाँ, मैं Sunita बोल रही हूँ। बोलिए, क्या काम है?", "roman": "Haan, main Sunita bol rahi hoon. Boliye, kya kaam hai?" },
+    { "speaker": "agent", "lang": "hi", "text": "Ma'am, aapke two-wheeler loan ki EMI, four thousand two hundred rupees, jo tenth November ko due thi, abhi tak pending hai." },
+    { "speaker": "customer", "lang": "hi", "text": "हाँ पता है, पर अभी मैं office में हूँ, मुझे meeting में जाना है।", "roman": "Haan pata hai, par abhi main office mein hoon, mujhe meeting mein jaana hai." },
+    { "speaker": "agent", "lang": "hi", "text": "Ma'am bas do minute lagenge. Payment kyun nahi ho paya tha is baar?" },
+    { "speaker": "customer", "lang": "hi", "text": "मेरे husband पिछले हफ्ते hospital में admit थे, सारा पैसा वहीं लग गया।", "roman": "Mere husband pichhle hafte hospital mein admit the, saara paisa wahin lag gaya." },
+    { "speaker": "agent", "lang": "hi", "text": "Achha. Toh EMI kab tak kar dengi aap?" },
+    { "speaker": "customer", "lang": "hi", "text": "अभी पक्का नहीं बता सकती। पहले hospital के bills settle होने दीजिए, फिर देखती हूँ।", "roman": "Abhi pakka nahi bata sakti. Pehle hospital ke bills settle hone dijiye, phir dekhti hoon." },
+    { "speaker": "agent", "lang": "hi", "text": "Ma'am, late payment se aapka CIBIL score affect hoga aur penalty bhi lagegi, isliye jaldi kar dijiye." },
+    { "speaker": "customer", "lang": "hi", "text": "समझ गई। आप शाम को call कर लीजिए, तब घर पर आराम से बात करती हूँ।", "roman": "Samajh gayi. Aap shaam ko call kar lijiye, tab ghar par aaram se baat karti hoon." },
+    { "speaker": "agent", "lang": "hi", "text": "Theek hai ma'am, kitne baje call karun?" },
+    { "speaker": "customer", "lang": "hi", "text": "छह बजे के बाद कर लीजिए।", "roman": "Chhe baje ke baad kar lijiye." },
+    { "speaker": "agent", "lang": "hi", "text": "Okay ma'am, toh main aaj six PM ke baad call karta hoon. Tab tak ho sake toh UPI se payment kar dijiye." },
+    { "speaker": "customer", "lang": "hi", "text": "ठीक है। Bye.", "roman": "Theek hai. Bye." }
+  ],
+  "analysis": {
+    "outcomeId": "callback",
+    "outcomeRationale": "Customer was busy at work and asked to be called back after 6 PM without committing to an amount or date.",
+    "summary": "Borrower missed the November two-wheeler EMI of ₹4,200 after her husband's hospitalisation. Agent stated dues and asked the reason, but did not acknowledge the hardship and ended with only a callback.",
+    "observations": "Basics were covered (company named, dues and due date stated, reason asked), but the recording disclosure was skipped and the agent moved straight from a medical emergency to 'kab tak kar dengi'. The late-fee line was vague rather than quantified.",
+    "improvements": "Acknowledge medical hardship before asking for a date; disclose call recording at the start; quote the actual late fee; try for a tentative PTP date even when scheduling a callback.",
+    "extractions": { "delay_reason": "medical", "ptp_amount": null, "ptp_date": null, "payment_mode": null },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted and named Kaveri Finance in the opening line.", "confidence": 0.93 },
+      "op_rpc_verify": { "result": "pass", "line": 0, "rationale": "Confirmed the borrower's name before discussing the loan; no account or DOB check.", "confidence": 0.68 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "No mention that the call is recorded.", "confidence": 0.95 },
+      "pr_state_dues": { "result": "pass", "line": 2, "rationale": "Stated ₹4,200 EMI and the 10 November due date.", "confidence": 0.95 },
+      "pr_late_fee_info": { "result": "pass", "line": 8, "rationale": "Mentioned CIBIL impact and penalty without threats, though the fee amount was not given.", "confidence": 0.7 },
+      "ds_reason_delay": { "result": "pass", "line": 4, "rationale": "Directly asked why the payment was missed.", "confidence": 0.94 },
+      "ds_empathy": { "result": "fail", "line": 6, "rationale": "Moved straight to 'kab tak kar dengi' after hearing about the husband's hospitalisation.", "confidence": 0.88 },
+      "cp_no_threats": { "result": "pass", "line": 8, "rationale": "Consequences mentioned without intimidation.", "confidence": 0.88 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Polite throughout, if a little rushed.", "confidence": 0.86 },
+      "cp_no_third_party": { "result": "pass", "line": 1, "rationale": "Loan discussed only with the confirmed borrower.", "confidence": 0.9 },
+      "cl_ptp_secured": { "result": "fail", "line": 7, "rationale": "Customer would not commit to a date; no PTP obtained.", "confidence": 0.93 },
+      "cl_payment_mode": { "result": "fail", "line": 12, "rationale": "UPI was suggested but the customer never confirmed a payment mode.", "confidence": 0.78 },
+      "cl_recap": { "result": "pass", "line": 12, "rationale": "Agent confirmed the callback time before ending.", "confidence": 0.65 }
+    },
+    "moments": [
+      { "type": "objection", "line": 3, "label": "Customer busy at office" },
+      { "type": "hardship", "line": 5, "label": "Husband hospitalised" },
+      { "type": "objection", "line": 9, "label": "Callback requested after 6 PM" }
+    ]
+  }
+}

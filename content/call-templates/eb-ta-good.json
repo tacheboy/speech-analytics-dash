@@ -1,0 +1,52 @@
+{
+  "id": "eb-ta-good",
+  "categoryId": "early-bucket",
+  "language": "ta-en",
+  "quality": "good",
+  "customerName": "Karthik Subramanian",
+  "lines": [
+    { "speaker": "agent", "lang": "ta", "text": "Vanakkam sir, naan Kaveri Finance la irundhu pesaren. Karthik Subramanian sir kooda pesalaama?" },
+    { "speaker": "customer", "lang": "ta", "text": "ஆமா, Karthik தான் பேசறேன். சொல்லுங்க.", "roman": "Aama, Karthik dhaan pesaren. Sollunga." },
+    { "speaker": "agent", "lang": "ta", "text": "Thank you sir. Indha call quality purpose kaaga record aagudhu. Verification kaaga, unga loan account oda last four digits sollunga please?" },
+    { "speaker": "customer", "lang": "ta", "text": "ஒரு நிமிஷம்... six eight one nine.", "roman": "Oru nimisham... six eight one nine." },
+    { "speaker": "agent", "lang": "ta", "text": "Thank you sir. Unga two-wheeler loan EMI, four thousand two hundred fifty rupees, November third due date irundhuchu. Adhu innum pending la irukku." },
+    { "speaker": "customer", "lang": "ta", "text": "ஆமா sorry, மறந்தே போச்சு. Native போயிருந்தேன், அம்மாக்கு உடம்பு சரியில்ல.", "roman": "Aama sorry, marandhe pochu. Native poyirundhen, ammaakku odambu sariyilla." },
+    { "speaker": "agent", "lang": "ta", "text": "Aiyo, sorry to hear sir. Amma ippo nalla irukaangala? Andha travel naala dhaan payment miss aachaa, illa vera edhavadhu financial issue irukka?" },
+    { "speaker": "customer", "lang": "ta", "text": "இப்போ பரவாயில்ல. Money problem ஒண்ணும் இல்ல, just மறந்துட்டேன்.", "roman": "Ippo paravaayilla. Money problem onnum illa, just marandhutten." },
+    { "speaker": "agent", "lang": "en", "text": "Glad to hear that sir. Just for your information, grace period mudinja appuram five hundred rupees late fee varum, and late payment credit score la reflect aagum." },
+    { "speaker": "customer", "lang": "ta", "text": "அப்போ இன்னைக்கே pay பண்ணிடறேன். GPay ல பண்ணலாமா?", "roman": "Appo innaikke pay pannidaren. GPay la pannalaamaa?" },
+    { "speaker": "agent", "lang": "ta", "text": "Kandippa sir. Unga registered mobile number ending four four two one ku oru payment link anuppuren, adhula UPI moolama pay pannalaam." },
+    { "speaker": "customer", "lang": "ta", "text": "சரி, link வந்துடுச்சு... பண்ணிட்டேன். Success னு காட்டுது.", "roman": "Seri, link vandhuduchu... pannitten. Success nu kaattudhu." },
+    { "speaker": "agent", "lang": "ta", "text": "Thank you sir, four thousand two hundred fifty rupees payment received aagiduchu. Receipt SMS la oru mani neratthula varum. Adutha EMI December third, auto-debit set pannikalaama?" },
+    { "speaker": "customer", "lang": "ta", "text": "அடுத்த தடவை யோசிக்கிறேன். Thanks.", "roman": "Adutha thadava yosikkiren. Thanks." },
+    { "speaker": "agent", "lang": "ta", "text": "Nandri Karthik sir, amma seekiram gunamaaganum. Nalla naal." }
+  ],
+  "analysis": {
+    "outcomeId": "paid",
+    "outcomeRationale": "Customer paid the full EMI of ₹4,250 via the UPI payment link during the call and the agent confirmed receipt.",
+    "summary": "Borrower missed the 3 November two-wheeler EMI while travelling to care for his unwell mother. Agent verified identity, checked for underlying financial stress, and collected the full EMI on the call through a payment link.",
+    "observations": "Strong early-bucket call: recording disclosure and account verification before dues, a genuine empathy check that also probed for financial stress, and in-call payment with receipt confirmation.",
+    "improvements": "Auto-debit pitch was a good instinct but should explain the benefit (no missed dates, no late fee) rather than just asking.",
+    "extractions": { "delay_reason": "forgot", "ptp_amount": 4250, "ptp_date": "Today (paid on call)", "payment_mode": "payment_link" },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted with Vanakkam and named Kaveri Finance in the opening line.", "confidence": 0.97 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Asked for the last four digits of the loan account before discussing dues.", "confidence": 0.95 },
+      "op_recording_disclosure": { "result": "pass", "line": 2, "rationale": "Told the customer the call is recorded for quality purposes.", "confidence": 0.97 },
+      "pr_state_dues": { "result": "pass", "line": 4, "rationale": "Stated the ₹4,250 EMI and the 3 November due date.", "confidence": 0.96 },
+      "pr_late_fee_info": { "result": "pass", "line": 8, "rationale": "Explained the ₹500 late fee and credit-score impact factually.", "confidence": 0.92 },
+      "ds_reason_delay": { "result": "pass", "line": 6, "rationale": "Asked whether the miss was due to travel or an underlying financial issue.", "confidence": 0.88 },
+      "ds_empathy": { "result": "pass", "line": 6, "rationale": "Asked after the mother's health before continuing.", "confidence": 0.93 },
+      "cp_no_threats": { "result": "pass", "line": 8, "rationale": "Consequences framed as information, no coercion.", "confidence": 0.94 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Warm, polite tone throughout, including the closing wish for the mother.", "confidence": 0.95 },
+      "cp_no_third_party": { "result": "pass", "line": 3, "rationale": "Loan discussed only after the borrower confirmed account digits.", "confidence": 0.92 },
+      "cl_ptp_secured": { "result": "pass", "line": 11, "rationale": "Full amount paid during the call, superseding a promise.", "confidence": 0.9 },
+      "cl_payment_mode": { "result": "pass", "line": 10, "rationale": "Payment link to registered mobile via UPI agreed and used.", "confidence": 0.95 },
+      "cl_recap": { "result": "pass", "line": 12, "rationale": "Confirmed amount received, receipt timing and the next EMI date.", "confidence": 0.93 }
+    },
+    "moments": [
+      { "type": "hardship", "line": 5, "label": "Mother unwell, travelling" },
+      { "type": "payment", "line": 11, "label": "Paid ₹4,250 via UPI link" },
+      { "type": "payment", "line": 12, "label": "Receipt confirmed, auto-debit offered" }
+    ]
+  }
+}

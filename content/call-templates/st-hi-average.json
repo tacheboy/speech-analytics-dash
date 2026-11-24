@@ -1,0 +1,56 @@
+{
+  "id": "st-hi-average",
+  "categoryId": "settlement",
+  "language": "hi-en",
+  "quality": "average",
+  "customerName": "Neha Kapoor",
+  "lines": [
+    { "speaker": "agent", "lang": "hi", "text": "Hello, main Kaveri Finance se bol raha hoon. Kya Neha Kapoor ji baat kar rahi hain?" },
+    { "speaker": "customer", "lang": "hi", "text": "हाँ, मैं Neha. आपके statement में गड़बड़ है, मुझे उसी बारे में बात करनी है।", "roman": "Haan, main Neha. Aapke statement mein gadbad hai, mujhe usi baare mein baat karni hai." },
+    { "speaker": "agent", "lang": "hi", "text": "Ji ma'am, pehle verification ke liye apni date of birth bata dijiye." },
+    { "speaker": "customer", "lang": "en", "text": "Second July, nineteen eighty-eight." },
+    { "speaker": "agent", "lang": "hi", "text": "Thank you. Bataiye ma'am, kya issue hai?" },
+    { "speaker": "customer", "lang": "hi", "text": "Statement में four thousand seven hundred twenty के legal charges लगे हैं। मुझे कोई legal notice आया ही नहीं, और penal interest भी double लगा है—", "roman": "Statement mein four thousand seven hundred twenty ke legal charges lage hain. Mujhe koi legal notice aaya hi nahi, aur penal interest bhi double laga hai—" },
+    { "speaker": "agent", "lang": "hi", "text": "Ma'am woh standard charges hote hain, sabke lagte hain. Aap settlement ki baat kar rahi thi na?" },
+    { "speaker": "customer", "lang": "hi", "text": "पहले मेरी बात पूरी सुनिए। मैंने पिछले महीने भी call पर बताया था, कुछ नहीं हुआ।", "roman": "Pehle meri baat poori suniye. Maine pichhle mahine bhi call par bataya tha, kuch nahi hua." },
+    { "speaker": "agent", "lang": "hi", "text": "Sorry ma'am. Main abhi dispute log kar raha hoon, reference number DSP seven seven zero three. Finance team charges review karegi, ten working days mein aapko email aayega." },
+    { "speaker": "customer", "lang": "hi", "text": "और settlement का क्या? Total कितना बन रहा है?", "roman": "Aur settlement ka kya? Total kitna ban raha hai?" },
+    { "speaker": "agent", "lang": "hi", "text": "Total outstanding sixty-eight thousand five hundred hai. Aap fifty-two thousand mein one-time settle kar sakti hain. Lekin yeh offer sirf is hafte tak hai, baad mein nahi milega." },
+    { "speaker": "customer", "lang": "hi", "text": "मैं पहले dispute का result देखूँगी, फिर settlement decide करूँगी। तब तक मुझे recovery calls मत कीजिए।", "roman": "Main pehle dispute ka result dekhoongi, phir settlement decide karoongi. Tab tak mujhe recovery calls mat kijiye." },
+    { "speaker": "agent", "lang": "hi", "text": "Theek hai ma'am, main note kar deta hoon ki dispute review tak collection calls hold rahengi. Settlement ka letter bhi likhit mein milega, payment usi ke baad hoga." },
+    { "speaker": "customer", "lang": "hi", "text": "ठीक है।", "roman": "Theek hai." },
+    { "speaker": "agent", "lang": "hi", "text": "Toh ma'am, ten working days mein finance team aapko email karegi, uske baad main settlement ke liye aapko call karunga." },
+    { "speaker": "customer", "lang": "hi", "text": "ठीक है, bye.", "roman": "Theek hai, bye." }
+  ],
+  "analysis": {
+    "outcomeId": "dispute_logged",
+    "outcomeRationale": "Customer's dispute over ₹4,720 legal charges and doubled penal interest was logged as DSP7703 with a 10-working-day timeline; settlement deferred until it is resolved.",
+    "summary": "Borrower disputes ₹4,720 in legal charges and doubled penal interest, and also asked about settling her ₹68,500 outstanding. Agent logged the dispute with a reference, timeline and collections hold, but interrupted her early and attached a fake one-week deadline to the ₹52,000 offer.",
+    "observations": "Dispute mechanics were handled well once the agent engaged: reference, timeline, pause on calls and written letter all covered. But he cut the customer off with 'standard charges hote hain', skipped the recording disclosure, never explained 'settled' bureau reporting, and pressured with 'sirf is hafte tak'.",
+    "improvements": "Let the customer finish describing the dispute before responding; disclose recording; explain that a settlement is reported as 'settled' to bureaus; drop artificial deadlines; recap the reference number and offer amount at close.",
+    "extractions": { "call_intent": "both", "dispute_type": "wrong_charges", "settlement_amount": 52000 },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted and named Kaveri Finance.", "confidence": 0.9 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Verified date of birth before discussing the account.", "confidence": 0.94 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "No recording disclosure.", "confidence": 0.95 },
+      "dp_listen_fully": { "result": "fail", "line": 6, "rationale": "Interrupted mid-explanation and pivoted to settlement; customer had to ask to be heard.", "confidence": 0.92 },
+      "dp_log_ticket": { "result": "pass", "line": 8, "rationale": "Logged the dispute with reference DSP7703.", "confidence": 0.96 },
+      "dp_timeline": { "result": "pass", "line": 8, "rationale": "Committed to an email within ten working days.", "confidence": 0.94 },
+      "dp_pause_collection": { "result": "pass", "line": 12, "rationale": "Confirmed collection calls are on hold during review.", "confidence": 0.9 },
+      "st_explain_terms": { "result": "fail", "line": 10, "rationale": "Gave the ₹52,000 amount but never mentioned 'settled' credit-bureau reporting.", "confidence": 0.88 },
+      "st_written_confirmation": { "result": "pass", "line": 12, "rationale": "Said the settlement letter comes in writing before payment.", "confidence": 0.88 },
+      "st_no_pressure": { "result": "fail", "line": 10, "rationale": "'Sirf is hafte tak hai' is an artificial deadline.", "confidence": 0.86 },
+      "cp_no_threats": { "result": "pass", "line": null, "rationale": "No threats or intimidation.", "confidence": 0.9 },
+      "cp_respectful": { "result": "pass", "line": 8, "rationale": "Dismissive early on but apologised and stayed polite.", "confidence": 0.72 },
+      "cp_no_third_party": { "result": "pass", "line": 3, "rationale": "Discussed only with the verified borrower.", "confidence": 0.92 },
+      "cl_next_step": { "result": "pass", "line": 14, "rationale": "Finance team emails in ten days, then agent calls about settlement.", "confidence": 0.9 },
+      "cl_recap": { "result": "fail", "line": 14, "rationale": "Did not restate the reference number, settlement amount or collections hold.", "confidence": 0.7 }
+    },
+    "moments": [
+      { "type": "dispute", "line": 5, "label": "₹4,720 legal charges disputed" },
+      { "type": "objection", "line": 7, "label": "Customer asks to be heard" },
+      { "type": "dispute", "line": 8, "label": "Ticket DSP7703 logged" },
+      { "type": "compliance_risk", "line": 10, "label": "Fake one-week deadline on offer" }
+    ]
+  }
+}

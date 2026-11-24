@@ -1,0 +1,49 @@
+{
+  "id": "st-ta-average",
+  "categoryId": "settlement",
+  "language": "ta-en",
+  "quality": "average",
+  "customerName": "Manoj Krishnan",
+  "lines": [
+    { "speaker": "agent", "lang": "ta", "text": "Hello sir, Kaveri Finance la irundhu pesaren. Manoj Krishnan sir ah?" },
+    { "speaker": "customer", "lang": "ta", "text": "ஆமா. மறுபடியும் Kaveri Finance ஆ? என்ன இப்போ?", "roman": "Aama. Marubadiyum Kaveri Finance aa? Enna ippo?" },
+    { "speaker": "agent", "lang": "ta", "text": "Sir, verification kaaga unga date of birth confirm pannunga please." },
+    { "speaker": "customer", "lang": "ta", "text": "Twenty eight June, eighty nine. சீக்கிரம் சொல்லுங்க.", "roman": "Twenty eight June, eighty nine. Seekiram sollunga." },
+    { "speaker": "agent", "lang": "ta", "text": "Sir, unga two-wheeler loan la six thousand three hundred rupees pending irukku, adha—" },
+    { "speaker": "customer", "lang": "ta", "text": "Sir, நான் August லயே loan foreclose பண்ணிட்டேன். Full amount கட்டி NOC கூட—", "roman": "Sir, naan August laye loan foreclose pannitten. Full amount katti NOC kooda—" },
+    { "speaker": "agent", "lang": "ta", "text": "Sir, system la innum six thousand three hundred kaattudhu. Foreclosure charges add aagirukkalaam." },
+    { "speaker": "customer", "lang": "ta", "text": "நான் முடிக்கல sir. Foreclosure statement ல நீங்களே amount சொன்னீங்க, அதை தான் கட்டினேன். NOC கூட வந்துச்சு. இப்போ மறுபடியும் calls வருது.", "roman": "Naan mudikkala sir. Foreclosure statement la neengale amount sonneenga, adha dhaan kattinen. NOC kooda vandhuchu. Ippo marubadiyum calls varudhu." },
+    { "speaker": "agent", "lang": "ta", "text": "Okay sir. Naan idha dispute ah log panren. Reference number DSP five five zero nine one. Fifteen days la finance team check pannuvaanga." },
+    { "speaker": "customer", "lang": "ta", "text": "அது வரைக்கும் இந்த calls நிக்குமா? Office time ல தினமும் call வருது.", "roman": "Adhu varaikkum indha calls nikkumaa? Office time la dhinamum call varudhu." },
+    { "speaker": "agent", "lang": "ta", "text": "Adhu collections team dhaan decide pannuvaanga sir. Neenga NOC copy and payment receipt support at kaveri finance dot com ku mail pannunga." },
+    { "speaker": "customer", "lang": "ta", "text": "சரி, mail பண்றேன். ஆனா திரும்ப இப்படி calls வந்தா நான் complaint பண்ணுவேன்.", "roman": "Seri, mail panren. Aana thirumba ippadi calls vandhaa naan complaint pannuven." },
+    { "speaker": "agent", "lang": "ta", "text": "Seri sir, mail pannunga. Thank you." }
+  ],
+  "analysis": {
+    "outcomeId": "dispute_logged",
+    "outcomeRationale": "Agent logged the already-paid dispute with reference DSP55091 and a 15-day review timeline.",
+    "summary": "Borrower says he foreclosed the two-wheeler loan in August using the amount quoted in the foreclosure statement and received an NOC, yet is still being called for ₹6,300. Agent logged the dispute with a reference and 15-day timeline but cut the customer off and could not stop the calls.",
+    "observations": "Reference number and timeline were given promptly and the next step (email NOC and receipt) was clear. However the agent interrupted the customer twice and guessed at 'foreclosure charges' before hearing the facts, skipped recording disclosure, and did not pause collections despite an NOC on file.",
+    "improvements": "Let the customer finish before responding, disclose recording, and when a customer cites an NOC, flag the account to pause collection calls during review. Close with a recap of reference, timeline and documents needed.",
+    "extractions": { "call_intent": "dispute", "dispute_type": "already_paid", "settlement_amount": null },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted and named Kaveri Finance.", "confidence": 0.93 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Verified date of birth before discussing the loan.", "confidence": 0.95 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "Recording never disclosed.", "confidence": 0.94 },
+      "dp_listen_fully": { "result": "fail", "line": 6, "rationale": "Cut the customer off mid-explanation and speculated about foreclosure charges.", "confidence": 0.9 },
+      "dp_log_ticket": { "result": "pass", "line": 8, "rationale": "Logged the dispute and shared reference DSP55091.", "confidence": 0.96 },
+      "dp_timeline": { "result": "pass", "line": 8, "rationale": "Gave a 15-day review timeline, though without saying how the customer will be updated.", "confidence": 0.78 },
+      "dp_pause_collection": { "result": "fail", "line": 10, "rationale": "Deflected to the collections team instead of confirming a pause.", "confidence": 0.92 },
+      "cp_no_threats": { "result": "pass", "line": null, "rationale": "No threats made.", "confidence": 0.95 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Polite wording, though interruptions made it feel curt.", "confidence": 0.75 },
+      "cp_no_third_party": { "result": "pass", "line": 3, "rationale": "Spoke only with the verified borrower.", "confidence": 0.93 },
+      "cl_next_step": { "result": "pass", "line": 10, "rationale": "Asked the customer to email the NOC and receipt to support.", "confidence": 0.85 },
+      "cl_recap": { "result": "fail", "line": 12, "rationale": "Ended without recapping the reference number, timeline or documents.", "confidence": 0.9 }
+    },
+    "moments": [
+      { "type": "dispute", "line": 5, "label": "Says loan foreclosed in August" },
+      { "type": "objection", "line": 9, "label": "Wants collection calls stopped" },
+      { "type": "objection", "line": 11, "label": "Threatens complaint if calls continue" }
+    ]
+  }
+}

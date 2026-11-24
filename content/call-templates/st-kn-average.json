@@ -1,0 +1,55 @@
+{
+  "id": "st-kn-average",
+  "categoryId": "settlement",
+  "language": "kn-en",
+  "quality": "average",
+  "customerName": "Suresh Kumar Naik",
+  "lines": [
+    { "speaker": "agent", "lang": "kn", "text": "Namaskara sir, Kaveri Finance inda maathadthiddini. Suresh Kumar Naik avaru maathadthiddeera?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಹೌದು, ನಾನೇ.", "roman": "Haudu, naane." },
+    { "speaker": "agent", "lang": "en", "text": "Sir, this call is being recorded. For verification, please tell me your date of birth." },
+    { "speaker": "customer", "lang": "en", "text": "Fourth July, nineteen eighty-five." },
+    { "speaker": "agent", "lang": "kn", "text": "Thank you sir. Nimma personal loan alli total outstanding one lakh twenty-four thousand rupees ide. Ee account ge namma kade inda one-time settlement offer ide." },
+    { "speaker": "customer", "lang": "kn", "text": "ಮೊದಲು ಆ amount ಬಗ್ಗೆನೇ ನನ್ನ problem. Principal ಬರೀ ಎಂಬತ್ತು ಸಾವಿರ, ಆದ್ರೆ penal interest eighteen thousand ಹಾಕಿದ್ದೀರ, ಅದು agreement ಅಲ್ಲಿ...", "roman": "Modalu aa amount baggene nanna problem. Principal bari embattu saavira, aadre penal interest eighteen thousand haakiddeera, adu agreement alli..." },
+    { "speaker": "agent", "lang": "kn", "text": "Sir sir, adu ella charges system prakaarane. Neevu settlement thagondre adu ella hogutte." },
+    { "speaker": "customer", "lang": "kn", "text": "ಇಲ್ಲ, ನನ್ನ ಮಾತು ಪೂರ್ತಿ ಕೇಳಿ. Agreement ಅಲ್ಲಿ penal charge ಎರಡು percent ಅಂತ ಇದೆ, ನೀವು ಅದಕ್ಕಿಂತ ಜಾಸ್ತಿ ಹಾಕಿದ್ದೀರ.", "roman": "Illa, nanna maathu poorti keli. Agreement alli penal charge eradu percent anta ide, neevu adakkintha jaasti haakiddeera." },
+    { "speaker": "agent", "lang": "kn", "text": "Sari sir. Settlement amount seventy-eight thousand rupees. Adanna katti account close maadkobahudu. Payment maaduva munche settlement letter written aagi kalisthivi." },
+    { "speaker": "customer", "lang": "kn", "text": "Seventy-eight ಕೂಡ ಜಾಸ್ತಿ. ಮೊದಲು ಈ wrong charges ಸರಿ ಮಾಡಿ. ನನಗೆ ನಿಮ್ಮ supervisor ಜೊತೆ ಮಾತಾಡ್ಬೇಕು.", "roman": "Seventy-eight kooda jaasti. Modalu ee wrong charges sari maadi. Nanage nimma supervisor jothe maathadbeku." },
+    { "speaker": "agent", "lang": "kn", "text": "Sari sir, yaava pressure illa, neevu yochane maadi decide maadi. Naanu nimma case na supervisor ge escalate maadthini." },
+    { "speaker": "customer", "lang": "kn", "text": "ಎಷ್ಟು ದಿನದಲ್ಲಿ call ಬರುತ್ತೆ? ಮತ್ತೆ ಈ recovery calls ನಿಲ್ಲುತ್ತಾ?", "roman": "Eshtu dinadalli call barutte? Matthe ee recovery calls nillutta?" },
+    { "speaker": "agent", "lang": "kn", "text": "Supervisor nimage forty-eight hours olage call maadthaare sir. Recovery calls bagge naanu heloke aagalla." },
+    { "speaker": "customer", "lang": "kn", "text": "ಸರಿ, wait ಮಾಡ್ತೀನಿ. Reference ಏನಾದ್ರೂ ಇದೆಯಾ?", "roman": "Sari, wait maadthini. Reference enaadroo ideya?" },
+    { "speaker": "agent", "lang": "kn", "text": "Supervisor call maadidaaga ella details heltaare sir. Thank you." },
+    { "speaker": "customer", "lang": "kn", "text": "ಹ್ಮ್, ಸರಿ.", "roman": "Hmm, sari." }
+  ],
+  "analysis": {
+    "outcomeId": "escalated",
+    "outcomeRationale": "Customer disputed the penal interest, rejected the ₹78,000 offer as too high and asked for a supervisor; agent escalated with a 48-hour callback.",
+    "summary": "Agent opened with a ₹78,000 one-time settlement on ₹1,24,000 outstanding, but the customer disputes ₹18,000 of penal interest as above the 2% in his agreement. Agent escalated to a supervisor with a 48-hour callback but gave no reference number and no assurance on recovery calls.",
+    "observations": "Compliant and non-pressuring on the settlement, with the written letter promised up front. Weaknesses: interrupted the customer mid-dispute to push the settlement, did not explain that the loan would be reported as 'settled', and left the dispute without a ticket reference or collection pause.",
+    "improvements": "Let the customer finish the dispute before pitching settlement; log the penal-charge dispute with a reference number; explain 'settled' credit-bureau reporting; and close with a recap of the escalation and what happens to recovery calls meanwhile.",
+    "extractions": { "call_intent": "both", "dispute_type": "wrong_charges", "settlement_amount": 78000 },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted and named Kaveri Finance.", "confidence": 0.96 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Asked for date of birth before discussing the account.", "confidence": 0.95 },
+      "op_recording_disclosure": { "result": "pass", "line": 2, "rationale": "Stated the call is being recorded.", "confidence": 0.97 },
+      "dp_listen_fully": { "result": "fail", "line": 6, "rationale": "Cut in with 'Sir sir' mid-explanation; customer had to ask to be heard fully.", "confidence": 0.92 },
+      "dp_log_ticket": { "result": "fail", "line": 14, "rationale": "Customer asked for a reference; none was given.", "confidence": 0.93 },
+      "dp_timeline": { "result": "pass", "line": 12, "rationale": "Supervisor callback within 48 hours.", "confidence": 0.8 },
+      "dp_pause_collection": { "result": "fail", "line": 12, "rationale": "Said he could not comment on recovery calls.", "confidence": 0.92 },
+      "st_explain_terms": { "result": "fail", "line": 8, "rationale": "Stated ₹78,000 but did not mention 'settled' reporting to credit bureaus.", "confidence": 0.9 },
+      "st_written_confirmation": { "result": "pass", "line": 8, "rationale": "Promised a written settlement letter before payment.", "confidence": 0.95 },
+      "st_no_pressure": { "result": "pass", "line": 10, "rationale": "Explicitly said 'yaava pressure illa' and let the customer decide.", "confidence": 0.93 },
+      "cp_no_threats": { "result": "pass", "line": null, "rationale": "No threats or coercion.", "confidence": 0.95 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Polite overall despite the interruption.", "confidence": 0.8 },
+      "cp_no_third_party": { "result": "pass", "line": 3, "rationale": "Account discussed only after DOB verification.", "confidence": 0.94 },
+      "cl_next_step": { "result": "pass", "line": 12, "rationale": "Stated the supervisor will call the customer within 48 hours.", "confidence": 0.88 },
+      "cl_recap": { "result": "fail", "line": 14, "rationale": "Closed with 'supervisor will tell details' — no recap of dispute, offer or escalation.", "confidence": 0.9 }
+    },
+    "moments": [
+      { "type": "dispute", "line": 5, "label": "Disputes ₹18k penal interest" },
+      { "type": "objection", "line": 9, "label": "₹78k too high, wants supervisor" },
+      { "type": "compliance_risk", "line": 12, "label": "No pause on recovery calls" }
+    ]
+  }
+}

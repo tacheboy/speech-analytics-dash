@@ -1,0 +1,57 @@
+{
+  "id": "mb-hi-good",
+  "categoryId": "mid-bucket",
+  "language": "hi-en",
+  "quality": "good",
+  "customerName": "Pooja Arora",
+  "lines": [
+    { "speaker": "agent", "lang": "hi", "text": "Namaste, main Kaveri Finance ki collections team se bol raha hoon. Kya meri baat Pooja Arora ji se ho rahi hai?" },
+    { "speaker": "customer", "lang": "hi", "text": "जी हाँ, मैं Pooja बोल रही हूँ।", "roman": "Ji haan, main Pooja bol rahi hoon." },
+    { "speaker": "agent", "lang": "en", "text": "Thank you ma'am. Please note, this call is recorded for quality and training. Verification ke liye apni date of birth confirm kar dijiye." },
+    { "speaker": "customer", "lang": "en", "text": "Fourteen March, nineteen ninety-one." },
+    { "speaker": "agent", "lang": "hi", "text": "Thank you. Ma'am, aapke personal loan ki do EMI, September aur October ki, pending hain. Har EMI six thousand five hundred hai, toh total overdue thirteen thousand rupees hai. Kya main jaan sakta hoon payment kyun miss hua?" },
+    { "speaker": "customer", "lang": "hi", "text": "हाँ, मुझे पता है। असल में August में मेरी job चली गई, company ने downsizing की।", "roman": "Haan, mujhe pata hai. Asal mein August mein meri job chali gayi, company ne downsizing ki." },
+    { "speaker": "agent", "lang": "hi", "text": "Yeh sunkar bura laga ma'am. Aisi situation mein tension hona natural hai. Abhi koi income source hai aapka?" },
+    { "speaker": "customer", "lang": "hi", "text": "अभी freelancing से थोड़ा बहुत आ रहा है। नई job की बात चल रही है, December से join करूँगी शायद।", "roman": "Abhi freelancing se thoda bahut aa raha hai. Nayi job ki baat chal rahi hai, December se join karoongi shayad." },
+    { "speaker": "agent", "lang": "hi", "text": "Achhi baat hai. Abhi aap realistically kitna pay kar sakti hain, taaki account aur overdue na ho?" },
+    { "speaker": "customer", "lang": "hi", "text": "पूरे तेरह हज़ार तो अभी नहीं हो पाएँगे। Six thousand तक कर सकती हूँ।", "roman": "Poore terah hazaar toh abhi nahi ho paayenge. Six thousand tak kar sakti hoon." },
+    { "speaker": "agent", "lang": "hi", "text": "Samajh gaya. Bas factually bata doon, agar account ninety days cross karta hai toh credit bureau ko NPA report hota hai aur late charges bhi lagte rahenge. Agar abhi ek EMI, six thousand five hundred, clear ho jaye toh account ek bucket neeche aa jayega." },
+    { "speaker": "customer", "lang": "hi", "text": "ठीक है, six thousand five hundred मैं पच्चीस तारीख तक कर दूँगी।", "roman": "Theek hai, six thousand five hundred main pachchees taarikh tak kar doongi." },
+    { "speaker": "agent", "lang": "hi", "text": "Bahut badhiya. Baaki EMI ke liye, joining ke baad zarurat ho toh hum restructuring request bhi dekh sakte hain. Payment aap kaise karengi?" },
+    { "speaker": "customer", "lang": "hi", "text": "UPI से कर दूँगी, मेरे phone में app है।", "roman": "UPI se kar doongi, mere phone mein app hai." },
+    { "speaker": "agent", "lang": "en", "text": "Perfect. So to confirm, six thousand five hundred rupees by twenty-fifth November through UPI. I am sending the UPI details to your registered number now." },
+    { "speaker": "customer", "lang": "hi", "text": "हाँ ठीक है, thank you।", "roman": "Haan theek hai, thank you." },
+    { "speaker": "agent", "lang": "hi", "text": "Dhanyavaad Pooja ji, nayi job ke liye all the best." }
+  ],
+  "analysis": {
+    "outcomeId": "partial",
+    "outcomeRationale": "Customer agreed to pay one of two overdue EMIs (₹6,500 of ₹13,000) by 25 November via UPI.",
+    "summary": "Borrower is two EMIs behind after losing her job in August and has a new role starting in December. Agent assessed her capacity, explained bureau consequences factually and secured a dated partial payment with a restructuring option for the balance.",
+    "observations": "Strong mid-bucket negotiation: full verification and disclosure, genuine empathy for the job loss, and an ability-to-pay question before proposing an amount. Nudging ₹6,000 up to one full EMI was handled without pressure.",
+    "improvements": "Could quote the actual late-charge amount and set a follow-up date for the remaining ₹6,500.",
+    "extractions": { "delay_reason": "job_loss", "ptp_amount": 6500, "ptp_date": "25 November", "payment_mode": "upi", "hardship": true },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted and identified the Kaveri Finance collections team.", "confidence": 0.97 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Verified date of birth before discussing the loan.", "confidence": 0.96 },
+      "op_recording_disclosure": { "result": "pass", "line": 2, "rationale": "Stated that the call is recorded.", "confidence": 0.98 },
+      "ds_reason_delay": { "result": "pass", "line": 4, "rationale": "Asked why the payments were missed.", "confidence": 0.95 },
+      "ds_empathy": { "result": "pass", "line": 6, "rationale": "Acknowledged the job loss and the stress it causes.", "confidence": 0.93 },
+      "ds_ability_to_pay": { "result": "pass", "line": 8, "rationale": "Asked what she could realistically pay now.", "confidence": 0.95 },
+      "ng_state_dues": { "result": "pass", "line": 4, "rationale": "Stated two missed EMIs of ₹6,500 and ₹13,000 total overdue.", "confidence": 0.96 },
+      "ng_consequences": { "result": "pass", "line": 10, "rationale": "Explained NPA reporting and ongoing charges factually.", "confidence": 0.9 },
+      "ng_options": { "result": "pass", "line": 12, "rationale": "Offered a partial payment now and a restructuring request later.", "confidence": 0.92 },
+      "cp_no_threats": { "result": "pass", "line": 10, "rationale": "Consequences framed as information, not intimidation.", "confidence": 0.93 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Warm, respectful tone throughout.", "confidence": 0.96 },
+      "cp_no_third_party": { "result": "pass", "line": 3, "rationale": "Loan discussed only after DOB verification.", "confidence": 0.92 },
+      "cl_ptp_secured": { "result": "pass", "line": 11, "rationale": "₹6,500 promised by 25 November.", "confidence": 0.95 },
+      "cl_payment_mode": { "result": "pass", "line": 13, "rationale": "Customer confirmed UPI.", "confidence": 0.94 },
+      "cl_recap": { "result": "pass", "line": 14, "rationale": "Amount, date and mode repeated before closing.", "confidence": 0.97 }
+    },
+    "moments": [
+      { "type": "hardship", "line": 5, "label": "Lost job in August" },
+      { "type": "objection", "line": 9, "label": "Can't pay full ₹13,000" },
+      { "type": "ptp", "line": 11, "label": "Partial PTP ₹6,500 by 25 Nov" },
+      { "type": "payment", "line": 14, "label": "UPI details sent" }
+    ]
+  }
+}

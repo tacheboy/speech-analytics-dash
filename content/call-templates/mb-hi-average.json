@@ -1,0 +1,56 @@
+{
+  "id": "mb-hi-average",
+  "categoryId": "mid-bucket",
+  "language": "hi-en",
+  "quality": "average",
+  "customerName": "Rahul Bansal",
+  "lines": [
+    { "speaker": "agent", "lang": "hi", "text": "Hello, main Kaveri Finance se bol raha hoon. Rahul Bansal ji baat kar rahe hain?" },
+    { "speaker": "customer", "lang": "hi", "text": "हाँ, बोल रहा हूँ।", "roman": "Haan, bol raha hoon." },
+    { "speaker": "agent", "lang": "hi", "text": "Sir aapke two-wheeler loan pe do EMI overdue hain, three thousand nine hundred each, total seven thousand eight hundred, plus eleven eighty bounce charges. Aaj kab tak clear karenge?" },
+    { "speaker": "customer", "lang": "hi", "text": "क्या? October की EMI तो मैंने Karol Bagh branch में cash जमा की थी। मेरे पास receipt है।", "roman": "Kya? October ki EMI toh maine Karol Bagh branch mein cash jama ki thi. Mere paas receipt hai." },
+    { "speaker": "agent", "lang": "hi", "text": "Sir system mein toh nahi dikh raha. Payment toh karna padega, warna charges badhte rahenge." },
+    { "speaker": "customer", "lang": "hi", "text": "देखिए, मैं double payment नहीं करूँगा। पहले आप अपना record check कीजिए। Receipt number भी है, KB दो चार आठ नौ।", "roman": "Dekhiye, main double payment nahi karoonga. Pehle aap apna record check kijiye. Receipt number bhi hai, KB do chaar aath nau." },
+    { "speaker": "agent", "lang": "hi", "text": "Okay sir, main dispute raise kar deta hoon. Aapka reference number hai DSP four five one two. Branch receipt verify karegi, seven working days mein resolution aa jayega." },
+    { "speaker": "customer", "lang": "hi", "text": "ठीक है। और तब तक मुझे ये calls आती रहेंगी?", "roman": "Theek hai. Aur tab tak mujhe ye calls aati rahengi?" },
+    { "speaker": "agent", "lang": "hi", "text": "Sir woh system automatic hai, main kuch nahi kar sakta. Waise November ki EMI toh disputed nahi hai na, woh aap bhar sakte hain." },
+    { "speaker": "customer", "lang": "hi", "text": "November की salary अभी आई नहीं है। Dispute clear होने दीजिए, फिर एक साथ देख लेंगे।", "roman": "November ki salary abhi aayi nahi hai. Dispute clear hone dijiye, phir ek saath dekh lenge." },
+    { "speaker": "agent", "lang": "hi", "text": "Sir bas dhyan rakhiye, overdue chalta raha toh credit bureau mein report hota hai, CIBIL pe asar padega." },
+    { "speaker": "customer", "lang": "hi", "text": "हाँ समझ गया। पहले मेरा issue solve कीजिए।", "roman": "Haan samajh gaya. Pehle mera issue solve kijiye." },
+    { "speaker": "agent", "lang": "hi", "text": "Theek hai sir. Toh recap kar deta hoon: dispute reference DSP four five one two, seven working days mein branch receipt verify hogi, uske baad hum aapko call karenge." },
+    { "speaker": "customer", "lang": "hi", "text": "ठीक है, धन्यवाद।", "roman": "Theek hai, dhanyavaad." }
+  ],
+  "analysis": {
+    "outcomeId": "dispute",
+    "outcomeRationale": "Customer disputes the October EMI, saying he paid cash at the Karol Bagh branch and holds a receipt; a dispute ticket was raised.",
+    "summary": "Borrower claims the October EMI was paid in cash at a branch and refuses to pay until records are corrected. Agent logged dispute DSP4512 with a 7-working-day timeline but could not confirm a pause on collection calls and secured no payment.",
+    "observations": "Dispute was logged cleanly with a reference and timeline, and consequences were explained factually. However, there was no recording disclosure, the agent opened by demanding payment instead of asking what happened, and he brushed off the request to pause calls ('system automatic hai').",
+    "improvements": "Disclose recording and verify with account digits; ask about the missed payments before demanding a date; confirm that collection follow-ups pause during dispute review; assess capacity for the undisputed November EMI rather than just asking him to pay it.",
+    "extractions": { "delay_reason": "dispute", "ptp_amount": null, "ptp_date": null, "payment_mode": null, "hardship": false },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted and named Kaveri Finance.", "confidence": 0.9 },
+      "op_rpc_verify": { "result": "pass", "line": 0, "rationale": "Borrower confirmed his name before dues were discussed; no stronger check.", "confidence": 0.66 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "Recording never disclosed.", "confidence": 0.95 },
+      "ds_reason_delay": { "result": "fail", "line": 2, "rationale": "Asked 'kab tak clear karenge' instead of why the EMIs were missed; the dispute surfaced only because the customer raised it.", "confidence": 0.8 },
+      "ds_empathy": { "result": "fail", "line": 4, "rationale": "Dismissed the cash receipt claim with 'payment toh karna padega'.", "confidence": 0.84 },
+      "ds_ability_to_pay": { "result": "fail", "line": 9, "rationale": "Did not explore what the customer could pay after he mentioned salary not yet credited.", "confidence": 0.78 },
+      "ng_state_dues": { "result": "pass", "line": 2, "rationale": "Stated two EMIs of ₹3,900, ₹7,800 total plus ₹1,180 bounce charges.", "confidence": 0.95 },
+      "ng_consequences": { "result": "pass", "line": 10, "rationale": "Explained credit bureau reporting factually.", "confidence": 0.86 },
+      "ng_options": { "result": "pass", "line": 8, "rationale": "Suggested paying the undisputed November EMI separately.", "confidence": 0.72 },
+      "dp_log_ticket": { "result": "pass", "line": 6, "rationale": "Logged the dispute and shared reference DSP4512.", "confidence": 0.96 },
+      "dp_timeline": { "result": "pass", "line": 6, "rationale": "Committed to resolution within seven working days.", "confidence": 0.94 },
+      "dp_pause_collection": { "result": "fail", "line": 8, "rationale": "Said calls are automatic and he could not stop them.", "confidence": 0.92 },
+      "cp_no_threats": { "result": "pass", "line": 10, "rationale": "No intimidation; consequences stated plainly.", "confidence": 0.88 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Curt in places but not abusive.", "confidence": 0.74 },
+      "cp_no_third_party": { "result": "pass", "line": 1, "rationale": "Spoke only with the borrower.", "confidence": 0.9 },
+      "cl_ptp_secured": { "result": "fail", "line": 9, "rationale": "No amount or date committed, even for the undisputed EMI.", "confidence": 0.93 },
+      "cl_payment_mode": { "result": "fail", "line": null, "rationale": "No payment mode discussed.", "confidence": 0.85 },
+      "cl_recap": { "result": "pass", "line": 12, "rationale": "Recapped reference number, timeline and next call.", "confidence": 0.93 }
+    },
+    "moments": [
+      { "type": "dispute", "line": 3, "label": "Claims Oct EMI paid in cash" },
+      { "type": "dispute", "line": 6, "label": "Ticket DSP4512 logged" },
+      { "type": "objection", "line": 9, "label": "Won't pay until dispute clears" }
+    ]
+  }
+}

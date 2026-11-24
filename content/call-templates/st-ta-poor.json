@@ -1,0 +1,49 @@
+{
+  "id": "st-ta-poor",
+  "categoryId": "settlement",
+  "language": "ta-en",
+  "quality": "poor",
+  "customerName": "Selvi Arumugam",
+  "lines": [
+    { "speaker": "agent", "lang": "ta", "text": "Hello madam, Kaveri Finance la irundhu pesaren, call record aagudhu. Selvi Arumugam madam ah?" },
+    { "speaker": "customer", "lang": "ta", "text": "ஆமா, Selvi தான்.", "roman": "Aama, Selvi dhaan." },
+    { "speaker": "agent", "lang": "ta", "text": "Madam, loan account last four digits confirm pannunga." },
+    { "speaker": "customer", "lang": "ta", "text": "Zero nine four six. என்ன sir?", "roman": "Zero nine four six. Enna sir?" },
+    { "speaker": "agent", "lang": "ta", "text": "Madam, unga personal loan la sixty two thousand outstanding irukku. Inniki oru special settlement offer irukku, forty five thousand kattina loan close." },
+    { "speaker": "customer", "lang": "ta", "text": "Forty five thousand ஆ? என் tailoring கடை இப்போ சரியா ஓடல. அவ்வளவு ஒரே தடவையா முடியாது sir.", "roman": "Forty five thousand aa? En tailoring kadai ippo sariyaa odala. Avvalavu ore thadavaiyaa mudiyaadhu sir." },
+    { "speaker": "agent", "lang": "ta", "text": "Madam, indha offer inniki saayangaalam aaru mani varaikkum dhaan. Naalaikku full amount plus charges dhaan kattanum." },
+    { "speaker": "customer", "lang": "ta", "text": "இவ்வளவு சீக்கிரம் எப்படி sir? Letter ஏதாவது அனுப்புங்க, பாத்துட்டு சொல்றேன்.", "roman": "Ivvalavu seekiram eppadi sir? Letter edhaavadhu anuppunga, paatthuttu solren." },
+    { "speaker": "agent", "lang": "ta", "text": "Letter ellaam payment pannina appuram dhaan madam. Ippove UPI la pannunga." },
+    { "speaker": "customer", "lang": "ta", "text": "Letter இல்லாம நான் பணம் கட்ட மாட்டேன்.", "roman": "Letter illaama naan panam katta maatten." },
+    { "speaker": "agent", "lang": "ta", "text": "Appo seri, legal notice unga veetukku varum. Unga street la ellaarukkum theriyum, apparam neenga dhaan asingapadanum." },
+    { "speaker": "customer", "lang": "ta", "text": "என்ன sir இப்படி பேசுறீங்க? இந்த offer எனக்கு வேணாம். Branch ல நேரா பேசிக்கறேன்.", "roman": "Enna sir ippadi pesureenga? Indha offer enakku venaam. Branch la neraa pesikkaren." },
+    { "speaker": "agent", "lang": "ta", "text": "Ungaloda ishtam madam." }
+  ],
+  "analysis": {
+    "outcomeId": "offer_rejected",
+    "outcomeRationale": "Customer rejected the ₹45,000 settlement after being given a same-day deadline, refused a written letter, and threatened with a legal notice.",
+    "summary": "Agent offered a ₹45,000 one-time settlement on ₹62,000 outstanding but imposed a 6 pm same-day deadline and refused a written letter before payment. When the customer insisted on the letter, the agent threatened a legal notice and public shaming, and she rejected the offer.",
+    "observations": "Classic pressure-selling of a settlement: fake deadline, payment demanded before written terms, no mention of 'settled' bureau reporting, then a threat with humiliation. The customer's request for a letter was correct and protected her; the agent's handling creates regulatory and reputational risk.",
+    "improvements": "Escalate for compliance review. Always explain 'settled' reporting, issue the settlement letter before payment, give a genuine validity window, and explore instalment options given the shop slowdown. Never reference home notices or neighbours.",
+    "extractions": { "call_intent": "settlement", "dispute_type": "none", "settlement_amount": 45000 },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Named Kaveri Finance in the opening.", "confidence": 0.88 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Asked for the last four digits of the loan account.", "confidence": 0.93 },
+      "op_recording_disclosure": { "result": "pass", "line": 0, "rationale": "Mentioned that the call is recorded.", "confidence": 0.9 },
+      "st_explain_terms": { "result": "fail", "line": 4, "rationale": "Quoted ₹45,000 and said the loan would 'close', with no mention of 'settled' bureau reporting.", "confidence": 0.93 },
+      "st_written_confirmation": { "result": "fail", "line": 8, "rationale": "Refused to send a letter until after payment.", "confidence": 0.97 },
+      "st_no_pressure": { "result": "fail", "line": 6, "rationale": "Imposed a same-day 6 pm deadline and demanded immediate UPI payment.", "confidence": 0.97 },
+      "cp_no_threats": { "result": "fail", "line": 10, "rationale": "Threatened a legal notice at the customer's home.", "confidence": 0.97 },
+      "cp_respectful": { "result": "fail", "line": 10, "rationale": "Said the neighbours would know and she would be humiliated.", "confidence": 0.95 },
+      "cp_no_third_party": { "result": "pass", "line": 3, "rationale": "No details shared with anyone other than the verified borrower.", "confidence": 0.85 },
+      "cl_next_step": { "result": "fail", "line": 12, "rationale": "No next step offered after the customer said she would go to the branch.", "confidence": 0.9 },
+      "cl_recap": { "result": "fail", "line": 12, "rationale": "Ended with 'your wish' and no recap.", "confidence": 0.94 }
+    },
+    "moments": [
+      { "type": "hardship", "line": 5, "label": "Tailoring shop slowdown" },
+      { "type": "compliance_risk", "line": 6, "label": "Fake same-day deadline" },
+      { "type": "compliance_risk", "line": 10, "label": "Legal notice and shaming threat" },
+      { "type": "objection", "line": 11, "label": "Rejected settlement offer" }
+    ]
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "id": "st-kn-good",
+  "categoryId": "settlement",
+  "language": "kn-en",
+  "quality": "good",
+  "customerName": "Kavya Hegde",
+  "lines": [
+    { "speaker": "agent", "lang": "kn", "text": "Namaskara madam, naanu Kaveri Finance inda maathadthiddini. Kavya Hegde avara jothe maathadthiddeena?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಹೌದು, ನಾನೇ Kavya. ನಿಮ್ಮಿಂದ ತುಂಬಾ calls ಬರ್ತಿವೆ, ಅದರ ಬಗ್ಗೆನೇ ಮಾತಾಡ್ಬೇಕಿತ್ತು.", "roman": "Haudu, naane Kavya. Nimminda thumba calls barthive, adara baggene maathadbekitthu." },
+    { "speaker": "agent", "lang": "en", "text": "Sure madam. This call is recorded for quality and for your protection. Before we proceed, please confirm the last four digits of your loan account." },
+    { "speaker": "customer", "lang": "en", "text": "Two zero five eight." },
+    { "speaker": "agent", "lang": "kn", "text": "Thank you madam. Dayavittu enu problem anta poorti heli, naanu note maadkothini." },
+    { "speaker": "customer", "lang": "kn", "text": "October ಹತ್ತನೇ ತಾರೀಕು ನಾನು loan foreclose ಮಾಡಿದೆ, forty-two thousand three hundred branch ಅಲ್ಲಿ ಕಟ್ಟಿದೆ. Receipt ಕೂಡ ಇದೆ.", "roman": "October hatthane thaareeku naanu loan foreclose maadide, forty-two thousand three hundred branch alli kattide. Receipt kooda ide." },
+    { "speaker": "agent", "lang": "kn", "text": "Hmm, sari madam, heli." },
+    { "speaker": "customer", "lang": "kn", "text": "ಆದ್ರೂ ನಿಮ್ಮ system ಅಲ್ಲಿ ಇನ್ನೂ three thousand one fifty due ಅಂತ ತೋರಿಸ್ತಿದೆ, NOC ಕೂಡ ಬಂದಿಲ್ಲ. ದಿನಾ calls ಬರ್ತಿವೆ, office ಅಲ್ಲಿ ತುಂಬಾ embarrassing ಆಗುತ್ತೆ.", "roman": "Aadroo nimma system alli innu three thousand one fifty due anta thoristide, NOC kooda bandilla. Dina calls barthive, office alli thumba embarrassing aagutte." },
+    { "speaker": "agent", "lang": "kn", "text": "Kshamisi madam, idu nimage thondre aagide. Foreclosure maadiddaroo due thoristide andre adu namma kade reconciliation problem irabahudu. Naanu eega dispute log maadthiddini." },
+    { "speaker": "customer", "lang": "kn", "text": "ಸರಿ, ಎಷ್ಟು ದಿನ ಆಗುತ್ತೆ?", "roman": "Sari, eshtu dina aagutte?" },
+    { "speaker": "agent", "lang": "en", "text": "Your reference number is K F D two four one one nine three. The reconciliation team will resolve it within seven working days, and I have put a hold on collection calls on your account until then." },
+    { "speaker": "customer", "lang": "kn", "text": "ಒಳ್ಳೇದು. Receipt ಎಲ್ಲಿಗೆ ಕಳುಹಿಸ್ಬೇಕು?", "roman": "Olledu. Receipt ellige kaluhisbeku?" },
+    { "speaker": "agent", "lang": "kn", "text": "Receipt photo na disputes at kaveri finance dot in ge kalisi, subject alli reference number haaki. Team nimage email mooloka update kodutte, resolve aada mele NOC kooda kalisthaare." },
+    { "speaker": "customer", "lang": "kn", "text": "ಸರಿ, ಇವತ್ತೇ ಮಾಡ್ತೀನಿ.", "roman": "Sari, ivatthe maadthini." },
+    { "speaker": "agent", "lang": "en", "text": "To recap madam: dispute KFD241193 is logged for the three thousand one fifty showing after your October foreclosure, resolution within seven working days, no collection calls meanwhile, and you will email the receipt today." },
+    { "speaker": "customer", "lang": "kn", "text": "ಹಾ, ಸರಿ. Thank you.", "roman": "Haa, sari. Thank you." },
+    { "speaker": "agent", "lang": "kn", "text": "Dhanyavaada madam, thondarege kshame irali." }
+  ],
+  "analysis": {
+    "outcomeId": "dispute_logged",
+    "outcomeRationale": "Dispute logged with reference KFD241193, a seven-working-day timeline and collection calls on hold.",
+    "summary": "Customer foreclosed her loan on 10 October (₹42,300 at branch) but the system still shows ₹3,150 due and no NOC has been issued. Agent listened fully, apologised, logged a dispute with a reference and timeline, and paused collection calls.",
+    "observations": "Model dispute call: verification and recording disclosure up front, open prompt for the full story with no interruptions, ownership of a likely internal reconciliation error, and a precise recap including the customer's own action item.",
+    "improvements": "Could confirm the registered email address on file so the update and NOC reach her.",
+    "extractions": { "call_intent": "dispute", "dispute_type": "already_paid", "settlement_amount": null },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted and named Kaveri Finance.", "confidence": 0.97 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Asked for last four digits of the loan account before discussing it.", "confidence": 0.96 },
+      "op_recording_disclosure": { "result": "pass", "line": 2, "rationale": "Disclosed that the call is recorded.", "confidence": 0.98 },
+      "dp_listen_fully": { "result": "pass", "line": 4, "rationale": "Invited the full explanation and only acknowledged ('heli') until the customer finished.", "confidence": 0.9 },
+      "dp_log_ticket": { "result": "pass", "line": 10, "rationale": "Logged the dispute and shared reference KFD241193.", "confidence": 0.97 },
+      "dp_timeline": { "result": "pass", "line": 10, "rationale": "Committed to resolution within seven working days.", "confidence": 0.96 },
+      "dp_pause_collection": { "result": "pass", "line": 10, "rationale": "Confirmed a hold on collection calls until resolution.", "confidence": 0.96 },
+      "cp_no_threats": { "result": "pass", "line": null, "rationale": "No pressure or threats at any point.", "confidence": 0.97 },
+      "cp_respectful": { "result": "pass", "line": 8, "rationale": "Apologised for the inconvenience and stayed courteous.", "confidence": 0.96 },
+      "cp_no_third_party": { "result": "pass", "line": 3, "rationale": "Account discussed only after verification.", "confidence": 0.94 },
+      "cl_next_step": { "result": "pass", "line": 12, "rationale": "Explained where to send the receipt and that the team will update by email and issue the NOC.", "confidence": 0.93 },
+      "cl_recap": { "result": "pass", "line": 14, "rationale": "Recapped reference, issue, timeline, call hold and customer's action.", "confidence": 0.97 }
+    },
+    "moments": [
+      { "type": "dispute", "line": 5, "label": "Already foreclosed on 10 Oct" },
+      { "type": "objection", "line": 7, "label": "Daily calls embarrassing at office" },
+      { "type": "dispute", "line": 10, "label": "Ticket KFD241193, calls paused" }
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "id": "st-ta-good",
+  "categoryId": "settlement",
+  "language": "ta-en",
+  "quality": "good",
+  "customerName": "Revathi Balaji",
+  "lines": [
+    { "speaker": "agent", "lang": "ta", "text": "Vanakkam madam, naan Kaveri Finance la irundhu pesaren. Revathi Balaji madam kooda pesalaama? Indha call quality kaaga record aagudhu." },
+    { "speaker": "customer", "lang": "ta", "text": "ஆமா, Revathi தான் பேசறேன்.", "roman": "Aama, Revathi dhaan pesaren." },
+    { "speaker": "agent", "lang": "ta", "text": "Thank you madam. Verification kaaga unga loan account last four digits sollunga?" },
+    { "speaker": "customer", "lang": "ta", "text": "Seven two five eight. நீங்க settlement பத்தி message அனுப்பியிருந்தீங்க இல்ல?", "roman": "Seven two five eight. Neenga settlement patthi message anuppiyirundheenga illa?" },
+    { "speaker": "agent", "lang": "ta", "text": "Aama madam. Adhukku munnaadi, neenga mail la charges pathi oru concern sollirundheenga. Adha mudhalla muzhusaa sollunga, naan kekkuren." },
+    { "speaker": "customer", "lang": "ta", "text": "ஆமா. Lockdown time ல moratorium எடுத்தேன், ஆனா அதுக்கும் penal charges fourteen thousand போட்டிருக்கீங்க. Statement ல clear ஆ இருக்கு, March to August moratorium approved னு. அது தப்பு.", "roman": "Aama. Lockdown time la moratorium edutthen, aana adhukkum penal charges fourteen thousand pottirukkeenga. Statement la clear aa irukku, March to August moratorium approved nu. Adhu thappu." },
+    { "speaker": "agent", "lang": "ta", "text": "Purinjidhu madam, neenga sonnadhu ellaam note panniten. Indha penal charges dispute ah log panniten, reference number DSP four eight one two seven. Ten working days la review mudinju email la update varum. Review mudiyura varaikkum andha fourteen thousand ku endha collection follow-up um irukkaadhu." },
+    { "speaker": "customer", "lang": "ta", "text": "சரி, அது நல்லது. இப்போ settlement amount என்ன?", "roman": "Seri, adhu nalladhu. Ippo settlement amount enna?" },
+    { "speaker": "agent", "lang": "ta", "text": "Unga total outstanding one lakh forty eight thousand. Disputed charges exclude panni, one-time settlement ah ninety five thousand rupees offer panrom. Oru vishayam clear ah solren madam, settle pannina credit bureau la account 'settled' nu report aagum, 'closed' nu illa. Adhu future loans ku konjam affect pannalaam." },
+    { "speaker": "customer", "lang": "ta", "text": "ஓ, அப்படியா. பரவாயில்ல, இந்த loan முடிஞ்சா போதும். ஆனா பணம் கட்டுறதுக்கு முன்னாடி எழுத்துல வேணும்.", "roman": "O, appadiyaa. Paravaayilla, indha loan mudinjaa podhum. Aana panam katturadhukku munnaadi ezhutthula venum." },
+    { "speaker": "agent", "lang": "ta", "text": "Kandippa madam. Settlement letter unga registered email ku vandha appuram dhaan pay pannanum. Offer thirty days valid, avasarapada vendaam, family kooda pesitu decide pannalaam." },
+    { "speaker": "customer", "lang": "ta", "text": "இல்ல, எனக்கு ok. Ninety five thousand ஒத்துக்கறேன். Letter அனுப்புங்க.", "roman": "Illa, enakku ok. Ninety five thousand otthukkaren. Letter anuppunga." },
+    { "speaker": "agent", "lang": "ta", "text": "Sari madam, recap panren: ninety five thousand one-time settlement agree panneenga. Settlement letter rendu working days la email la varum, letter la irukkura account ku dhaan payment pannanum. Penal charges dispute DSP four eight one two seven separately ten working days la review aagum. Letter anuppina appuram naan ungalukku call panni confirm panren." },
+    { "speaker": "customer", "lang": "ta", "text": "சரி sir, thank you. Clear ஆ சொன்னீங்க.", "roman": "Seri sir, thank you. Clear aa sonneenga." },
+    { "speaker": "agent", "lang": "ta", "text": "Nandri madam, nalla naal." }
+  ],
+  "analysis": {
+    "outcomeId": "settlement_agreed",
+    "outcomeRationale": "Customer accepted a one-time settlement of ₹95,000, to be paid only after the written settlement letter arrives.",
+    "summary": "Borrower disputed ₹14,000 of penal charges levied during an approved COVID moratorium and wanted to close the loan. Agent logged the dispute with a reference and pause on collection, then agreed a ₹95,000 settlement (excluding the disputed charges) pending a written letter.",
+    "observations": "Model settlement call: let the customer explain the dispute before talking money, gave reference, timeline and collection pause in one turn, and was transparent that the account will be reported as 'settled'. Explicitly removed time pressure with a 30-day validity.",
+    "improvements": "Could confirm the registered email address on the call before promising the letter.",
+    "extractions": { "call_intent": "both", "dispute_type": "wrong_charges", "settlement_amount": 95000 },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted and named Kaveri Finance.", "confidence": 0.97 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Asked for last four digits of the loan account.", "confidence": 0.95 },
+      "op_recording_disclosure": { "result": "pass", "line": 0, "rationale": "Disclosed recording in the opening line.", "confidence": 0.96 },
+      "dp_listen_fully": { "result": "pass", "line": 4, "rationale": "Invited the customer to explain the concern fully and did not interrupt.", "confidence": 0.9 },
+      "dp_log_ticket": { "result": "pass", "line": 6, "rationale": "Logged the dispute and gave reference DSP48127.", "confidence": 0.97 },
+      "dp_timeline": { "result": "pass", "line": 6, "rationale": "Gave a ten-working-day review timeline with email update.", "confidence": 0.95 },
+      "dp_pause_collection": { "result": "pass", "line": 6, "rationale": "Confirmed no follow-up on the disputed ₹14,000 during review.", "confidence": 0.9 },
+      "st_explain_terms": { "result": "pass", "line": 8, "rationale": "Stated the ₹95,000 amount and that the account will be reported as 'settled', not 'closed'.", "confidence": 0.96 },
+      "st_written_confirmation": { "result": "pass", "line": 10, "rationale": "Promised the settlement letter before any payment.", "confidence": 0.96 },
+      "st_no_pressure": { "result": "pass", "line": 10, "rationale": "Offered 30-day validity and encouraged consulting family.", "confidence": 0.94 },
+      "cp_no_threats": { "result": "pass", "line": null, "rationale": "No coercive language at any point.", "confidence": 0.96 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Courteous and patient throughout.", "confidence": 0.96 },
+      "cp_no_third_party": { "result": "pass", "line": 3, "rationale": "Details discussed only after verification.", "confidence": 0.93 },
+      "cl_next_step": { "result": "pass", "line": 12, "rationale": "Letter by email in two working days, then the agent will call to confirm.", "confidence": 0.95 },
+      "cl_recap": { "result": "pass", "line": 12, "rationale": "Recapped settlement amount, letter, payment account and dispute reference.", "confidence": 0.97 }
+    },
+    "moments": [
+      { "type": "dispute", "line": 5, "label": "Penal charges during moratorium" },
+      { "type": "ptp", "line": 11, "label": "Accepted ₹95,000 settlement" },
+      { "type": "payment", "line": 12, "label": "Pay only after written letter" }
+    ]
+  }
+}

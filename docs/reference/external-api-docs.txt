@@ -1,0 +1,1732 @@
+## quickstart
+
+Quickstart
+Create and analyze your first call in a few requests.
+Requirements
+A Voxxi organization with at least one call category configured
+An external API key for that organization
+A call recording file (for example,
+demo-call.mp3
+)
+Step 1: Configure base URL and API key
+export
+VOXXI_BASE_URL
+=
+"https://app.voxxi.ai/api/external/v1/"
+export
+VOXXI_API_KEY
+=
+"your_external_api_key"
+Copy
+Copied!
+Step 2: Create an agent
+curl
+-X
+POST
+"${VOXXI_BASE_URL}agents"
+\
+-H
+"Authorization: Bearer $VOXXI_API_KEY"
+\
+-H
+"Content-Type: application/json"
+\
+-d
+'{
+"name": "Jane Agent",
+"email": "jane.agent@example.com"
+}'
+Copy
+Copied!
+Save
+data.id
+as
+MEMBER_ID
+.
+Step 3: Request an upload URL
+curl
+-X
+POST
+"${VOXXI_BASE_URL}calls/presigned-url"
+\
+-H
+"Authorization: Bearer $VOXXI_API_KEY"
+\
+-H
+"Content-Type: application/json"
+\
+-d
+'{
+"filename": "demo-call.mp3",
+"contentType": "audio/mpeg"
+}'
+Copy
+Copied!
+Save
+data.presignedUrl
+as
+PRESIGNED_URL
+and
+data.publicUrl
+as
+PUBLIC_URL
+.
+Step 4: Upload audio
+curl
+-X
+PUT
+"$PRESIGNED_URL"
+\
+-H
+"Content-Type: audio/mpeg"
+\
+--data-binary
+@demo-call.mp3
+Copy
+Copied!
+Step 5: Create a call
+curl
+-X
+POST
+"${VOXXI_BASE_URL}calls"
+\
+-H
+"Authorization: Bearer $VOXXI_API_KEY"
+\
+-H
+"Content-Type: application/json"
+\
+-d
+'{
+"memberId": "'"$MEMBER_ID"'",
+"categoryId": "'"$CATEGORY_ID"'",
+"audio_url": "'"$PUBLIC_URL"'"
+}'
+Copy
+Copied!
+Save
+data.callId
+as
+CALL_ID
+.
+Step 6: Poll analysis
+curl
+-X
+GET
+"${VOXXI_BASE_URL}calls/$CALL_ID/analysis"
+\
+-H
+"Authorization: Bearer $VOXXI_API_KEY"
+Copy
+Copied!
+Repeat until
+data.status
+becomes
+completed
+.
+categoryId
+must belong to your organization. Use the category id shown in your Voxxi app.
+Previous
+Introduction
+Next
+Authentication
+©
+2026
+VoxxiLabs Technology Private Limited.
+All rights reserved.
+Follow us on LinkedIn
+
+## webhooks
+
+Webhooks
+Voxxi can send event notifications to your endpoint when call processing completes or fails.
+Overview
+Configure webhook endpoints in Voxxi Integrations. Each endpoint subscribes to one or more events.
+Event types
+Name
+call.analysis_complete
+Description
+Fired when call analysis finishes successfully.
+Name
+call.analysis_failed
+Description
+Fired when analysis fails.
+Name
+call.ingestion_failed
+Description
+Fired when recording ingestion fails.
+Headers
+Webhook deliveries are
+POST
+requests with JSON body and these headers:
+Name
+X-Voxxi-Event
+Type
+string
+Description
+Event name, for example
+call.analysis_complete
+.
+Name
+X-Voxxi-Timestamp
+Type
+string
+Description
+Unix timestamp (seconds) used in signature generation.
+Name
+X-Voxxi-Signature
+Type
+string
+Description
+Signature in the format
+v1=<hex_hmac_sha256>
+.
+Name
+X-Voxxi-Delivery-Id
+Type
+string
+Description
+Unique id for this delivery attempt.
+Payload envelope
+{
+"id"
+:
+"delivery_uuid"
+,
+"type"
+:
+"call.analysis_complete"
+,
+"createdAt"
+:
+"2026-01-01T00:00:00.000Z"
+,
+"data"
+:
+{
+"callId"
+:
+"call_uuid"
+,
+"organizationId"
+:
+"org_uuid"
+}
+}
+Copy
+Copied!
+data
+fields vary by event type.
+call.analysis_complete
+includes analysis results, transcript/extractions, tags, and metadata.
+Event payload schemas
+All webhook deliveries use the same top-level envelope:
+Name
+id
+Type
+string
+Description
+Unique delivery id (
+UUID
+).
+Name
+type
+Type
+string
+Description
+Webhook event type.
+Name
+createdAt
+Type
+string
+Description
+ISO-8601 timestamp for delivery creation.
+Name
+data
+Type
+object
+Description
+Event-specific payload. See schemas below.
+call.analysis_complete
+Name
+data.callId
+Type
+string
+Description
+Call id.
+Name
+data.organizationId
+Type
+string
+Description
+Organization id.
+Name
+data.memberId
+Type
+string | null
+Description
+Agent/member id.
+Name
+data.memberName
+Type
+string | null
+Description
+Agent/member display name.
+Name
+data.categoryId
+Type
+string | null
+Description
+Category id used for analysis.
+Name
+data.duration
+Type
+number
+Description
+Call duration in seconds.
+Name
+data.date
+Type
+string
+Description
+Call date (YYYY-MM-DD).
+Name
+data.audioUrl
+Type
+string | null
+Description
+Recording URL.
+Name
+data.udfs
+Type
+object | null
+Description
+User-defined fields attached to the call.
+Name
+data.score
+Type
+number
+Description
+Overall analysis score.
+Name
+data.outcomeLabel
+Type
+string | null
+Description
+Outcome label.
+Name
+data.outcomeRationale
+Type
+string | null
+Description
+Explanation for outcome.
+Name
+data.callObservations
+Type
+string | null
+Description
+Observations summary.
+Name
+data.areasForImprovement
+Type
+string | null
+Description
+Improvement summary.
+Name
+data.summary
+Type
+string | null
+Description
+Short call summary.
+Name
+data.transcript
+Type
+array | null
+Description
+Array of transcript segments:
+{ start, end, speaker, content }
+.
+Name
+data.extractions
+Type
+array | null
+Description
+Extraction objects:
+{ id, fieldName, displayName, value, fieldType, description, required, enumValues }
+.
+Name
+data.analytics
+Type
+array
+Description
+Section-level scoring:
+{ sectionId, sectionName, score, totalScore, criterias[] }
+.
+Name
+data.uploadedBy
+Type
+string | null
+Description
+Uploader user id.
+Name
+data.uploadedByName
+Type
+string | null
+Description
+Uploader name.
+Name
+data.uploadedByEmail
+Type
+string | null
+Description
+Uploader email.
+Name
+data.tags
+Type
+array
+Description
+Call tags:
+{ id, slug, displayName, description }
+.
+Name
+data.completedAt
+Type
+string
+Description
+ISO-8601 timestamp when analysis completed.
+Name
+data.createdAt
+Type
+string
+Description
+ISO-8601 timestamp when call was created.
+call.analysis_complete example
+{
+"id"
+:
+"4e7f0708-5418-48c8-bf68-06cfef58da9d"
+,
+"type"
+:
+"call.analysis_complete"
+,
+"createdAt"
+:
+"2026-04-09T07:30:00.000Z"
+,
+"data"
+:
+{
+"callId"
+:
+"bff2f584-8bba-4fce-bc99-c5adf72f04a2"
+,
+"organizationId"
+:
+"25f7f786-f334-4f0c-9f0d-09d9aef6f37a"
+,
+"memberId"
+:
+"ee96ce4e-8f8a-4e87-8a7f-93ea7c2260e1"
+,
+"memberName"
+:
+"Ari Sharma"
+,
+"categoryId"
+:
+"e9862d12-d729-47ef-8173-99e4e2804c0f"
+,
+"duration"
+:
+642
+,
+"date"
+:
+"2026-04-09"
+,
+"audioUrl"
+:
+"https://cdn.example.com/calls/call-123.mp3"
+,
+"udfs"
+:
+{
+"leadId"
+:
+"lead_123"
+,
+"source"
+:
+"website"
+}
+,
+"score"
+:
+86
+,
+"outcomeLabel"
+:
+"Qualified"
+,
+"outcomeRationale"
+:
+"Clear need, budget, and timeline captured."
+,
+"callObservations"
+:
+"Strong discovery and objection handling."
+,
+"areasForImprovement"
+:
+"Tighter next-step confirmation."
+,
+"summary"
+:
+"Prospect agreed to product demo next week."
+,
+"transcript"
+:
+[
+{
+"start"
+:
+0.12
+,
+"end"
+:
+4.33
+,
+"speaker"
+:
+"agent"
+,
+"content"
+:
+"Thanks for taking the call today."
+}
+]
+,
+"extractions"
+:
+[
+{
+"id"
+:
+"ext_1"
+,
+"fieldName"
+:
+"budget"
+,
+"displayName"
+:
+"Budget"
+,
+"value"
+:
+"$12,000"
+,
+"fieldType"
+:
+"string"
+,
+"description"
+:
+"Customer-stated budget"
+,
+"required"
+:
+false
+,
+"enumValues"
+:
+null
+}
+]
+,
+"analytics"
+:
+[
+{
+"sectionId"
+:
+"discovery"
+,
+"sectionName"
+:
+"Discovery"
+,
+"score"
+:
+8
+,
+"totalScore"
+:
+10
+,
+"criterias"
+:
+[
+{
+"criteriaId"
+:
+"asked_pain_points"
+,
+"question"
+:
+"Did the agent uncover pain points?"
+,
+"result"
+:
+true
+,
+"rationale"
+:
+"Customer pain points were clarified."
+}
+]
+}
+]
+,
+"uploadedBy"
+:
+"e535a336-2cb5-49a6-9292-d3670a52edba"
+,
+"uploadedByName"
+:
+"Priya Nair"
+,
+"uploadedByEmail"
+:
+"priya@example.com"
+,
+"tags"
+:
+[
+{
+"id"
+:
+"76f8b94e-c18e-4ce4-b4c2-b78bc4cae4e6"
+,
+"slug"
+:
+"enterprise"
+,
+"displayName"
+:
+"Enterprise"
+,
+"description"
+:
+"Enterprise opportunity"
+}
+]
+,
+"completedAt"
+:
+"2026-04-09T07:29:52.000Z"
+,
+"createdAt"
+:
+"2026-04-09T07:10:41.000Z"
+}
+}
+Copy
+Copied!
+call.analysis_failed
+Name
+data.callId
+Type
+string
+Description
+Call id.
+Name
+data.organizationId
+Type
+string
+Description
+Organization id.
+Name
+data.message
+Type
+string
+Description
+Failure reason summary.
+Name
+data.failedAt
+Type
+string
+Description
+ISO-8601 failure timestamp.
+call.analysis_failed example
+{
+"id"
+:
+"dff42aec-c880-472f-9df1-d16bdc77661e"
+,
+"type"
+:
+"call.analysis_failed"
+,
+"createdAt"
+:
+"2026-04-09T07:31:00.000Z"
+,
+"data"
+:
+{
+"callId"
+:
+"bff2f584-8bba-4fce-bc99-c5adf72f04a2"
+,
+"organizationId"
+:
+"25f7f786-f334-4f0c-9f0d-09d9aef6f37a"
+,
+"message"
+:
+"Call analysis failed"
+,
+"failedAt"
+:
+"2026-04-09T07:30:58.000Z"
+}
+}
+Copy
+Copied!
+call.ingestion_failed
+Name
+data.callId
+Type
+string
+Description
+Call id.
+Name
+data.organizationId
+Type
+string
+Description
+Organization id.
+Name
+data.recordingUrl
+Type
+string
+Description
+Recording URL that failed ingestion.
+Name
+data.errorMessage
+Type
+string
+Description
+Ingestion error details.
+Name
+data.failedAt
+Type
+string
+Description
+ISO-8601 failure timestamp.
+call.ingestion_failed example
+{
+"id"
+:
+"f554c715-cfd8-46fe-a3ca-4381e0263e91"
+,
+"type"
+:
+"call.ingestion_failed"
+,
+"createdAt"
+:
+"2026-04-09T07:32:00.000Z"
+,
+"data"
+:
+{
+"callId"
+:
+"bff2f584-8bba-4fce-bc99-c5adf72f04a2"
+,
+"organizationId"
+:
+"25f7f786-f334-4f0c-9f0d-09d9aef6f37a"
+,
+"recordingUrl"
+:
+"https://cdn.example.com/calls/call-123.mp3"
+,
+"errorMessage"
+:
+"Unable to ingest recording"
+,
+"failedAt"
+:
+"2026-04-09T07:31:58.000Z"
+}
+}
+Copy
+Copied!
+Signature verification
+The signature is HMAC-SHA256 over:
+<timestamp>.<raw_request_body>
+using your webhook signing secret.
+Verify X-Voxxi-Signature
+Node.js
+Python
+import
+crypto
+from
+'crypto'
+function
+verifyVoxxiSignature
+({ secret
+,
+timestamp
+,
+rawBody
+,
+signatureHeader }) {
+const
+expected
+=
+crypto
+.createHmac
+(
+'sha256'
+,
+secret)
+.update
+(
+`
+${
+timestamp
+}
+.
+${
+rawBody
+}
+`
+)
+.digest
+(
+'hex'
+)
+const
+provided
+=
+signatureHeader
+?.replace
+(
+/
+^
+v1=/
+,
+''
+)
+return
+Boolean
+(provided)
+&&
+crypto
+.timingSafeEqual
+(
+Buffer
+.from
+(expected
+,
+'hex'
+)
+,
+Buffer
+.from
+(provided
+,
+'hex'
+)
+)
+}
+Copy
+Copied!
+Previous
+Errors
+Next
+API Reference
+©
+2026
+VoxxiLabs Technology Private Limited.
+All rights reserved.
+Follow us on LinkedIn
+
+## errors
+
+Errors
+The external API returns a simple JSON error object when a request fails.
+Error format
+{
+"error"
+:
+"Error message describing why the request failed."
+}
+Copy
+Copied!
+Status codes
+Name
+400
+Description
+Invalid request body or missing required input.
+Name
+401
+Description
+Missing API key or invalid API key.
+Name
+404
+Description
+Requested resource was not found (for example agent, category, or call).
+Name
+409
+Description
+Conflict (for example duplicate agent or email already in use).
+Common success codes:
+Name
+200
+Description
+Successful read/update/delete response.
+Name
+201
+Description
+Resource created (
+POST /agents
+).
+Name
+202
+Description
+Accepted for async processing (
+POST /calls
+).
+Previous
+Authentication
+Next
+Webhooks
+©
+2026
+VoxxiLabs Technology Private Limited.
+All rights reserved.
+Follow us on LinkedIn
+
+## reference_calls
+
+Calls
+Reference documentation for Calls.
+Endpoints
+POST
+/calls
+Create call
+Creates a call record and asynchronously starts recording ingestion and analysis. memberId accepts either member id or agent email. If date is provided, createdAt/updatedAt are initialized from that timestamp (date-only values default to IST 09:00).
+Request body
+Name
+memberId
+Type
+string, required
+Description
+Agent identifier who handled the call. Accepts either member id or agent email.
+Name
+categoryId
+Type
+string, required
+Description
+Call category id used for analysis.
+Name
+audio_url
+Type
+string, required
+Description
+Public URL to a call recording. This URL is always ingested before analysis.
+Name
+udfs
+Type
+object
+Description
+Optional user-defined fields to persist with this call.
+Name
+date
+Type
+string
+Description
+Optional call date/time input. Supports YYYY-MM-DD (stored as IST 09:00 start of workday), ISO-8601 date-time, and common date-time formats like YYYY/MM/DD, DD-MM-YYYY, and DD/MM/YYYY with optional time.
+Request
+cURL
+JavaScript
+Python
+PHP
+POST
+/calls
+curl
+-X
+POST
+https://app.voxxi.ai/api/external/v1/calls
+\
+-H
+"Authorization: Bearer {token}"
+\
+-H
+"Content-Type: application/json"
+\
+-d
+'{"memberId":"string","categoryId":"string","audio_url":"https://example.com","udfs":{},"date":"string"}'
+Copy
+Copied!
+202 Response
+{
+"data"
+:
+{
+"callId"
+:
+"string"
+,
+"status"
+:
+"processing"
+}
+}
+Copy
+Copied!
+GET
+/calls/{callId}/analysis
+Get call analysis
+Returns current analysis status and available analysis output for a call.
+Required parameters
+Name
+callId
+Type
+string, required
+Description
+Call id returned from the create call endpoint.
+Request
+cURL
+JavaScript
+Python
+PHP
+GET
+/calls/{callId}/analysis
+curl
+-X
+GET
+https://app.voxxi.ai/api/external/v1/calls/callId/analysis
+\
+-H
+"Authorization: Bearer {token}"
+Copy
+Copied!
+200 Response
+{
+"data"
+:
+{
+"callId"
+:
+"string"
+,
+"status"
+:
+"pending"
+,
+"analysis"
+:
+{
+"score"
+:
+0
+,
+"outcomeLabel"
+:
+"string"
+,
+"outcomeRationale"
+:
+"string"
+,
+"callObservations"
+:
+null
+,
+"areasForImprovement"
+:
+null
+,
+"extractions"
+:
+null
+,
+"sections"
+:
+[
+{
+"sectionId"
+:
+"string"
+,
+"sectionName"
+:
+"string"
+,
+"score"
+:
+0
+,
+"totalScore"
+:
+0
+,
+"criterias"
+:
+[
+{
+"criteriaId"
+:
+"string"
+,
+"question"
+:
+"string"
+,
+"result"
+:
+"string"
+,
+"rationale"
+:
+"string"
+}
+]
+}
+]
+}
+,
+"metadata"
+:
+{
+"date"
+:
+"string"
+,
+"duration"
+:
+0
+,
+"summary"
+:
+"string"
+,
+"audioUrl"
+:
+"https://example.com"
+,
+"udfs"
+:
+{}
+,
+"createdAt"
+:
+"2026-01-01T00:00:00Z"
+,
+"updatedAt"
+:
+"2026-01-01T00:00:00Z"
+}
+}
+}
+Copy
+Copied!
+POST
+/calls/presigned-url
+Create presigned upload URL
+Creates a temporary signed URL to upload an audio file to Voxxi-managed storage.
+Request body
+Name
+filename
+Type
+string, required
+Description
+Original file name, including extension.
+Name
+contentType
+Type
+string, required
+Description
+MIME type of the audio file.
+Request
+cURL
+JavaScript
+Python
+PHP
+POST
+/calls/presigned-url
+curl
+-X
+POST
+https://app.voxxi.ai/api/external/v1/calls/presigned-url
+\
+-H
+"Authorization: Bearer {token}"
+\
+-H
+"Content-Type: application/json"
+\
+-d
+'{"filename":"string","contentType":"string"}'
+Copy
+Copied!
+200 Response
+{
+"data"
+:
+{
+"key"
+:
+"string"
+,
+"presignedUrl"
+:
+"https://example.com"
+,
+"publicUrl"
+:
+"https://example.com"
+}
+}
+Copy
+Copied!
+Previous
+Agents
+Next
+Categories
+©
+2026
+VoxxiLabs Technology Private Limited.
+All rights reserved.
+Follow us on LinkedIn
+
+## reference_agents
+
+Agents
+Reference documentation for Agents.
+Endpoints
+GET
+/agents
+List agents
+Returns all active agent members for the authenticated organization.
+Request
+cURL
+JavaScript
+Python
+PHP
+GET
+/agents
+curl
+-X
+GET
+https://app.voxxi.ai/api/external/v1/agents
+\
+-H
+"Authorization: Bearer {token}"
+Copy
+Copied!
+200 Response
+{
+"data"
+:
+[
+{
+"id"
+:
+"string"
+,
+"userId"
+:
+"string"
+,
+"name"
+:
+"string"
+,
+"email"
+:
+"user@example.com"
+,
+"image"
+:
+"https://example.com"
+,
+"createdAt"
+:
+"2026-01-01T00:00:00Z"
+}
+]
+}
+Copy
+Copied!
+POST
+/agents
+Create agent
+Creates a new agent member for the authenticated organization.
+Request body
+Name
+name
+Type
+string, required
+Description
+Full name of the agent.
+Name
+email
+Type
+string, required
+Description
+Email for the agent account.
+Request
+cURL
+JavaScript
+Python
+PHP
+POST
+/agents
+curl
+-X
+POST
+https://app.voxxi.ai/api/external/v1/agents
+\
+-H
+"Authorization: Bearer {token}"
+\
+-H
+"Content-Type: application/json"
+\
+-d
+'{"name":"string","email":"user@example.com"}'
+Copy
+Copied!
+201 Response
+{
+"data"
+:
+{
+"id"
+:
+"string"
+,
+"userId"
+:
+"string"
+,
+"name"
+:
+"string"
+,
+"email"
+:
+"user@example.com"
+}
+}
+Copy
+Copied!
+DELETE
+/agents/{id}
+Delete agent
+Deletes an existing agent member from the authenticated organization.
+Required parameters
+Name
+id
+Type
+string, required
+Description
+Agent member id.
+Request
+cURL
+JavaScript
+Python
+PHP
+DELETE
+/agents/{id}
+curl
+-X
+DELETE
+https://app.voxxi.ai/api/external/v1/agents/id
+\
+-H
+"Authorization: Bearer {token}"
+Copy
+Copied!
+200 Response
+{
+"success"
+:
+true
+}
+Copy
+Copied!
+PATCH
+/agents/{id}
+Update agent
+Updates an existing agent name and/or email.
+Required parameters
+Name
+id
+Type
+string, required
+Description
+Agent member id.
+Request body
+Name
+name
+Type
+string
+Description
+Updated full name of the agent.
+Name
+email
+Type
+string
+Description
+Updated agent email address.
+Request
+cURL
+JavaScript
+Python
+PHP
+PATCH
+/agents/{id}
+curl
+-X
+PATCH
+https://app.voxxi.ai/api/external/v1/agents/id
+\
+-H
+"Authorization: Bearer {token}"
+\
+-H
+"Content-Type: application/json"
+\
+-d
+'{"name":"string","email":"user@example.com"}'
+Copy
+Copied!
+200 Response
+{
+"data"
+:
+{
+"memberId"
+:
+"string"
+,
+"userId"
+:
+"string"
+,
+"name"
+:
+"string"
+,
+"email"
+:
+"user@example.com"
+,
+"image"
+:
+"https://example.com"
+}
+}
+Copy
+Copied!
+Previous
+API Reference
+Next
+Calls
+©
+2026
+VoxxiLabs Technology Private Limited.
+All rights reserved.
+Follow us on LinkedIn
+
+## reference_categories
+
+Categories
+Reference documentation for Categories.
+Endpoints
+GET
+/categories
+List categories
+Returns call categories available to the authenticated organization.
+Request
+cURL
+JavaScript
+Python
+PHP
+GET
+/categories
+curl
+-X
+GET
+https://app.voxxi.ai/api/external/v1/categories
+\
+-H
+"Authorization: Bearer {token}"
+Copy
+Copied!
+200 Response
+{
+"data"
+:
+[
+{
+"id"
+:
+"string"
+,
+"name"
+:
+"string"
+,
+"description"
+:
+"string"
+,
+"icon"
+:
+"string"
+,
+"createdAt"
+:
+"2026-01-01T00:00:00Z"
+,
+"updatedAt"
+:
+"2026-01-01T00:00:00Z"
+}
+]
+}
+Copy
+Copied!
+GET
+/categories/{categoryId}
+Get category detail
+Returns category metadata and the complete analysis configuration for the authenticated organization.
+Required parameters
+Name
+categoryId
+Type
+string, required
+Description
+Category id.
+Request
+cURL
+JavaScript
+Python
+PHP
+GET
+/categories/{categoryId}
+curl
+-X
+GET
+https://app.voxxi.ai/api/external/v1/categories/categoryId
+\
+-H
+"Authorization: Bearer {token}"
+Copy
+Copied!
+200 Response
+{
+"data"
+:
+{
+"id"
+:
+"string"
+,
+"name"
+:
+"string"
+,
+"description"
+:
+"string"
+,
+"icon"
+:
+"string"
+,
+"createdAt"
+:
+"2026-01-01T00:00:00Z"
+,
+"updatedAt"
+:
+"2026-01-01T00:00:00Z"
+,
+"intendedPurpose"
+:
+"string"
+,
+"additionalLLMContext"
+:
+"string"
+,
+"possibleOutcomes"
+:
+[
+{
+"id"
+:
+"string"
+,
+"label"
+:
+"string"
+,
+"description"
+:
+"string"
+,
+"isSuccess"
+:
+true
+,
+"isNotApplicable"
+:
+true
+}
+]
+,
+"analysisPointers"
+:
+[
+{
+"id"
+:
+"string"
+,
+"sectionId"
+:
+"string"
+,
+"sectionName"
+:
+"string"
+,
+"criterias"
+:
+[
+{
+"id"
+:
+"string"
+,
+"criteriaId"
+:
+"string"
+,
+"question"
+:
+"string"
+}
+]
+}
+]
+,
+"extractionFields"
+:
+[
+{
+"id"
+:
+"string"
+,
+"fieldName"
+:
+"string"
+,
+"displayName"
+:
+"string"
+,
+"fieldType"
+:
+"string"
+,
+"enumOptions"
+:
+[
+{
+"value"
+:
+"string"
+,
+"hint"
+:
+"string"
+}
+]
+,
+"enumValues"
+:
+[
+"string"
+]
+,
+"description"
+:
+"string"
+,
+"required"
+:
+true
+}
+]
+,
+"targetingRules"
+:
+[
+{
+"targetType"
+:
+"section"
+,
+"targetId"
+:
+"string"
+,
+"expression"
+:
+null
+}
+]
+,
+"tagTargets"
+:
+[
+{
+"id"
+:
+"string"
+,
+"slug"
+:
+"string"
+,
+"displayName"
+:
+"string"
+}
+]
+}
+}
+Copy
+Copied!
+Previous
+Calls
+©
+2026
+VoxxiLabs Technology Private Limited.
+All rights reserved.
+Follow us on LinkedIn
+

@@ -1,0 +1,54 @@
+{
+  "id": "mb-kn-poor",
+  "categoryId": "mid-bucket",
+  "language": "kn-en",
+  "quality": "poor",
+  "customerName": "Venkatesh Murthy",
+  "lines": [
+    { "speaker": "agent", "lang": "kn", "text": "Hello, Venkatesh Murthy avara number alva? Kaveri Finance inda." },
+    { "speaker": "customer", "lang": "kn", "text": "ಅವರು ಸ್ನಾನಕ್ಕೆ ಹೋಗಿದ್ದಾರೆ, ನಾನು ಅವರ wife. ಏನು ವಿಷಯ?", "roman": "Avaru snaanakke hogiddaare, naanu avara wife. Enu vishaya?" },
+    { "speaker": "agent", "lang": "kn", "text": "Madam, nimma yajamanru bike loan mooru EMI kattilla, eleven thousand seven hundred rupees baaki ide. Avarige heli bega kattoke, illandre bike seize maadthivi." },
+    { "speaker": "customer", "lang": "kn", "text": "ಅಯ್ಯೋ, ನನಗೆ ಗೊತ್ತೇ ಇರಲಿಲ್ಲ... ಇರಿ, ಕೊಡ್ತೀನಿ.", "roman": "Ayyo, nanage gotthe iralilla... Iri, kodthini." },
+    { "speaker": "customer", "lang": "kn", "text": "Hello, ನಾನು Venkatesh. ನನ್ನ wife ಹತ್ರ ಯಾಕೆ loan ಬಗ್ಗೆ ಹೇಳಿದ್ರಿ?", "roman": "Hello, naanu Venkatesh. Nanna wife hathra yaake loan bagge helidri?" },
+    { "speaker": "agent", "lang": "kn", "text": "Neevu phone ethalla, adakke helde. Mooru thingalinda yaake EMI kattilla?" },
+    { "speaker": "customer", "lang": "kn", "text": "ನನ್ನ ಅಪ್ಪನಿಗೆ heart operation ಆಯ್ತು sir, ಎಲ್ಲಾ ದುಡ್ಡು ಅಲ್ಲಿ ಹೋಯ್ತು.", "roman": "Nanna appanige heart operation aaythu sir, ellaa duddu alli hoythu." },
+    { "speaker": "agent", "lang": "kn", "text": "Ella customers ide kathe heltheera. Eega eshtu kattheera adanna heli." },
+    { "speaker": "customer", "lang": "kn", "text": "ಈಗ ಏನೂ ಇಲ್ಲ. ಮುಂದಿನ ತಿಂಗಳು ನೋಡ್ತೀನಿ.", "roman": "Eega enoo illa. Mundina thingalu nodthini." },
+    { "speaker": "agent", "lang": "kn", "text": "Mundina thingalu alla. Ee vaara kattilla andre bike seize maadi, nimma office ge kooda bandu maathadthivi." },
+    { "speaker": "customer", "lang": "kn", "text": "ಹೀಗೆ ಹೆದರಿಸ್ಬೇಡಿ. ನಾನು ಏನೂ commit ಮಾಡಲ್ಲ, complaint ಕೊಡ್ತೀನಿ.", "roman": "Heege hedarisbedi. Naanu enoo commit maadalla, complaint kodthini." },
+    { "speaker": "agent", "lang": "en", "text": "Give complaint, no problem. Your CIBIL is already spoiled, nobody will give you a loan now." },
+    { "speaker": "customer", "lang": "kn", "text": "ಸರಿ, ಇಡಿ phone.", "roman": "Sari, idi phone." },
+    { "speaker": "agent", "lang": "kn", "text": "Sari, field team barthaare." }
+  ],
+  "analysis": {
+    "outcomeId": "refused",
+    "outcomeRationale": "Customer refused to commit to any payment and said he would file a complaint after repeated threats.",
+    "summary": "Agent disclosed the three missed EMIs (₹11,700) to the borrower's wife before reaching the borrower, then threatened vehicle seizure and an office visit. Borrower, who cited his father's heart surgery, refused to commit and threatened a complaint.",
+    "observations": "Multiple RBI fair-practice breaches: loan details and a seizure threat given to a family member without verification, disbelief of a medical hardship ('Ella customers ide kathe heltheera'), threat of a workplace visit, and a demeaning CIBIL remark. High complaint and regulatory risk on a recoverable medical-hardship case.",
+    "improvements": "Escalate for compliance review. Never discuss dues with relatives — ask for a callback time instead. Acknowledge medical hardship, explore partial payment or a revised date, and explain bureau reporting factually rather than as a threat.",
+    "extractions": { "delay_reason": "medical", "ptp_amount": null, "ptp_date": null, "payment_mode": null, "hardship": true },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Said 'Hello' and named Kaveri Finance, without a proper greeting.", "confidence": 0.68 },
+      "op_rpc_verify": { "result": "fail", "line": 2, "rationale": "Discussed the loan with the person who answered without confirming she was the borrower.", "confidence": 0.97 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "No recording disclosure.", "confidence": 0.96 },
+      "ds_reason_delay": { "result": "pass", "line": 5, "rationale": "Asked why the EMIs were not paid for three months.", "confidence": 0.8 },
+      "ds_empathy": { "result": "fail", "line": 7, "rationale": "Dismissed the father's heart operation as a story every customer tells.", "confidence": 0.96 },
+      "ds_ability_to_pay": { "result": "pass", "line": 7, "rationale": "Asked how much he could pay now, though brusquely.", "confidence": 0.66 },
+      "ng_state_dues": { "result": "pass", "line": 2, "rationale": "Stated three missed EMIs and ₹11,700 total — but to the wife, not the borrower.", "confidence": 0.62 },
+      "ng_consequences": { "result": "fail", "line": 11, "rationale": "Consequences framed as seizure threats and a demeaning CIBIL remark, not factual explanation.", "confidence": 0.88 },
+      "ng_options": { "result": "fail", "line": 9, "rationale": "Rejected next month without offering any partial payment or revised date.", "confidence": 0.9 },
+      "cp_no_threats": { "result": "fail", "line": 9, "rationale": "Threatened bike seizure and a visit to the borrower's office.", "confidence": 0.98 },
+      "cp_respectful": { "result": "fail", "line": 11, "rationale": "Mocked the customer's credit standing and disbelieved his hardship.", "confidence": 0.92 },
+      "cp_no_third_party": { "result": "fail", "line": 2, "rationale": "Disclosed missed EMIs, amount and seizure threat to the borrower's wife.", "confidence": 0.98 },
+      "cl_ptp_secured": { "result": "fail", "line": 10, "rationale": "No promise-to-pay; customer refused to commit.", "confidence": 0.95 },
+      "cl_payment_mode": { "result": "fail", "line": null, "rationale": "Payment mode never discussed.", "confidence": 0.94 },
+      "cl_recap": { "result": "fail", "line": 13, "rationale": "Ended with 'field team barthaare' instead of a recap.", "confidence": 0.95 }
+    },
+    "moments": [
+      { "type": "compliance_risk", "line": 2, "label": "Dues disclosed to wife" },
+      { "type": "hardship", "line": 6, "label": "Father's heart surgery" },
+      { "type": "compliance_risk", "line": 9, "label": "Seizure + office visit threat" },
+      { "type": "objection", "line": 10, "label": "Refused, threatened complaint" }
+    ]
+  }
+}

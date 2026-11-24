@@ -1,0 +1,51 @@
+{
+  "id": "eb-hi-poor",
+  "categoryId": "early-bucket",
+  "language": "hi-en",
+  "quality": "poor",
+  "customerName": "Vikas Chauhan",
+  "lines": [
+    { "speaker": "agent", "lang": "hi", "text": "Hello, main Kaveri Finance se bol raha hoon. Vikas Chauhan?" },
+    { "speaker": "customer", "lang": "hi", "text": "नहीं, मैं उसका भाई बोल रहा हूँ। क्या काम है?", "roman": "Nahi, main uska bhai bol raha hoon. Kya kaam hai?" },
+    { "speaker": "agent", "lang": "hi", "text": "Apne bhai ko bolo, bike loan ki EMI three thousand six hundred, bees din se pending hai. Bahut ho gaya, phone do usko." },
+    { "speaker": "customer", "lang": "hi", "text": "हाँ, मैं Vikas बोल रहा हूँ। आपने मेरे भाई को loan के बारे में क्यों बताया?", "roman": "Haan, main Vikas bol raha hoon. Aapne mere bhai ko loan ke baare mein kyun bataya?" },
+    { "speaker": "agent", "lang": "hi", "text": "Aap phone nahi uthaoge toh kisi ko toh batana padega. Three thousand six hundred ka EMI first November se due hai. Payment kyun nahi kiya?" },
+    { "speaker": "customer", "lang": "hi", "text": "इस महीने shop पे customers ही नहीं आए, काम बिल्कुल ठंडा था। अभी मेरे पास पैसे नहीं हैं।", "roman": "Is mahine shop pe customers hi nahi aaye, kaam bilkul thanda tha. Abhi mere paas paise nahi hain." },
+    { "speaker": "agent", "lang": "hi", "text": "Yeh sab bahane sab dete hain. Aaj payment nahi hua toh kal hamari field team aapke ghar aayegi, aur legal notice bhi jayega." },
+    { "speaker": "customer", "lang": "hi", "text": "आप धमकी दे रहे हैं? मैं इसकी complaint करूँगा।", "roman": "Aap dhamki de rahe hain? Main iski complaint karoonga." },
+    { "speaker": "agent", "lang": "hi", "text": "Complaint karo jo karna hai. CIBIL kharab ho jayega, zindagi bhar koi bank loan nahi dega." },
+    { "speaker": "customer", "lang": "hi", "text": "मैं अभी कोई payment नहीं करूँगा। जब पैसे होंगे तब देखूँगा।", "roman": "Main abhi koi payment nahi karoonga. Jab paise honge tab dekhoonga." },
+    { "speaker": "agent", "lang": "hi", "text": "Theek hai, phir jo hoga uske zimmedar aap ho." },
+    { "speaker": "customer", "lang": "hi", "text": "ठीक है, रखिए phone।", "roman": "Theek hai, rakhiye phone." },
+    { "speaker": "agent", "lang": "hi", "text": "Bas yaad rakhna, kal se hum aapke shop aur ghar dono jagah baat karenge." }
+  ],
+  "analysis": {
+    "outcomeId": "refused",
+    "outcomeRationale": "Customer declined to commit to any payment after the agent threatened a home visit and legal notice.",
+    "summary": "Borrower missed a ₹3,600 bike-loan EMI due to a slow month at his shop. Agent disclosed the loan to the borrower's brother, threatened field visits and legal action, and the customer refused to pay.",
+    "observations": "Serious RBI fair-practice breaches: loan details shared with a family member before verification, threats of home/shop visits and legal notice, and dismissive language ('bahane sab dete hain'). The customer explicitly said he would complain.",
+    "improvements": "Never disclose loan details to anyone but the verified borrower; remove threats of visits or legal action; acknowledge the business slowdown and offer a revised date or partial payment. Flag for compliance review and coaching.",
+    "extractions": { "delay_reason": "business_slowdown", "ptp_amount": null, "ptp_date": null, "payment_mode": "none" },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Named Kaveri Finance in the opening, though curtly.", "confidence": 0.78 },
+      "op_rpc_verify": { "result": "fail", "line": 2, "rationale": "Discussed the EMI with the brother before reaching or verifying the borrower.", "confidence": 0.95 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "No recording disclosure.", "confidence": 0.95 },
+      "pr_state_dues": { "result": "pass", "line": 4, "rationale": "Stated ₹3,600 EMI and the 1 November due date.", "confidence": 0.9 },
+      "pr_late_fee_info": { "result": "fail", "line": 8, "rationale": "Credit impact framed as a threat ('zindagi bhar koi loan nahi dega') rather than factual fee information.", "confidence": 0.87 },
+      "ds_reason_delay": { "result": "pass", "line": 4, "rationale": "Asked why the payment was not made.", "confidence": 0.85 },
+      "ds_empathy": { "result": "fail", "line": 6, "rationale": "Dismissed the business slowdown as an excuse.", "confidence": 0.95 },
+      "cp_no_threats": { "result": "fail", "line": 6, "rationale": "Threatened a field-team home visit and legal notice.", "confidence": 0.97 },
+      "cp_respectful": { "result": "fail", "line": 6, "rationale": "'Yeh sab bahane sab dete hain' and 'complaint karo jo karna hai' are dismissive and humiliating.", "confidence": 0.9 },
+      "cp_no_third_party": { "result": "fail", "line": 2, "rationale": "Told the brother the EMI amount and overdue period.", "confidence": 0.97 },
+      "cl_ptp_secured": { "result": "fail", "line": 9, "rationale": "Customer refused to commit to any payment.", "confidence": 0.95 },
+      "cl_payment_mode": { "result": "na", "line": null, "rationale": "No payment was agreed, so there was no mode to confirm.", "confidence": 0.8 },
+      "cl_recap": { "result": "na", "line": null, "rationale": "No commitment to recap; call ended on a threat.", "confidence": 0.78 }
+    },
+    "moments": [
+      { "type": "compliance_risk", "line": 2, "label": "Loan disclosed to brother" },
+      { "type": "compliance_risk", "line": 6, "label": "Home visit & legal notice threat" },
+      { "type": "objection", "line": 9, "label": "Customer refuses to pay" },
+      { "type": "compliance_risk", "line": 12, "label": "Threat to visit shop and home" }
+    ]
+  }
+}

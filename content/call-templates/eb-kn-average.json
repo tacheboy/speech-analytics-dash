@@ -1,0 +1,50 @@
+{
+  "id": "eb-kn-average",
+  "categoryId": "early-bucket",
+  "language": "kn-en",
+  "quality": "average",
+  "customerName": "Shwetha Ramesh",
+  "lines": [
+    { "speaker": "agent", "lang": "kn", "text": "Hello madam, Kaveri Finance inda call maadthiddivi. Shwetha Ramesh avara jothe maathadbahuda?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಹಾ, ನಾನೇ ಮಾತಾಡ್ತಿರೋದು. ಏನು ವಿಷಯ?", "roman": "Haa, naane maathadthirodu. Enu vishaya?" },
+    { "speaker": "agent", "lang": "kn", "text": "Madam, nimma personal loan EMI six thousand eight hundred rupees, November aidane thareeku due ittu. Innu bandilla." },
+    { "speaker": "customer", "lang": "kn", "text": "ಗೊತ್ತು, ಈ ತಿಂಗಳು ಸ್ವಲ್ಪ tight ಆಗಿದೆ.", "roman": "Gotthu, ee thingalu swalpa tight aagide." },
+    { "speaker": "agent", "lang": "kn", "text": "Yaake madam, enaaythu?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಅಮ್ಮನಿಗೆ hospital ಖರ್ಚು ಬಂತು, ಅದಕ್ಕೆ ದುಡ್ಡು ಎಲ್ಲಾ ಅಲ್ಲಿ ಹೋಯ್ತು.", "roman": "Ammanige hospital kharchu banthu, adakke duddu ellaa alli hoythu." },
+    { "speaker": "agent", "lang": "kn", "text": "Sari madam. EMI yaavaga kattheera?" },
+    { "speaker": "customer", "lang": "kn", "text": "Next week ಒಳಗೆ ಮಾಡ್ತೀನಿ, salary ಬಂದ ಮೇಲೆ.", "roman": "Next week olage maadthini, salary banda mele." },
+    { "speaker": "agent", "lang": "en", "text": "Next week means which date madam? I need one date for the system." },
+    { "speaker": "customer", "lang": "kn", "text": "ಹ್ಮ್... twenty-fifth ಅಂತ ಹಾಕ್ಕೊಳ್ಳಿ, try ಮಾಡ್ತೀನಿ.", "roman": "Hmm... twenty-fifth anta haakkolli, try maadthini." },
+    { "speaker": "agent", "lang": "kn", "text": "Sari, full amount six thousand eight hundred alva?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಹಾ, full ಮಾಡೋಕೆ try ಮಾಡ್ತೀನಿ.", "roman": "Haa, full maadoke try maadthini." },
+    { "speaker": "agent", "lang": "kn", "text": "Okay madam, twenty-fifth ge note maadkondiddini. Thank you." },
+    { "speaker": "customer", "lang": "kn", "text": "ಸರಿ.", "roman": "Sari." }
+  ],
+  "analysis": {
+    "outcomeId": "ptp",
+    "outcomeRationale": "Customer gave 25 November for the full ₹6,800 EMI, though she framed it as 'try maadthini' rather than a firm commitment.",
+    "summary": "Borrower missed the November EMI after her mother's hospital expenses. Agent stated dues and pushed for a date, getting a tentative promise for 25 November but without confirming payment mode or recapping.",
+    "observations": "Agent was polite and got to a date quickly, but skipped the recording disclosure and moved straight past a medical hardship ('Sari madam, EMI yaavaga kattheera?') without acknowledgement. The promise is soft — the customer said 'try' twice.",
+    "improvements": "Acknowledge hardship before asking for a date, disclose recording up front, mention the late fee factually, and close by confirming payment mode (link/UPI) and repeating amount + date to firm up the PTP.",
+    "extractions": { "delay_reason": "medical", "ptp_amount": 6800, "ptp_date": "25 November", "payment_mode": null },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Opened with a greeting and named Kaveri Finance.", "confidence": 0.93 },
+      "op_rpc_verify": { "result": "pass", "line": 1, "rationale": "Asked for Shwetha Ramesh by name and she confirmed before dues were discussed.", "confidence": 0.74 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "No mention that the call is recorded.", "confidence": 0.95 },
+      "pr_state_dues": { "result": "pass", "line": 2, "rationale": "Stated ₹6,800 EMI and the 5 November due date.", "confidence": 0.95 },
+      "pr_late_fee_info": { "result": "fail", "line": null, "rationale": "Late fee and credit-score impact never mentioned.", "confidence": 0.9 },
+      "ds_reason_delay": { "result": "pass", "line": 4, "rationale": "Asked 'Yaake madam, enaaythu?'.", "confidence": 0.93 },
+      "ds_empathy": { "result": "fail", "line": 6, "rationale": "Responded to the mother's hospital expenses with 'Sari madam' and went straight to the date.", "confidence": 0.85 },
+      "cp_no_threats": { "result": "pass", "line": null, "rationale": "No threatening or coercive language.", "confidence": 0.94 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Polite tone, though somewhat transactional.", "confidence": 0.88 },
+      "cp_no_third_party": { "result": "pass", "line": 1, "rationale": "Dues discussed only after the borrower confirmed her name.", "confidence": 0.85 },
+      "cl_ptp_secured": { "result": "pass", "line": 9, "rationale": "Got an amount and date (₹6,800 on the 25th), though the customer hedged with 'try maadthini'.", "confidence": 0.64 },
+      "cl_payment_mode": { "result": "fail", "line": null, "rationale": "Never asked how the customer would pay or offered a link.", "confidence": 0.92 },
+      "cl_recap": { "result": "fail", "line": 12, "rationale": "Only repeated the date; amount and mode were not recapped.", "confidence": 0.78 }
+    },
+    "moments": [
+      { "type": "hardship", "line": 5, "label": "Mother's hospital expenses" },
+      { "type": "ptp", "line": 9, "label": "Tentative PTP ₹6,800 on 25 Nov" }
+    ]
+  }
+}

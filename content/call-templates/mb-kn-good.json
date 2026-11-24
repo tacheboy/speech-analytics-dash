@@ -1,0 +1,56 @@
+{
+  "id": "mb-kn-good",
+  "categoryId": "mid-bucket",
+  "language": "kn-en",
+  "quality": "good",
+  "customerName": "Lakshmi Narayan",
+  "lines": [
+    { "speaker": "agent", "lang": "kn", "text": "Namaskara madam, naanu Kaveri Finance inda maathadthiddini. Lakshmi Narayan avara jothe maathadthiddeena?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಹೌದು, ನಾನೇ Lakshmi.", "roman": "Haudu, naane Lakshmi." },
+    { "speaker": "agent", "lang": "en", "text": "Thank you madam. For verification, can you please tell me your date of birth?" },
+    { "speaker": "customer", "lang": "en", "text": "Twelfth March, nineteen ninety." },
+    { "speaker": "agent", "lang": "kn", "text": "Dhanyavaada madam. Nimma personal loan alli eradu EMI pending ide, September mattu October, prathi ondu five thousand six hundred, total eleven thousand two hundred rupees. Enaadru problem aaytha?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಹೌದು, August ಅಲ್ಲಿ ನನ್ನ job ಹೋಯ್ತು. Company shut ಆಯ್ತು. ತುಂಬಾ ಕಷ್ಟ ಆಗಿತ್ತು.", "roman": "Haudu, August alli nanna job hoythu. Company shut aaythu. Thumba kashta aagitthu." },
+    { "speaker": "agent", "lang": "kn", "text": "Ayyo, kshamisi madam, adu thumba kashtada samaya. Eega paristhiti hegide? Bere kelasa sikkideya?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಹಾ, ಹೊಸ job ಸಿಕ್ಕಿದೆ, November ಅಲ್ಲಿ join ಆದೆ. First salary December first ಗೆ ಬರುತ್ತೆ.", "roman": "Haa, hosa job sikkide, November alli join aade. First salary December first ge barutte." },
+    { "speaker": "agent", "lang": "kn", "text": "Santhosha madam. Salary banda mele, eshtu kattoke saadhya aagutte anta anisutte?" },
+    { "speaker": "customer", "lang": "kn", "text": "Full eleven thousand ಒಂದೇ ಸಲ ಕಷ್ಟ. ಆದ್ರೆ ಸ್ವಲ್ಪ ಸ್ವಲ್ಪ ಕಟ್ಟಬಹುದು.", "roman": "Full eleven thousand ondhe sala kashta. Aadre swalpa swalpa kattabahudu." },
+    { "speaker": "agent", "lang": "en", "text": "I understand. Just to be transparent, if this stays unpaid it gets reported to the credit bureaus and late charges keep adding. One option: pay one EMI, five thousand six hundred, on December third, and the second on December twentieth. Would that work?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಹಾ, ಅದು ಆಗುತ್ತೆ. Third ಗೆ ಒಂದು, twentieth ಗೆ ಇನ್ನೊಂದು.", "roman": "Haa, adu aagutte. Third ge ondu, twentieth ge innondu." },
+    { "speaker": "agent", "lang": "kn", "text": "Super madam. Payment hege maadtheera, UPI na athava link kalisla?" },
+    { "speaker": "customer", "lang": "kn", "text": "UPI ಇಂದ ಮಾಡ್ತೀನಿ, Google Pay ಇದೆ.", "roman": "UPI inda maadthini, Google Pay ide." },
+    { "speaker": "agent", "lang": "en", "text": "Perfect. So to confirm: five thousand six hundred on December third and five thousand six hundred on December twentieth, through UPI. I will SMS the UPI ID to your registered number." },
+    { "speaker": "customer", "lang": "kn", "text": "ಸರಿ, ಅರ್ಥ ಮಾಡ್ಕೊಂಡಿದ್ದಕ್ಕೆ ತುಂಬಾ thanks.", "roman": "Sari, artha maadkondiddakke thumba thanks." },
+    { "speaker": "agent", "lang": "kn", "text": "Dhanyavaada madam, hosa kelasakke all the best." }
+  ],
+  "analysis": {
+    "outcomeId": "ptp",
+    "outcomeRationale": "Customer committed to clearing the full ₹11,200 overdue in two dated UPI payments of ₹5,600 on 3 and 20 December.",
+    "summary": "Borrower missed two EMIs after losing her job in August; she has since joined a new company with first salary on 1 December. Agent showed empathy, assessed affordability and agreed a two-instalment plan covering the full overdue amount.",
+    "observations": "Strong negotiation: explored the current situation before asking for money, explained bureau reporting factually, and structured an affordable split around the salary date. Only gap was the missing recording disclosure.",
+    "improvements": "Add the call-recording disclosure during verification. Could also set a reminder call before 3 December given the recent job change.",
+    "extractions": { "delay_reason": "job_loss", "ptp_amount": 11200, "ptp_date": "3 December & 20 December", "payment_mode": "upi", "hardship": true },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted and named Kaveri Finance in the opening.", "confidence": 0.97 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Asked for date of birth before discussing the loan.", "confidence": 0.95 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "Recording was never disclosed.", "confidence": 0.94 },
+      "ds_reason_delay": { "result": "pass", "line": 4, "rationale": "Asked 'Enaadru problem aaytha?' after stating dues.", "confidence": 0.9 },
+      "ds_empathy": { "result": "pass", "line": 6, "rationale": "Apologised and acknowledged the job loss as a difficult time.", "confidence": 0.95 },
+      "ds_ability_to_pay": { "result": "pass", "line": 8, "rationale": "Asked how much she could realistically pay once salary arrives.", "confidence": 0.93 },
+      "ng_state_dues": { "result": "pass", "line": 4, "rationale": "Stated two missed EMIs (Sept, Oct) of ₹5,600 totalling ₹11,200.", "confidence": 0.96 },
+      "ng_consequences": { "result": "pass", "line": 10, "rationale": "Explained credit-bureau reporting and added charges without threats.", "confidence": 0.92 },
+      "ng_options": { "result": "pass", "line": 10, "rationale": "Offered a split into two dated instalments.", "confidence": 0.95 },
+      "cp_no_threats": { "result": "pass", "line": 10, "rationale": "Consequences framed as 'just to be transparent'.", "confidence": 0.95 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Warm, respectful tone; wished her well on the new job.", "confidence": 0.96 },
+      "cp_no_third_party": { "result": "pass", "line": 3, "rationale": "Loan details shared only after DOB verification.", "confidence": 0.93 },
+      "cl_ptp_secured": { "result": "pass", "line": 11, "rationale": "Customer agreed to ₹5,600 on 3 Dec and ₹5,600 on 20 Dec.", "confidence": 0.95 },
+      "cl_payment_mode": { "result": "pass", "line": 13, "rationale": "Confirmed UPI via Google Pay.", "confidence": 0.96 },
+      "cl_recap": { "result": "pass", "line": 14, "rationale": "Repeated both amounts, dates and mode.", "confidence": 0.97 }
+    },
+    "moments": [
+      { "type": "hardship", "line": 5, "label": "Job loss in August" },
+      { "type": "ptp", "line": 11, "label": "PTP ₹5,600 × 2 (3 & 20 Dec)" },
+      { "type": "payment", "line": 14, "label": "UPI ID to be sent by SMS" }
+    ]
+  }
+}

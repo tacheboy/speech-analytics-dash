@@ -1,0 +1,73 @@
+{
+  "id": "eb-kn-wrongparty",
+  "categoryId": "early-bucket",
+  "language": "kn-en",
+  "quality": "average",
+  "customerName": "Deepak Shenoy",
+  "lines": [
+    {
+      "speaker": "agent",
+      "lang": "kn",
+      "text": "Namaskara, naanu Kaveri Finance inda maathadthiddini. Deepak Shenoy avara jothe maathadbahuda?"
+    },
+    {
+      "speaker": "customer",
+      "lang": "kn",
+      "text": "ಅವನು ಮನೆಯಲ್ಲಿ ಇಲ್ಲ, ನಾನು ಅವನ ಅಮ್ಮ. ಏನು ವಿಷಯ ಹೇಳಿ, ನಾನು ಹೇಳ್ತೀನಿ.",
+      "roman": "Avanu maneyalli illa, naanu avana amma. Enu vishaya heli, naanu heltheeni."
+    },
+    {
+      "speaker": "agent",
+      "lang": "kn",
+      "text": "Dhanyavaada amma. Kshamisi, idu avara personal vishaya, adanna naanu avara jothe maatra maathadbeku."
+    },
+    {
+      "speaker": "customer",
+      "lang": "kn",
+      "text": "ಏನಾದ್ರೂ problem ಆ? Loan ಏನಾದ್ರೂ ಇದೆಯಾ?",
+      "roman": "Enaadroo problem aa? Loan enaadroo ideya?"
+    },
+    {
+      "speaker": "agent",
+      "lang": "kn",
+      "text": "Gaabari aagbedi amma, yaava tension illa. Avaru yaavaga sigtaare anta heltheera? Aa samayakke call maadthini."
+    },
+    {
+      "speaker": "customer",
+      "lang": "kn",
+      "text": "ಸಂಜೆ ಏಳು ಗಂಟೆ ಆದ್ಮೇಲೆ office ಇಂದ ಬರ್ತಾನೆ.",
+      "roman": "Sanje elu gante aadmele office inda barthaane."
+    },
+    {
+      "speaker": "agent",
+      "lang": "kn",
+      "text": "Sari amma, sanje elu gante mele call maadthini. Kaveri Finance inda call bandittu anta maatra heli."
+    },
+    {
+      "speaker": "customer",
+      "lang": "kn",
+      "text": "ಸರಿ, ಹೇಳ್ತೀನಿ.",
+      "roman": "Sari, heltheeni."
+    },
+    {
+      "speaker": "agent",
+      "lang": "kn",
+      "text": "Dhanyavaada amma, olle dina."
+    }
+  ],
+  "analysis": {
+    "outcomeId": "wrong_party",
+    "outcomeRationale": "Borrower's mother answered; the borrower was not reached, so the call is not scored.",
+    "summary": "Borrower's mother answered and offered to pass on a message. Agent declined to share any loan details, even when she asked directly about a loan, and set a callback for after 7 pm.",
+    "observations": "Correct third-party handling: no confirmation of the loan or dues, reassured the relative without revealing anything, and captured a specific callback window.",
+    "improvements": "Schedule the callback in the dialler for after 7 pm today so the attempt is not lost.",
+    "extractions": {
+      "delay_reason": null,
+      "ptp_amount": null,
+      "ptp_date": null,
+      "payment_mode": null
+    },
+    "criteria": {},
+    "moments": []
+  }
+}

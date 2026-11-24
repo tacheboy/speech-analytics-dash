@@ -1,0 +1,52 @@
+{
+  "id": "st-hi-good",
+  "categoryId": "settlement",
+  "language": "hi-en",
+  "quality": "good",
+  "customerName": "Deepak Malik",
+  "lines": [
+    { "speaker": "agent", "lang": "hi", "text": "Namaste, main Kaveri Finance ki recoveries team se bol raha hoon. Kya meri baat Deepak Malik ji se ho rahi hai?" },
+    { "speaker": "customer", "lang": "hi", "text": "हाँ, Deepak बोल रहा हूँ।", "roman": "Haan, Deepak bol raha hoon." },
+    { "speaker": "agent", "lang": "en", "text": "Thank you sir. This call is being recorded. Verification ke liye apne loan account ke last four digits bata dijiye." },
+    { "speaker": "customer", "lang": "en", "text": "Eight three zero five." },
+    { "speaker": "agent", "lang": "hi", "text": "Thank you. Sir, aapne pichhli baar one-time settlement ke baare mein poocha tha. Aapka total outstanding one lakh forty-two thousand hai, aur management ne eighty-five thousand rupees ka one-time settlement approve kiya hai." },
+    { "speaker": "customer", "lang": "hi", "text": "पचासी हज़ार भी ज़्यादा है। मेरा business बंद हो गया था, मैं seventy तक कर सकता हूँ।", "roman": "Pachaasi hazaar bhi zyaada hai. Mera business band ho gaya tha, main seventy tak kar sakta hoon." },
+    { "speaker": "agent", "lang": "hi", "text": "Main samajhta hoon sir, business band hona bahut mushkil hota hai. Honestly eighty-five already maximum waiver hai. Ek baat clear kar doon, settlement ke baad aapka loan credit bureau mein 'settled' report hoga, 'closed' nahi." },
+    { "speaker": "customer", "lang": "hi", "text": "हम्म। 'Settled' का मतलब CIBIL खराब रहेगा?", "roman": "Hmm. 'Settled' ka matlab CIBIL kharaab rahega?" },
+    { "speaker": "agent", "lang": "hi", "text": "Score par kuch saal asar rehta hai, haan, future loans mein dikkat aa sakti hai. Isliye aap soch samajh ke decide kijiye, koi jaldi nahi hai. Yeh offer thirty days tak valid hai." },
+    { "speaker": "customer", "lang": "hi", "text": "ठीक है, eighty-five मंज़ूर है, पर मुझे सब कुछ लिखित में चाहिए।", "roman": "Theek hai, eighty-five manzoor hai, par mujhe sab kuch likhit mein chahiye." },
+    { "speaker": "agent", "lang": "hi", "text": "Bilkul sir. Aapko pehle settlement letter email par milega, jismein amount, account number aur 'no further dues' condition likhi hogi. Letter milne ke baad hi payment kijiye." },
+    { "speaker": "customer", "lang": "hi", "text": "ठीक है। Payment दो installments में कर सकता हूँ?", "roman": "Theek hai. Payment do installments mein kar sakta hoon?" },
+    { "speaker": "agent", "lang": "hi", "text": "Haan sir, letter mein do installments likh denge: fifty thousand tenth December tak aur thirty-five thousand tenth January tak." },
+    { "speaker": "customer", "lang": "hi", "text": "ठीक है, ये चलेगा।", "roman": "Theek hai, ye chalega." },
+    { "speaker": "agent", "lang": "hi", "text": "Toh recap kar deta hoon: eighty-five thousand ka settlement, do installments mein. Letter agle do working days mein aapke registered email par aayega, uske baad hi payment. Koi sawaal ho toh isi number par call kijiye." },
+    { "speaker": "customer", "lang": "hi", "text": "ठीक है, धन्यवाद।", "roman": "Theek hai, dhanyavaad." }
+  ],
+  "analysis": {
+    "outcomeId": "settlement_agreed",
+    "outcomeRationale": "Customer accepted a ₹85,000 one-time settlement in two instalments, pending a written settlement letter.",
+    "summary": "Borrower with ₹1,42,000 outstanding after his business closed accepted an ₹85,000 one-time settlement split into two instalments. Agent explained 'settled' bureau reporting clearly, gave a 30-day window without pressure, and promised the letter before any payment.",
+    "observations": "Model settlement call: verification and disclosure first, honest explanation of credit-bureau impact, explicit 'koi jaldi nahi hai', and payment tied to receiving the written letter.",
+    "improvements": "Could confirm the registered email address on the call before sending the letter.",
+    "extractions": { "call_intent": "settlement", "dispute_type": "none", "settlement_amount": 85000 },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted and identified the Kaveri Finance recoveries team.", "confidence": 0.97 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Verified last four digits of the account.", "confidence": 0.96 },
+      "op_recording_disclosure": { "result": "pass", "line": 2, "rationale": "Stated the call is recorded.", "confidence": 0.98 },
+      "st_explain_terms": { "result": "pass", "line": 6, "rationale": "Gave the ₹85,000 amount and explained 'settled' (not 'closed') bureau reporting.", "confidence": 0.95 },
+      "st_written_confirmation": { "result": "pass", "line": 10, "rationale": "Promised a settlement letter before any payment.", "confidence": 0.97 },
+      "st_no_pressure": { "result": "pass", "line": 8, "rationale": "Said there is no hurry and the offer is valid for 30 days.", "confidence": 0.93 },
+      "cp_no_threats": { "result": "pass", "line": null, "rationale": "No intimidation at any point.", "confidence": 0.95 },
+      "cp_respectful": { "result": "pass", "line": 6, "rationale": "Acknowledged the business closure respectfully.", "confidence": 0.94 },
+      "cp_no_third_party": { "result": "pass", "line": 3, "rationale": "Discussed only after account verification.", "confidence": 0.92 },
+      "cl_next_step": { "result": "pass", "line": 14, "rationale": "Letter by email within two working days, then payment.", "confidence": 0.94 },
+      "cl_recap": { "result": "pass", "line": 14, "rationale": "Recapped amount, instalments and letter timing.", "confidence": 0.96 }
+    },
+    "moments": [
+      { "type": "hardship", "line": 5, "label": "Business shut down" },
+      { "type": "objection", "line": 7, "label": "Concern about CIBIL impact" },
+      { "type": "ptp", "line": 9, "label": "₹85,000 settlement accepted" },
+      { "type": "payment", "line": 12, "label": "Two instalments: 10 Dec & 10 Jan" }
+    ]
+  }
+}

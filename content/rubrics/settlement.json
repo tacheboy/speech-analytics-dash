@@ -1,0 +1,203 @@
+{
+  "id": "settlement",
+  "name": "Disputes & Settlement",
+  "icon": "scale",
+  "description": "Calls where the borrower disputes charges or negotiates a one-time settlement.",
+  "sections": [
+    {
+      "id": "opening",
+      "name": "Opening & Right-Party Verification",
+      "criteria": [
+        {
+          "id": "op_greet_company",
+          "question": "Did the agent greet the customer and identify themselves and Kaveri Finance?"
+        },
+        {
+          "id": "op_rpc_verify",
+          "question": "Did the agent verify they were speaking to the borrower before discussing the loan?",
+          "context": "Asking for name confirmation, DOB or last 4 digits of the loan account counts."
+        },
+        {
+          "id": "op_recording_disclosure",
+          "question": "Did the agent inform the customer that the call is recorded?"
+        }
+      ]
+    },
+    {
+      "id": "dispute_handling",
+      "name": "Dispute Handling",
+      "criteria": [
+        {
+          "id": "dp_listen_fully",
+          "question": "Did the agent let the customer explain the dispute fully without interrupting?"
+        },
+        {
+          "id": "dp_log_ticket",
+          "question": "Did the agent log the dispute and share a reference number?"
+        },
+        {
+          "id": "dp_timeline",
+          "question": "Did the agent share a resolution timeline?"
+        },
+        {
+          "id": "dp_pause_collection",
+          "question": "Did the agent confirm collection follow-ups pause while the dispute is reviewed?"
+        }
+      ]
+    },
+    {
+      "id": "settlement_offer",
+      "name": "Settlement Offer",
+      "criteria": [
+        {
+          "id": "st_explain_terms",
+          "question": "Did the agent explain the settlement amount and that the loan will be reported as ‘settled’ to credit bureaus?"
+        },
+        {
+          "id": "st_written_confirmation",
+          "question": "Did the agent promise a written settlement letter before the customer pays?"
+        },
+        {
+          "id": "st_no_pressure",
+          "question": "Did the agent avoid pressuring the customer to accept on the call (e.g. fake deadlines)?"
+        }
+      ]
+    },
+    {
+      "id": "compliance",
+      "name": "RBI Fair-Practice Compliance",
+      "criteria": [
+        {
+          "id": "cp_no_threats",
+          "question": "Did the agent avoid threats, intimidation or coercive language?",
+          "context": "Threatening legal action, police, visiting the home/workplace, or shaming fails this."
+        },
+        {
+          "id": "cp_respectful",
+          "question": "Did the agent stay polite and avoid abusive or humiliating language?"
+        },
+        {
+          "id": "cp_no_third_party",
+          "question": "Did the agent avoid disclosing loan details to anyone other than the borrower?"
+        }
+      ]
+    },
+    {
+      "id": "closure",
+      "name": "Closure",
+      "criteria": [
+        {
+          "id": "cl_next_step",
+          "question": "Did the agent clearly state the next step and who will contact whom?"
+        },
+        {
+          "id": "cl_recap",
+          "question": "Did the agent recap what was agreed before ending the call?"
+        }
+      ]
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "dispute_logged",
+      "label": "Dispute Logged",
+      "description": "Dispute recorded with a reference number and timeline.",
+      "isSuccess": true,
+      "isNotApplicable": false
+    },
+    {
+      "id": "settlement_agreed",
+      "label": "Settlement Agreed",
+      "description": "Customer accepted a settlement amount pending written letter.",
+      "isSuccess": true,
+      "isNotApplicable": false
+    },
+    {
+      "id": "escalated",
+      "label": "Escalated",
+      "description": "Call escalated to a supervisor or grievance officer.",
+      "isSuccess": null,
+      "isNotApplicable": false
+    },
+    {
+      "id": "offer_rejected",
+      "label": "Offer Rejected",
+      "description": "Customer rejected the settlement offer.",
+      "isSuccess": false,
+      "isNotApplicable": false
+    },
+    {
+      "id": "wrong_party",
+      "label": "Wrong Party",
+      "description": "Borrower not reached; someone else answered or wrong number.",
+      "isSuccess": null,
+      "isNotApplicable": true
+    }
+  ],
+  "extractionFields": [
+    {
+      "fieldName": "call_intent",
+      "displayName": "Call Intent",
+      "fieldType": "enum",
+      "description": "Whether the call is about a dispute, a settlement, or both.",
+      "enumValues": [
+        "dispute",
+        "settlement",
+        "both"
+      ]
+    },
+    {
+      "fieldName": "dispute_type",
+      "displayName": "Dispute Type",
+      "fieldType": "enum",
+      "description": "What the customer disputes, if anything.",
+      "enumValues": [
+        "wrong_charges",
+        "already_paid",
+        "fraud",
+        "service_issue",
+        "none"
+      ]
+    },
+    {
+      "fieldName": "settlement_amount",
+      "displayName": "Settlement Amount (₹)",
+      "fieldType": "number",
+      "description": "Settlement amount discussed, in rupees."
+    }
+  ],
+  "targetingRules": [
+    {
+      "targetType": "section",
+      "targetId": "dispute_handling",
+      "description": "Only when the call involves a dispute",
+      "expression": {
+        "in": [
+          {
+            "var": "extractions.call_intent"
+          },
+          [
+            "dispute",
+            "both"
+          ]
+        ]
+      }
+    },
+    {
+      "targetType": "section",
+      "targetId": "settlement_offer",
+      "description": "Only when a settlement is discussed",
+      "expression": {
+        "in": [
+          {
+            "var": "extractions.call_intent"
+          },
+          [
+            "settlement",
+            "both"
+          ]
+        ]
+      }
+    }
+  ]
+}

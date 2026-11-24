@@ -1,0 +1,58 @@
+{
+  "id": "mb-kn-average",
+  "categoryId": "mid-bucket",
+  "language": "kn-en",
+  "quality": "average",
+  "customerName": "Raghavendra Rao",
+  "lines": [
+    { "speaker": "agent", "lang": "kn", "text": "Namaskara sir, Kaveri Finance inda maathadthiddini. Raghavendra Rao avaru maathadthiddeera?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಹೌದು, ಹೇಳಿ.", "roman": "Haudu, heli." },
+    { "speaker": "agent", "lang": "kn", "text": "Sir, verification ge nimma loan account last four digits heli." },
+    { "speaker": "customer", "lang": "en", "text": "Six one nine four." },
+    { "speaker": "agent", "lang": "kn", "text": "Thank you sir. Nimma account alli eradu EMI pending ide, prathi ondu seven thousand four hundred fifty, jothege bounce charges serisi total seventeen thousand two hundred sixty rupees aagide. Yaake EMI miss aaythu sir?" },
+    { "speaker": "customer", "lang": "kn", "text": "ನೋಡಿ, ಅದೇ ನನ್ನ problem. ನನ್ನ account ಅಲ್ಲಿ balance ಇತ್ತು, ನಿಮ್ಮ side ಇಂದ NACH fail ಆಗಿದೆ. ಆದ್ರೂ ಎರಡು ಸಲ bounce charge ಹಾಕಿದ್ದೀರ.", "roman": "Nodi, ade nanna problem. Nanna account alli balance ittu, nimma side inda NACH fail aagide. Aadroo eradu sala bounce charge haakiddeera." },
+    { "speaker": "agent", "lang": "kn", "text": "Sir, system alli bounce anta thoristide. Charges ella system generated." },
+    { "speaker": "customer", "lang": "kn", "text": "System ಏನ್ ಹೇಳುತ್ತೆ ನನಗೆ ಬೇಡ. ನನ್ನ bank statement ಅಲ್ಲಿ balance ಇದೆ. ನಾನು ಈ charges ಕಟ್ಟಲ್ಲ.", "roman": "System en helutte nanage beda. Nanna bank statement alli balance ide. Naanu ee charges kattalla." },
+    { "speaker": "agent", "lang": "en", "text": "Okay sir. But if the EMIs stay unpaid it will be reported to CIBIL and more charges will add. You can pay the two EMIs, fourteen thousand nine hundred, and we check the charges separately." },
+    { "speaker": "customer", "lang": "kn", "text": "ಮೊದಲು charges reverse ಮಾಡಿ, ಆಮೇಲೆ EMI ಬಗ್ಗೆ ಮಾತಾಡೋಣ.", "roman": "Modalu charges reverse maadi, aamele EMI bagge maathadona." },
+    { "speaker": "agent", "lang": "kn", "text": "Sari sir, naanu dispute raise maadthini. Nimma reference number K F D two four one one eight seven." },
+    { "speaker": "customer", "lang": "kn", "text": "ಎಷ್ಟು ದಿನ ಆಗುತ್ತೆ ಇದು clear ಆಗೋಕೆ? ಅಲ್ಲಿವರೆಗೂ calls ಬರುತ್ತಾ?", "roman": "Eshtu dina aagutte idu clear aagoke? Allivaregu calls barutta?" },
+    { "speaker": "agent", "lang": "kn", "text": "Adu team decide maadutte sir. Calls system inda barthaane irthave, adu namma kaili illa." },
+    { "speaker": "customer", "lang": "kn", "text": "ಇದು ಸರಿ ಅಲ್ಲ, ಆದ್ರೂ ಸರಿ. Statement email ಮಾಡ್ತೀನಿ.", "roman": "Idu sari alla, aadroo sari. Statement email maadthini." },
+    { "speaker": "agent", "lang": "en", "text": "Okay sir. So the dispute is logged for the double bounce charges, reference KFD241187. Please email your bank statement to care at kaveri finance dot in." },
+    { "speaker": "customer", "lang": "kn", "text": "ಸರಿ.", "roman": "Sari." }
+  ],
+  "analysis": {
+    "outcomeId": "dispute",
+    "outcomeRationale": "Customer disputes two bounce charges, saying the NACH failure was on the lender's side; he will not pay until they are reversed.",
+    "summary": "Borrower has two missed EMIs (₹14,900) plus ₹2,360 bounce charges, which he disputes as a lender-side NACH failure. Agent logged a dispute with reference KFD241187 but gave no timeline and said collection calls would continue.",
+    "observations": "Verification, dues and consequences were handled correctly and a ticket was raised. However, the agent initially defended the charges as 'system generated' instead of listening, never assessed what the customer could pay for the undisputed EMIs, and told him calls would continue during the review.",
+    "improvements": "Share the standard dispute SLA and confirm that collection follow-ups pause while the dispute is reviewed. Separate the undisputed ₹14,900 and try for a dated PTP on that portion. Add the recording disclosure.",
+    "extractions": { "delay_reason": "dispute", "ptp_amount": null, "ptp_date": null, "payment_mode": null, "hardship": false },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted and named Kaveri Finance.", "confidence": 0.96 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Asked for the last four digits of the loan account.", "confidence": 0.95 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "Recording never disclosed.", "confidence": 0.94 },
+      "ds_reason_delay": { "result": "pass", "line": 4, "rationale": "Asked 'Yaake EMI miss aaythu sir?'.", "confidence": 0.95 },
+      "ds_empathy": { "result": "fail", "line": 6, "rationale": "Dismissed the customer's concern as 'system generated' charges.", "confidence": 0.84 },
+      "ds_ability_to_pay": { "result": "fail", "line": null, "rationale": "Never asked what the customer could pay towards the undisputed EMIs.", "confidence": 0.8 },
+      "ng_state_dues": { "result": "pass", "line": 4, "rationale": "Stated two EMIs of ₹7,450 and the total ₹17,260 including charges.", "confidence": 0.95 },
+      "ng_consequences": { "result": "pass", "line": 8, "rationale": "Mentioned CIBIL reporting and added charges factually.", "confidence": 0.88 },
+      "ng_options": { "result": "pass", "line": 8, "rationale": "Suggested paying the ₹14,900 EMIs while charges are checked separately.", "confidence": 0.78 },
+      "dp_log_ticket": { "result": "pass", "line": 10, "rationale": "Raised a dispute and shared reference KFD241187.", "confidence": 0.95 },
+      "dp_timeline": { "result": "fail", "line": 12, "rationale": "Answered 'Adu team decide maadutte' — no resolution timeline.", "confidence": 0.92 },
+      "dp_pause_collection": { "result": "fail", "line": 12, "rationale": "Told the customer collection calls would continue during the review.", "confidence": 0.94 },
+      "cp_no_threats": { "result": "pass", "line": 8, "rationale": "Consequences stated without intimidation.", "confidence": 0.92 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Polite throughout, though somewhat defensive.", "confidence": 0.85 },
+      "cp_no_third_party": { "result": "pass", "line": 3, "rationale": "Loan discussed only after account verification.", "confidence": 0.93 },
+      "cl_ptp_secured": { "result": "fail", "line": 9, "rationale": "No payment commitment; customer deferred EMI discussion until reversal.", "confidence": 0.9 },
+      "cl_payment_mode": { "result": "fail", "line": null, "rationale": "Payment mode not discussed.", "confidence": 0.9 },
+      "cl_recap": { "result": "pass", "line": 14, "rationale": "Recapped the dispute, reference number and next action (email statement).", "confidence": 0.8 }
+    },
+    "moments": [
+      { "type": "dispute", "line": 5, "label": "Disputes double bounce charges" },
+      { "type": "objection", "line": 9, "label": "Won't pay until charges reversed" },
+      { "type": "dispute", "line": 10, "label": "Ticket KFD241187 raised" }
+    ]
+  }
+}

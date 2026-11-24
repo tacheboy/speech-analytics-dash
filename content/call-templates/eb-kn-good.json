@@ -1,0 +1,52 @@
+{
+  "id": "eb-kn-good",
+  "categoryId": "early-bucket",
+  "language": "kn-en",
+  "quality": "good",
+  "customerName": "Prakash Gowda",
+  "lines": [
+    { "speaker": "agent", "lang": "kn", "text": "Namaskara sir, naanu Kaveri Finance inda maathadthiddini. Prakash Gowda avara jothe maathadthiddeena?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಹೌದು, ನಾನೇ Prakash. ಹೇಳಿ.", "roman": "Haudu, naane Prakash. Heli." },
+    { "speaker": "agent", "lang": "en", "text": "Thank you sir. This call is being recorded for quality purposes. Verification ge, nimma loan account last four digits heltheera?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಹಾ, three eight five two.", "roman": "Haa, three eight five two." },
+    { "speaker": "agent", "lang": "kn", "text": "Dhanyavaada Prakash avare. Nimma two-wheeler loan EMI, three thousand two hundred fifty rupees, November moorane thareeku due ittu, innu pending ide." },
+    { "speaker": "customer", "lang": "kn", "text": "ಅಯ್ಯೋ, ಹೌದಾ? Auto-debit ಆಗುತ್ತೆ ಅಂತ ಅಂದ್ಕೊಂಡಿದ್ದೆ. Account ನಲ್ಲಿ balance ಕಮ್ಮಿ ಇತ್ತು ಅನ್ಸುತ್ತೆ.", "roman": "Ayyo, haudaa? Auto-debit aagutte anta andkondidde. Account nalli balance kammi ittu ansutte." },
+    { "speaker": "agent", "lang": "kn", "text": "Paravagilla sir, heege kelavu sala aagutte. Balance yaake kammi ittu, enaadru problem ideya?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಇಲ್ಲ ಇಲ್ಲ, salary ಬೇರೆ account ಗೆ ಬರುತ್ತೆ. Transfer ಮಾಡೋದು ಮರೆತುಹೋಯ್ತು ಅಷ್ಟೇ.", "roman": "Illa illa, salary bere account ge barutte. Transfer maadodu marethuhoythu ashte." },
+    { "speaker": "agent", "lang": "en", "text": "Understood sir. Just so you know, a late fee of four hundred rupees applies after the grace period, and paying soon keeps your CIBIL score safe." },
+    { "speaker": "customer", "lang": "kn", "text": "ಸರಿ, ಈಗಲೇ pay ಮಾಡ್ತೀನಿ. Link ಕಳ್ಸಿ.", "roman": "Sari, eegale pay maadthini. Link kalsi." },
+    { "speaker": "agent", "lang": "kn", "text": "Khandita sir. Nimma registered mobile number nine eight four five ending ge payment link kalisiddini, UPI inda maadabahudu." },
+    { "speaker": "customer", "lang": "kn", "text": "ಬಂತು, ಒಂದು ನಿಮಿಷ... ಹಾ, PhonePe ಇಂದ ಮಾಡಿದೆ. Success ಅಂತ ಬಂತು.", "roman": "Banthu, ondu nimisha... Haa, PhonePe inda maadide. Success anta banthu." },
+    { "speaker": "agent", "lang": "en", "text": "Yes sir, I can see three thousand two hundred fifty rupees received just now against your November EMI. Receipt SMS barutte. Next month auto-debit account alli balance itkolli." },
+    { "speaker": "customer", "lang": "kn", "text": "ಸರಿ, ನೆನಪಿಟ್ಕೊಳ್ತೀನಿ. Thank you.", "roman": "Sari, nenapitkolthini. Thank you." },
+    { "speaker": "agent", "lang": "kn", "text": "Dhanyavaada Prakash avare, olle dina irali." }
+  ],
+  "analysis": {
+    "outcomeId": "paid",
+    "outcomeRationale": "Customer paid the full EMI of ₹3,250 via the payment link (UPI) during the call and the agent confirmed receipt.",
+    "summary": "Borrower missed the November EMI because he forgot to move salary into the auto-debit account. Agent verified identity, stated dues and the late fee factually, and collected the full EMI on the call via a payment link.",
+    "observations": "Clean early-bucket call: recording disclosure and account verification before any loan details, non-judgemental probing of the reason, and the payment confirmed live with a reminder to fund the auto-debit account.",
+    "improvements": "Could offer to switch the auto-debit mandate to the salary account to prevent a repeat miss.",
+    "extractions": { "delay_reason": "forgot", "ptp_amount": 3250, "ptp_date": "Paid on call", "payment_mode": "payment_link" },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Greeted with 'Namaskara' and named Kaveri Finance in the opening line.", "confidence": 0.97 },
+      "op_rpc_verify": { "result": "pass", "line": 2, "rationale": "Asked for the last four digits of the loan account before stating dues.", "confidence": 0.95 },
+      "op_recording_disclosure": { "result": "pass", "line": 2, "rationale": "Stated the call is recorded for quality purposes.", "confidence": 0.98 },
+      "pr_state_dues": { "result": "pass", "line": 4, "rationale": "Stated ₹3,250 EMI and the 3 November due date.", "confidence": 0.96 },
+      "pr_late_fee_info": { "result": "pass", "line": 8, "rationale": "Mentioned the ₹400 late fee and CIBIL impact in a neutral tone.", "confidence": 0.92 },
+      "ds_reason_delay": { "result": "pass", "line": 6, "rationale": "Asked why the account balance was short.", "confidence": 0.9 },
+      "ds_empathy": { "result": "pass", "line": 6, "rationale": "'Paravagilla sir, heege kelavu sala aagutte' reassured the customer before probing.", "confidence": 0.86 },
+      "cp_no_threats": { "result": "pass", "line": 8, "rationale": "Consequences stated factually with no intimidation.", "confidence": 0.95 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Courteous throughout, used 'avare' and thanked the customer.", "confidence": 0.95 },
+      "cp_no_third_party": { "result": "pass", "line": 3, "rationale": "Loan details shared only after the borrower verified the account digits.", "confidence": 0.92 },
+      "cl_ptp_secured": { "result": "pass", "line": 11, "rationale": "Customer paid the full amount during the call, exceeding a promise-to-pay.", "confidence": 0.88 },
+      "cl_payment_mode": { "result": "pass", "line": 10, "rationale": "Payment link sent to the masked registered number for UPI payment.", "confidence": 0.95 },
+      "cl_recap": { "result": "pass", "line": 12, "rationale": "Confirmed amount received against the November EMI and reminded about next month's auto-debit.", "confidence": 0.9 }
+    },
+    "moments": [
+      { "type": "objection", "line": 5, "label": "Assumed auto-debit had run" },
+      { "type": "payment", "line": 11, "label": "Paid ₹3,250 via UPI link" },
+      { "type": "payment", "line": 12, "label": "Receipt confirmed by agent" }
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "id": "eb-ta-average",
+  "categoryId": "early-bucket",
+  "language": "ta-en",
+  "quality": "average",
+  "customerName": "Priya Ramesh",
+  "lines": [
+    { "speaker": "agent", "lang": "ta", "text": "Hello, Kaveri Finance la irundhu pesaren. Priya Ramesh madam ah?" },
+    { "speaker": "customer", "lang": "ta", "text": "ஆமா, சொல்லுங்க. யாரு?", "roman": "Aama, sollunga. Yaaru?" },
+    { "speaker": "agent", "lang": "ta", "text": "Madam, Kaveri Finance personal loan. Unga EMI seven thousand eight hundred rupees innum pay aagala." },
+    { "speaker": "customer", "lang": "ta", "text": "ஆமா தெரியும், office ல இருக்கேன் இப்போ. கொஞ்சம் busy.", "roman": "Aama theriyum, office la irukken ippo. Konjam busy." },
+    { "speaker": "agent", "lang": "ta", "text": "Okay madam, rendu nimisham dhaan. Edhunaala late aachunu sollunga?" },
+    { "speaker": "customer", "lang": "ta", "text": "இந்த மாசம் school fees, rent எல்லாம் ஒரே time ல வந்துடுச்சு. Salary போதல.", "roman": "Indha maasam school fees, rent ellaam ore time la vandhuduchu. Salary podhala." },
+    { "speaker": "agent", "lang": "ta", "text": "Seri madam. Aana EMI pay pannalana five hundred rupees late fee add aagum, CIBIL score um affect aagum." },
+    { "speaker": "customer", "lang": "ta", "text": "புரியுது. ஆனா இப்போ என்னால date சொல்ல முடியாது. Husband கிட்ட பேசிட்டு சொல்றேன்.", "roman": "Puriyudhu. Aana ippo ennaala date solla mudiyaadhu. Husband kitta pesittu solren." },
+    { "speaker": "agent", "lang": "ta", "text": "Approx eppo pay panna mudiyum madam? Indha week kulla aagumaa?" },
+    { "speaker": "customer", "lang": "ta", "text": "தெரியல sir. Friday evening call பண்ணுங்க, அப்போ confirm ஆ சொல்றேன்.", "roman": "Theriyala sir. Friday evening call pannunga, appo confirm aa solren." },
+    { "speaker": "agent", "lang": "ta", "text": "Friday ku munnaadi partial ah edhavadhu pay panna mudiyuma?" },
+    { "speaker": "customer", "lang": "ta", "text": "இல்ல sir, இப்போ கஷ்டம். Friday பேசலாம்.", "roman": "Illa sir, ippo kashtam. Friday pesalaam." },
+    { "speaker": "agent", "lang": "ta", "text": "Okay madam. Appo Friday evening aaru mani ku thirumba call panren, appo amount um date um confirm pannunga." },
+    { "speaker": "customer", "lang": "ta", "text": "சரி, ok.", "roman": "Seri, ok." },
+    { "speaker": "agent", "lang": "en", "text": "Thank you madam." }
+  ],
+  "analysis": {
+    "outcomeId": "callback",
+    "outcomeRationale": "Customer would not commit to an amount or date and asked for a call back on Friday evening after consulting her husband.",
+    "summary": "Borrower's ₹7,800 personal-loan EMI is pending because school fees and rent landed in the same month. Agent probed for a date and a partial payment but only secured a Friday-evening callback.",
+    "observations": "Agent asked the reason and tried for a partial payment, which is good persistence. However there was no recording disclosure, the due date was never stated, and the agent moved straight to late fees without acknowledging the household cash crunch.",
+    "improvements": "Disclose recording and verify with account digits, state the original due date, acknowledge the stretch before talking fees, and offer a smaller split amount with a payment link to convert the callback into a PTP.",
+    "extractions": { "delay_reason": "other", "ptp_amount": null, "ptp_date": null, "payment_mode": "none" },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Named Kaveri Finance at the start, though with a plain hello.", "confidence": 0.88 },
+      "op_rpc_verify": { "result": "pass", "line": 0, "rationale": "Confirmed the customer's name before discussing the loan; no account-digit check.", "confidence": 0.68 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "Recording was never mentioned.", "confidence": 0.95 },
+      "pr_state_dues": { "result": "fail", "line": 2, "rationale": "Stated the ₹7,800 amount but not the original due date.", "confidence": 0.8 },
+      "pr_late_fee_info": { "result": "pass", "line": 6, "rationale": "Explained the ₹500 late fee and CIBIL impact without threats.", "confidence": 0.88 },
+      "ds_reason_delay": { "result": "pass", "line": 4, "rationale": "Directly asked why the payment was late.", "confidence": 0.94 },
+      "ds_empathy": { "result": "fail", "line": 6, "rationale": "Replied to the school-fees and rent squeeze with a flat 'seri' and went straight to late fees.", "confidence": 0.82 },
+      "cp_no_threats": { "result": "pass", "line": 6, "rationale": "Consequences stated factually; no intimidation.", "confidence": 0.9 },
+      "cp_respectful": { "result": "pass", "line": null, "rationale": "Polite, if brisk, throughout.", "confidence": 0.85 },
+      "cp_no_third_party": { "result": "pass", "line": 1, "rationale": "Spoke only with the borrower.", "confidence": 0.9 },
+      "cl_ptp_secured": { "result": "fail", "line": 9, "rationale": "No amount or date committed; customer deferred to a callback.", "confidence": 0.93 },
+      "cl_payment_mode": { "result": "fail", "line": null, "rationale": "Payment mode was never discussed.", "confidence": 0.9 },
+      "cl_recap": { "result": "pass", "line": 12, "rationale": "Confirmed the Friday 6 pm callback and what the customer should confirm then.", "confidence": 0.72 }
+    },
+    "moments": [
+      { "type": "hardship", "line": 5, "label": "School fees and rent same month" },
+      { "type": "objection", "line": 7, "label": "Wants to consult husband first" },
+      { "type": "objection", "line": 11, "label": "Declined partial payment" }
+    ]
+  }
+}

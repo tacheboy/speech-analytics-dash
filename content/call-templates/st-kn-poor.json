@@ -1,0 +1,48 @@
+{
+  "id": "st-kn-poor",
+  "categoryId": "settlement",
+  "language": "kn-en",
+  "quality": "poor",
+  "customerName": "Nagaraj Poojary",
+  "lines": [
+    { "speaker": "agent", "lang": "kn", "text": "Hello, Nagaraj Poojary avara jothe maathadthiddeena? Kaveri Finance inda call." },
+    { "speaker": "customer", "lang": "kn", "text": "ಹೌದು, ನಾನೇ Nagaraj. ಹೇಳಿ.", "roman": "Haudu, naane Nagaraj. Heli." },
+    { "speaker": "agent", "lang": "kn", "text": "Nimma bike loan alli sixty-eight thousand five hundred baaki ide, elu thingalinda ondu rupaayi kattilla. Ivattu nimage special settlement offer ide, forty-five thousand." },
+    { "speaker": "customer", "lang": "kn", "text": "Forty-five ಸಾವಿರ ಒಂದೇ ಸಲ ಎಲ್ಲಿಂದ ತರ್ಲಿ? Auto ಓಡಿಸೋದ್ರಿಂದ ದಿನಕ್ಕೆ ಐನೂರು ಬರುತ್ತೆ ಅಷ್ಟೇ.", "roman": "Forty-five saavira ondhe sala ellinda tharli? Auto odisodrinda dinakke ainooru barutte ashte." },
+    { "speaker": "agent", "lang": "kn", "text": "Adu nimma problem sir. Ee offer ivattu sanje aaru gante varegu maatra. Naale inda full amount plus legal charges kattbeku." },
+    { "speaker": "customer", "lang": "kn", "text": "ಇಷ್ಟು ಬೇಗ ಹೇಗೆ decide ಮಾಡ್ಲಿ? ಮನೆಯಲ್ಲಿ ಮಾತಾಡ್ಬೇಕು. Letter ಏನಾದ್ರೂ ಕಳುಹಿಸ್ತೀರಾ?", "roman": "Ishtu bega hege decide maadli? Maneyalli maathadbeku. Letter enaadru kaluhistheera?" },
+    { "speaker": "agent", "lang": "kn", "text": "Letter ella aamele. Modalu duddu kattbeku. Ivattu kattilla andre namma legal team case file maadutte, court notice nimma manege barutte." },
+    { "speaker": "customer", "lang": "kn", "text": "ಏನು sir, court ಅಂತೀರಾ? ನಾನು ಏನೂ cheat ಮಾಡಿಲ್ಲ, ಕಷ್ಟದಲ್ಲಿದ್ದೀನಿ ಅಷ್ಟೇ.", "roman": "Enu sir, court antheera? Naanu enoo cheat maadilla, kashtadalliddini ashte." },
+    { "speaker": "agent", "lang": "kn", "text": "Ellaroo ide heltheera. Elu thingalu kattilla andre adu cheating ne. Aamele nimma ooralli ellarigu gotthaagutte." },
+    { "speaker": "customer", "lang": "kn", "text": "ಈ ತರ ಮಾತಾಡಿದ್ರೆ ನಾನು ಈ offer ತಗೊಳ್ಳಲ್ಲ. ಬೇಡ ನನಗೆ.", "roman": "Ee thara maathadidre naanu ee offer thagollalla. Beda nanage." },
+    { "speaker": "agent", "lang": "en", "text": "Fine, your wish. Offer is cancelled. Don't call us later asking for discount." },
+    { "speaker": "customer", "lang": "kn", "text": "ಸರಿ, ಇಡ್ತೀನಿ.", "roman": "Sari, idthini." }
+  ],
+  "analysis": {
+    "outcomeId": "offer_rejected",
+    "outcomeRationale": "Customer rejected the ₹45,000 settlement after a same-day deadline, legal threats and being called a cheat.",
+    "summary": "Agent pitched a ₹45,000 settlement on ₹68,500 outstanding with a same-day 6 pm deadline, refused a written letter before payment, and threatened a court case. The customer, an auto driver earning about ₹500 a day, rejected the offer.",
+    "observations": "Classic pressure-selling plus RBI breaches: fake deadline, 'letter ella aamele' (pay first, letter later), court-notice threat, calling the customer a cheat and implying his village would find out. No explanation of 'settled' credit reporting. A potentially viable settlement was lost.",
+    "improvements": "Compliance review required. Never set artificial deadlines or demand payment before the settlement letter; explain the amount and 'settled' bureau status, offer time to consult family, and explore instalment settlement given the customer's daily income.",
+    "extractions": { "call_intent": "settlement", "dispute_type": "none", "settlement_amount": 45000 },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Said 'Hello' and named Kaveri Finance, without a proper greeting.", "confidence": 0.7 },
+      "op_rpc_verify": { "result": "pass", "line": 1, "rationale": "Asked for Nagaraj Poojary by name and he confirmed; minimal verification.", "confidence": 0.64 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "No recording disclosure.", "confidence": 0.96 },
+      "st_explain_terms": { "result": "fail", "line": 2, "rationale": "Gave ₹45,000 but no mention of 'settled' reporting to credit bureaus.", "confidence": 0.92 },
+      "st_written_confirmation": { "result": "fail", "line": 6, "rationale": "Refused the letter: 'Letter ella aamele, modalu duddu kattbeku'.", "confidence": 0.97 },
+      "st_no_pressure": { "result": "fail", "line": 4, "rationale": "Same-day 6 pm deadline and threat of full amount plus legal charges from tomorrow.", "confidence": 0.97 },
+      "cp_no_threats": { "result": "fail", "line": 6, "rationale": "Threatened a legal case and court notice to the home.", "confidence": 0.97 },
+      "cp_respectful": { "result": "fail", "line": 8, "rationale": "Called the customer's default 'cheating' and implied his village would find out.", "confidence": 0.94 },
+      "cp_no_third_party": { "result": "pass", "line": null, "rationale": "Nothing actually disclosed to others, though exposure was implied.", "confidence": 0.7 },
+      "cl_next_step": { "result": "fail", "line": 10, "rationale": "Cancelled the offer with no next step.", "confidence": 0.93 },
+      "cl_recap": { "result": "fail", "line": 10, "rationale": "No recap; call ended dismissively.", "confidence": 0.95 }
+    },
+    "moments": [
+      { "type": "hardship", "line": 3, "label": "Earns ~₹500/day driving auto" },
+      { "type": "compliance_risk", "line": 4, "label": "Fake same-day deadline" },
+      { "type": "compliance_risk", "line": 6, "label": "Court notice threat, no letter" },
+      { "type": "objection", "line": 9, "label": "Rejected offer" }
+    ]
+  }
+}

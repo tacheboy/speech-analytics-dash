@@ -1,0 +1,237 @@
+{
+  "id": "mid-bucket",
+  "name": "Mid Bucket (DPD 31–90)",
+  "icon": "handshake",
+  "description": "Negotiation calls for 31–90 days past due. Goal: payment plan or partial payment, compliantly.",
+  "sections": [
+    {
+      "id": "opening",
+      "name": "Opening & Right-Party Verification",
+      "criteria": [
+        {
+          "id": "op_greet_company",
+          "question": "Did the agent greet the customer and identify themselves and Kaveri Finance?"
+        },
+        {
+          "id": "op_rpc_verify",
+          "question": "Did the agent verify they were speaking to the borrower before discussing the loan?",
+          "context": "Asking for name confirmation, DOB or last 4 digits of the loan account counts."
+        },
+        {
+          "id": "op_recording_disclosure",
+          "question": "Did the agent inform the customer that the call is recorded?"
+        }
+      ]
+    },
+    {
+      "id": "discovery",
+      "name": "Discovery",
+      "criteria": [
+        {
+          "id": "ds_reason_delay",
+          "question": "Did the agent ask why the payments were missed?"
+        },
+        {
+          "id": "ds_empathy",
+          "question": "Did the agent acknowledge the customer’s situation with empathy?"
+        },
+        {
+          "id": "ds_ability_to_pay",
+          "question": "Did the agent assess what the customer can realistically pay now?"
+        }
+      ]
+    },
+    {
+      "id": "negotiation",
+      "name": "Negotiation",
+      "criteria": [
+        {
+          "id": "ng_state_dues",
+          "question": "Did the agent state the total overdue amount and number of missed EMIs?"
+        },
+        {
+          "id": "ng_consequences",
+          "question": "Did the agent explain the consequences of continued non-payment factually (credit bureau reporting, charges)?"
+        },
+        {
+          "id": "ng_options",
+          "question": "Did the agent offer at least one option (partial payment, revised date, restructuring request)?"
+        }
+      ]
+    },
+    {
+      "id": "dispute_handling",
+      "name": "Dispute Handling",
+      "criteria": [
+        {
+          "id": "dp_log_ticket",
+          "question": "Did the agent log the dispute and share a reference number?"
+        },
+        {
+          "id": "dp_timeline",
+          "question": "Did the agent share a resolution timeline?"
+        },
+        {
+          "id": "dp_pause_collection",
+          "question": "Did the agent confirm collection follow-ups pause while the dispute is reviewed?"
+        }
+      ]
+    },
+    {
+      "id": "compliance",
+      "name": "RBI Fair-Practice Compliance",
+      "criteria": [
+        {
+          "id": "cp_no_threats",
+          "question": "Did the agent avoid threats, intimidation or coercive language?",
+          "context": "Threatening legal action, police, visiting the home/workplace, or shaming fails this."
+        },
+        {
+          "id": "cp_respectful",
+          "question": "Did the agent stay polite and avoid abusive or humiliating language?"
+        },
+        {
+          "id": "cp_no_third_party",
+          "question": "Did the agent avoid disclosing loan details to anyone other than the borrower?"
+        }
+      ]
+    },
+    {
+      "id": "closure",
+      "name": "Closure",
+      "criteria": [
+        {
+          "id": "cl_ptp_secured",
+          "question": "Did the agent secure a specific promise-to-pay amount and date?"
+        },
+        {
+          "id": "cl_payment_mode",
+          "question": "Did the agent confirm how the customer will pay (UPI, payment link, branch, auto-debit)?"
+        },
+        {
+          "id": "cl_recap",
+          "question": "Did the agent recap the commitment before ending the call?"
+        }
+      ]
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "ptp",
+      "label": "Promise to Pay",
+      "description": "Customer committed to a specific amount and date for the overdue amount.",
+      "isSuccess": true,
+      "isNotApplicable": false
+    },
+    {
+      "id": "partial",
+      "label": "Partial Payment Agreed",
+      "description": "Customer agreed to pay part of the overdue amount with a date.",
+      "isSuccess": true,
+      "isNotApplicable": false
+    },
+    {
+      "id": "restructure",
+      "label": "Restructure Request",
+      "description": "Customer asked for EMI restructuring; request raised.",
+      "isSuccess": null,
+      "isNotApplicable": false
+    },
+    {
+      "id": "dispute",
+      "label": "Dispute Raised",
+      "description": "Customer disputes the amount or charges.",
+      "isSuccess": null,
+      "isNotApplicable": false
+    },
+    {
+      "id": "refused",
+      "label": "Refused to Pay",
+      "description": "Customer declined to commit to any payment.",
+      "isSuccess": false,
+      "isNotApplicable": false
+    },
+    {
+      "id": "wrong_party",
+      "label": "Wrong Party",
+      "description": "Borrower not reached; someone else answered or wrong number.",
+      "isSuccess": null,
+      "isNotApplicable": true
+    }
+  ],
+  "extractionFields": [
+    {
+      "fieldName": "delay_reason",
+      "displayName": "Delay Reason",
+      "fieldType": "enum",
+      "description": "Primary reason the customer gives for missing the payment.",
+      "enumValues": [
+        "job_loss",
+        "medical",
+        "business_slowdown",
+        "salary_delay",
+        "forgot",
+        "dispute",
+        "other"
+      ]
+    },
+    {
+      "fieldName": "ptp_amount",
+      "displayName": "PTP Amount (₹)",
+      "fieldType": "number",
+      "description": "Amount the customer promised to pay, in rupees. Null if no promise."
+    },
+    {
+      "fieldName": "ptp_date",
+      "displayName": "PTP Date",
+      "fieldType": "text",
+      "description": "Date the customer promised to pay, as said on the call."
+    },
+    {
+      "fieldName": "payment_mode",
+      "displayName": "Payment Mode",
+      "fieldType": "enum",
+      "description": "How the customer said they will pay.",
+      "enumValues": [
+        "upi",
+        "payment_link",
+        "branch",
+        "auto_debit",
+        "none"
+      ]
+    },
+    {
+      "fieldName": "hardship",
+      "displayName": "Financial Hardship",
+      "fieldType": "boolean",
+      "description": "True if the customer describes genuine financial hardship (job loss, medical emergency)."
+    }
+  ],
+  "targetingRules": [
+    {
+      "targetType": "section",
+      "targetId": "dispute_handling",
+      "description": "Only when the customer raises a dispute",
+      "expression": {
+        "or": [
+          {
+            "==": [
+              {
+                "var": "outcome.id"
+              },
+              "dispute"
+            ]
+          },
+          {
+            "==": [
+              {
+                "var": "extractions.delay_reason"
+              },
+              "dispute"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

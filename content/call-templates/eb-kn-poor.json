@@ -1,0 +1,52 @@
+{
+  "id": "eb-kn-poor",
+  "categoryId": "early-bucket",
+  "language": "kn-en",
+  "quality": "poor",
+  "customerName": "Manjunath Shetty",
+  "lines": [
+    { "speaker": "agent", "lang": "kn", "text": "Hello, Kaveri Finance inda call maadthirodu. Manjunath Shetty avara phone alva?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಹೌದು, ನಾನೇ. ಏನು?", "roman": "Haudu, naane. Enu?" },
+    { "speaker": "agent", "lang": "kn", "text": "Nimma bike loan EMI four thousand one hundred rupees, November eradane thareeku due ittu. Yaake innu kattilla?" },
+    { "speaker": "customer", "lang": "kn", "text": "ಈ ತಿಂಗಳು business ಸರಿ ಇಲ್ಲ sir, shop ಅಲ್ಲಿ sales ಏನೂ ಇಲ್ಲ.", "roman": "Ee thingalu business sari illa sir, shop alli sales enoo illa." },
+    { "speaker": "agent", "lang": "kn", "text": "Adella nanage gottilla. Loan thagondaaga gotthiralilva? Ivattu kattbeku." },
+    { "speaker": "customer", "lang": "kn", "text": "ಇವತ್ತು ಆಗಲ್ಲ sir, ಕೈಯಲ್ಲಿ ದುಡ್ಡಿಲ್ಲ. ಒಂದು ಹತ್ತು ದಿನ time ಕೊಡಿ.", "roman": "Ivattu aagalla sir, kaiyalli duddilla. Ondu hatthu dina time kodi." },
+    { "speaker": "agent", "lang": "kn", "text": "Hatthu dina ella aagalla. Neevu kattilla andre namma field team nimma manege barthaare, nimma neighbours ellarigu gotthaagutte." },
+    { "speaker": "customer", "lang": "kn", "text": "ಏನ್ sir ಇದು, ಮನೆಗೆ ಬರ್ತೀರಾ? ಇದು ಸರಿ ಅಲ್ಲ.", "roman": "En sir idu, manege bartheera? Idu sari alla." },
+    { "speaker": "agent", "lang": "kn", "text": "Sari alla anta helbedi. Neevu defaulter. Legal notice kooda kalisthivi, police case aagutte." },
+    { "speaker": "customer", "lang": "kn", "text": "ನೀವು ಹೀಗೆ ಮಾತಾಡಿದ್ರೆ ನಾನು ಏನೂ pay ಮಾಡಲ್ಲ. ನಿಮ್ಮ manager number ಕೊಡಿ.", "roman": "Neevu heege maathadidre naanu enoo pay maadalla. Nimma manager number kodi." },
+    { "speaker": "agent", "lang": "kn", "text": "Manager ge yaake? Duddu kattodu neevu." },
+    { "speaker": "customer", "lang": "kn", "text": "ನಾನು ಈಗ ಏನೂ commit ಮಾಡಲ್ಲ. ಬೇಕಾದ್ರೆ branch ಗೆ ಬಂದು ಮಾತಾಡ್ತೀನಿ.", "roman": "Naanu eega enoo commit maadalla. Bekaadre branch ge bandu maathadthini." },
+    { "speaker": "agent", "lang": "en", "text": "Okay, then face the consequences. Bye." },
+    { "speaker": "customer", "lang": "kn", "text": "ಸರಿ, bye.", "roman": "Sari, bye." }
+  ],
+  "analysis": {
+    "outcomeId": "refused",
+    "outcomeRationale": "Customer refused to commit to any payment after the agent threatened a home visit and police case.",
+    "summary": "Borrower missed the November EMI due to a slowdown in his shop and asked for ten days. Agent rejected the request, threatened a field visit, legal notice and police case, and the customer refused to commit.",
+    "observations": "Serious RBI fair-practice breach: threatening a home visit with neighbours finding out, calling the customer a 'defaulter' and invoking police for a 1-month delay. A recoverable early-bucket account (customer asked for only ten days) was turned into a refusal and likely complaint.",
+    "improvements": "Immediate coaching and call review for compliance. Acknowledge the business slowdown, explain the late fee factually, and negotiate a dated PTP within the ten days requested instead of escalating; provide the manager/grievance contact when asked.",
+    "extractions": { "delay_reason": "business_slowdown", "ptp_amount": null, "ptp_date": null, "payment_mode": null },
+    "criteria": {
+      "op_greet_company": { "result": "pass", "line": 0, "rationale": "Said 'Hello' and named Kaveri Finance, though no proper greeting.", "confidence": 0.72 },
+      "op_rpc_verify": { "result": "pass", "line": 1, "rationale": "Asked whether it was Manjunath Shetty's phone and he confirmed it was him; minimal verification.", "confidence": 0.62 },
+      "op_recording_disclosure": { "result": "fail", "line": null, "rationale": "No recording disclosure.", "confidence": 0.96 },
+      "pr_state_dues": { "result": "pass", "line": 2, "rationale": "Stated ₹4,100 EMI and the 2 November due date.", "confidence": 0.94 },
+      "pr_late_fee_info": { "result": "fail", "line": 8, "rationale": "No factual late-fee or credit-score information; used legal/police threats instead.", "confidence": 0.9 },
+      "ds_reason_delay": { "result": "pass", "line": 2, "rationale": "Asked 'Yaake innu kattilla?', albeit in an accusatory tone.", "confidence": 0.7 },
+      "ds_empathy": { "result": "fail", "line": 4, "rationale": "Dismissed the business slowdown with 'Adella nanage gottilla'.", "confidence": 0.95 },
+      "cp_no_threats": { "result": "fail", "line": 6, "rationale": "Threatened a field-team home visit with neighbours finding out, then legal notice and police case.", "confidence": 0.98 },
+      "cp_respectful": { "result": "fail", "line": 8, "rationale": "Called the customer a 'defaulter' and ended with 'face the consequences'.", "confidence": 0.93 },
+      "cp_no_third_party": { "result": "pass", "line": null, "rationale": "No loan details were actually shared with anyone else, though exposure to neighbours was threatened.", "confidence": 0.7 },
+      "cl_ptp_secured": { "result": "fail", "line": 11, "rationale": "No promise-to-pay; customer refused to commit.", "confidence": 0.96 },
+      "cl_payment_mode": { "result": "fail", "line": null, "rationale": "Payment mode never discussed.", "confidence": 0.94 },
+      "cl_recap": { "result": "fail", "line": 12, "rationale": "Call ended abruptly with no recap or next step.", "confidence": 0.95 }
+    },
+    "moments": [
+      { "type": "hardship", "line": 3, "label": "Shop sales down" },
+      { "type": "compliance_risk", "line": 6, "label": "Threatened home visit / neighbours" },
+      { "type": "compliance_risk", "line": 8, "label": "'Defaulter', police case threat" },
+      { "type": "objection", "line": 11, "label": "Refused to commit" }
+    ]
+  }
+}
