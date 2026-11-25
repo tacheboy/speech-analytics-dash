@@ -61,7 +61,7 @@ fi
 [ "$START" = 1 ] || { step "Setup complete. Run ./dev.sh to start."; exit 0; }
 
 PORT="${PORT:-3000}"
-PROVIDERS=$(grep -E '^(ANTHROPIC|OPENAI|GEMINI|SARVAM|DEEPGRAM)_API_KEY=.+|^OPENAI_COMPAT_BASE_URL=.+' .env | cut -d= -f1 | tr '\n' ' ')
+PROVIDERS=$(grep -E '^(ANTHROPIC|OPENAI|GEMINI|SARVAM|DEEPGRAM)_API_KEY=.+|^OPENAI_COMPAT_BASE_URL=.+' .env 2>/dev/null | cut -d= -f1 | tr '\n' ' ' || true)
 echo "AI providers: ${PROVIDERS:-none configured, using mocks (add keys to .env, then npm run providers:check)}"
 step "Starting the app on http://localhost:$PORT (pick a demo user on the login page)"
 exec npx next dev -p "$PORT"
