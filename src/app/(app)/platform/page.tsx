@@ -6,27 +6,27 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AgentAvatar, PageHeader, Panel, ScoreBadge } from "@/components/app/bits";
-import { CallsTable } from "@/components/app/calls-table";
+import { ConversationsTable } from "@/components/app/conversations-table";
 import { OutcomeBars, TrendChart } from "@/components/app/charts";
 import { DateRangePicker, useDateRange } from "@/components/app/date-range";
 import { KpiCard, METRIC_HELP } from "@/components/app/kpi";
 import { UploadDialog } from "@/components/app/upload-dialog";
-import { useAnalytics, useWorkspace } from "@/lib/api-client";
+import { useDashboard, useWorkspace } from "@/lib/api-client";
 import { fmtDuration, fmtPct } from "@/lib/format";
-import type { Analytics } from "@/server/services/analytics";
+import type { Dashboard as Analytics } from "@/server/services/dashboard";
 
 function greeting() {
   const h = new Date().getHours();
   return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
 }
 
-function AgentList({ title, rows, empty }: { title: string; rows: Analytics["agents"]; empty: string }) {
+function AgentList({ title, rows, empty }: { title: string; rows: Analytics["people"]; empty: string }) {
   return (
     <Panel title={title} bodyClassName="p-2">
       {rows.length ? rows.map((r) => (
-        <Link key={r.agentId} href={`/people/${r.agentId}`} className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-accent/40">
+        <Link key={r.personId} href={`/people/${r.personId}`} className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-accent/40">
           <AgentAvatar name={r.name} size="sm" />
-          <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{r.name}</span><span className="text-xs text-muted-foreground">{r.teamName} · {r.calls} conversations{r.complianceFlags ? ` · ${r.complianceFlags} risk flags` : ""}</span></span>
+          <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{r.name}</span><span className="text-xs text-muted-foreground">{r.cohortName} · {r.conversations} conversations{r.riskFlags ? ` · ${r.riskFlags} risk flags` : ""}</span></span>
           <ScoreBadge score={r.quality == null ? null : Math.round(r.quality)} />
         </Link>
       )) : <p className="p-4 text-sm text-muted-foreground">{empty}</p>}
@@ -38,10 +38,10 @@ export default function PlatformPage() {
   const router = useRouter();
   const { data: ws } = useWorkspace();
   const { from, to } = useDateRange();
-  const { data: a } = useAnalytics({ dimension: "org", from, to }, !!ws);
+  const { data: a } = useDashboard({ dimension: "org", from, to }, !!ws);
   const isMember = ws?.me.role === "member";
   const first = ws?.me.name.split(" ")[0];
-  const ranked = (a?.agents ?? []).filter((x) => x.calls >= 3);
+  const ranked = (a?.people ?? []).filter((x) => x.conversations >= 3);
 
   return (
     <>
@@ -59,9 +59,9 @@ export default function PlatformPage() {
             <KpiCard label="Success rate" info={METRIC_HELP.success} icon={<Target className="size-4 text-chart-2" />} value={fmtPct(a.kpis.successRate.value, 1)} delta={a.kpis.successRate.delta} hint="vs previous period" spark={a.trend.map((d) => d.successRate)} />
             <KpiCard label={isMember ? "My conversations" : "Conversations analyzed"} icon={<Phone className="size-4 text-muted-foreground" />} value={a.kpis.volume.value.toLocaleString("en-IN")} delta={a.kpis.volume.delta} deltaSuffix="" hint={`avg ${fmtDuration(a.kpis.avgDurationSec.value)}`} spark={a.trend.map((d) => d.volume)} />
             {isMember && a.profile ? (
-              <KpiCard label="Score vs cohort average" icon={<ClipboardCheck className="size-4 text-primary" />} value={a.kpis.quality.value != null && a.profile.teamQuality != null ? `${a.kpis.quality.value - a.profile.teamQuality > 0 ? "+" : ""}${(a.kpis.quality.value - a.profile.teamQuality).toFixed(1)}` : "—"} hint={`cohort avg ${fmtPct(a.profile.teamQuality, 1)}`} />
+              <KpiCard label="Score vs cohort average" icon={<ClipboardCheck className="size-4 text-primary" />} value={a.kpis.quality.value != null && a.profile.cohortQuality != null ? `${a.kpis.quality.value - a.profile.cohortQuality > 0 ? "+" : ""}${(a.kpis.quality.value - a.profile.cohortQuality).toFixed(1)}` : "—"} hint={`cohort avg ${fmtPct(a.profile.cohortQuality, 1)}`} />
             ) : (
-              <KpiCard label="Risk flags" info={METRIC_HELP.compliance} icon={<ShieldAlert className="size-4 text-danger" />} value={fmtPct(a.kpis.complianceRate.value, 1)} delta={a.kpis.complianceRate.delta} invertDelta hint="of conversations" spark={a.trend.map((d) => d.complianceRate)} />
+              <KpiCard label="Risk flags" info={METRIC_HELP.compliance} icon={<ShieldAlert className="size-4 text-danger" />} value={fmtPct(a.kpis.riskRate.value, 1)} delta={a.kpis.riskRate.delta} invertDelta hint="of conversations" spark={a.trend.map((d) => d.riskRate)} />
             )}
           </div>
 
@@ -82,7 +82,7 @@ export default function PlatformPage() {
                 ) : <p className="text-sm text-muted-foreground">Nothing consistently missed — keep it up.</p>}
                 <Button variant="link" className="mt-2 px-0" nativeButton={false} render={<Link href={`/people/${ws?.me.id}`} />}>Open my report card <ArrowRight className="size-3.5" /></Button>
               </Panel>
-              <Panel title="My recent conversations" bodyClassName="p-0"><CallsTable compact hideFilters pageSize={5} fixed={{ page: 1, sort: "date", order: "desc", status: "all" }} /></Panel>
+              <Panel title="My recent conversations" bodyClassName="p-0"><ConversationsTable compact hideFilters pageSize={5} fixed={{ sort: "date", order: "desc" }} /></Panel>
             </div>
           ) : (
             <>
@@ -92,7 +92,7 @@ export default function PlatformPage() {
               </div>
               <Panel title="Recent conversations" description="The latest conversations from the dialer feed and uploads" bodyClassName="p-0"
                 actions={<Link href="/conversations/all" className="flex items-center gap-1 text-sm text-primary hover:underline">All conversations <ArrowRight className="size-3.5" /></Link>}>
-                <CallsTable compact hideFilters pageSize={6} fixed={{ page: 1, sort: "date", order: "desc", status: "all" }} />
+                <ConversationsTable compact hideFilters pageSize={6} fixed={{ sort: "date", order: "desc" }} />
               </Panel>
             </>
           )}

@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader, ScoreBadge, Pill } from "@/components/app/bits";
 import { UploadDialog } from "@/components/app/upload-dialog";
-import { useAnalytics, useWorkspace } from "@/lib/api-client";
+import { useDashboard, useWorkspace } from "@/lib/api-client";
 import { fmtPct } from "@/lib/format";
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = { "bell-ring": BellRing, handshake: Handshake, scale: Scale };
 
 function CategoryCard({ id, name, description, icon }: { id: string; name: string; description: string; icon: string }) {
-  const { data } = useAnalytics({ dimension: "category", id });
+  const { data } = useDashboard({ dimension: "category", id });
   const Icon = ICONS[icon] ?? Layers;
   return (
     <div className="flex flex-col rounded-2xl border bg-card p-5 transition hover:border-primary/40">

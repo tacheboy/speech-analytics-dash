@@ -1,21 +1,29 @@
 "use client";
 
-import { GitBranch, Plus, Trash2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { FlaskConical, GitBranch, Plus, RotateCcw, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { DemoBadge, PageHeader, Panel, Pill } from "@/components/app/bits";
-import { useWorkspace } from "@/lib/api-client";
+import { PageHeader, Panel, Pill, ScoreBadge } from "@/components/app/bits";
+import { api, useWorkspace } from "@/lib/api-client";
+import type { Category, Conversation, List } from "@/lib/contract";
 import { OUTCOME_TYPE_LABEL, outcomeType, type Rubric } from "@/lib/domain";
 import type { Workspace } from "@/server/services/workspace";
 import { cn } from "@/lib/utils";
 
-const TABS = ["Sections & criteria", "Outcomes", "Extraction fields", "Targeting rules", "Versions"] as const;
+const TABS = ["Sections & criteria", "Outcomes", "Extraction fields", "Targeting rules", "Test & versions"] as const;
+type DryRun = { conversationId: string; score: number | null; outcome: { label: string }; summary: string };
+type TestRow = { id: string; person: string; before: number | null; beforeOutcome: string | null; after?: number | null; afterOutcome?: string; error?: string };
 
-/** Mockup: the rubric editor. Reads the live rubric; edits stay in local state (nothing is persisted). */
+/**
+ * The rubric editor on the public API: edit a draft, test it on recent conversations (dry run: nothing
+ * saved), publish an immutable version (PUT /categories/{id}), then optionally re-score recent conversations.
+ */
 export default function ConfigurationPage() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const { data: ws } = useWorkspace();
@@ -30,10 +38,67 @@ function Editor({ cat, tags }: { cat: Workspace["categories"][number]; tags: Wor
   const [dirty, setDirty] = useState(false);
 
   const edit = (fn: (r: Rubric) => void) => { setDraft((d) => { const n = structuredClone(d); fn(n); return n; }); setDirty(true); };
+  const qc = useQueryClient();
+  const [publishing, setPublishing] = useState(false);
+  const [test, setTest] = useState<TestRow[] | null>(null);
+  const [testing, setTesting] = useState(false);
+  const [rescoring, setRescoring] = useState<string | null>(null);
+  const meta = useQuery({ queryKey: ["category", cat.id], queryFn: () => api<Category>(`/api/v1/categories/${cat.id}`) });
+  const { id: _id, ...doc } = draft;
+
+  const publish = async () => {
+    setPublishing(true);
+    try {
+      const c = await api<Category>(`/api/v1/categories/${cat.id}`, { method: "PUT", body: JSON.stringify(doc) });
+      toast.success(`Published version ${c.version}. New conversations are scored with it.`);
+      setDirty(false);
+      await Promise.all([qc.invalidateQueries({ queryKey: ["workspace"] }), qc.invalidateQueries({ queryKey: ["category", cat.id] })]);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  /** Dry-runs the draft on the 10 most recent completed conversations: nothing is saved. */
+  const runTest = async () => {
+    setTesting(true);
+    setTab("Test & versions");
+    try {
+      const recent = await api<List<Conversation>>(`/api/v1/conversations?categoryId=${cat.id}&status=completed&limit=10`);
+      const rows: TestRow[] = recent.data.map((c) => ({ id: c.id, person: c.person.name, before: c.score, beforeOutcome: c.outcome?.label ?? null }));
+      setTest(rows);
+      for (const [i, c] of recent.data.entries()) {
+        try {
+          const r = await api<DryRun>(`/api/v1/conversations/${c.id}/analyze`, { method: "POST", body: JSON.stringify({ dryRun: true, rubric: doc }) });
+          rows[i] = { ...rows[i], after: r.score, afterOutcome: r.outcome.label };
+        } catch (e) {
+          rows[i] = { ...rows[i], error: (e as Error).message };
+        }
+        setTest([...rows]);
+      }
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const rescore = async () => {
+    const recent = await api<List<Conversation>>(`/api/v1/conversations?categoryId=${cat.id}&status=completed&limit=50`);
+    let n = 0;
+    for (const c of recent.data) {
+      setRescoring(`${++n}/${recent.data.length}`);
+      await api(`/api/v1/conversations/${c.id}/analyze`, { method: "POST", body: "{}" }).catch(() => null);
+    }
+    setRescoring(null);
+    toast.success(`Re-analysing ${recent.data.length} conversations with version ${cat.rubricVersion}`);
+    qc.invalidateQueries({ queryKey: ["conversations"] });
+  };
 
   return (
     <>
-      <PageHeader title={`${cat.name} · configuration`} description="The rubric every conversation in this category is scored against." actions={<><DemoBadge /><Button variant="outline" disabled={!dirty} onClick={() => { setDraft(structuredClone(cat.rubric)); setDirty(false); }}>Discard</Button><Button disabled={!dirty} onClick={() => { toast.success(`Published version ${cat.rubricVersion + 1} (demo — not persisted). New conversations would use it.`); setDirty(false); }}>Publish version {cat.rubricVersion + 1}</Button></>}>
+      <PageHeader title={`${cat.name} · configuration`} description="The rubric every conversation in this category is scored against." actions={<><Button variant="outline" disabled={!dirty} onClick={() => { setDraft(structuredClone(cat.rubric)); setDirty(false); }}>Discard</Button><Button variant="outline" className="gap-1.5" disabled={testing} onClick={runTest}><FlaskConical className="size-4" />{testing ? "Testing…" : "Test on recent conversations"}</Button><Button disabled={!dirty || publishing} onClick={publish}>{publishing ? "Publishing…" : `Publish version ${cat.rubricVersion + 1}`}</Button></>}>
         <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground"><GitBranch className="size-4" /> Active: version {cat.rubricVersion} {dirty ? <Pill tone="warning">Unpublished changes</Pill> : <Pill tone="success">Draft matches published</Pill>}</div>
       </PageHeader>
 
@@ -133,13 +198,33 @@ function Editor({ cat, tags }: { cat: Workspace["categories"][number]; tags: Wor
         </div>
       )}
 
-      {tab === "Versions" && (
-        <Panel title="Config versions" description="Published snapshots. Each conversation stores the version it was scored with, so trends stay comparable.">
-          <ul className="divide-y text-sm">
-            <li className="flex items-center justify-between py-3"><span>Version {cat.rubricVersion} <Pill tone="success" className="ml-2">Active</Pill></span><span className="text-muted-foreground">Published at seed time</span></li>
-            {dirty && <li className="flex items-center justify-between py-3"><span>Draft <Pill tone="warning" className="ml-2">Unpublished</Pill></span><span className="text-muted-foreground">Local changes</span></li>}
-          </ul>
-        </Panel>
+      {tab === "Test & versions" && (
+        <div className="space-y-4">
+          <Panel title="Test the draft" icon={<FlaskConical className="size-4" />} description="Scores the 10 most recent conversations with the draft rubric (a dry run: nothing is saved, transcription isn't repeated).">
+            {!test ? (
+              <Button variant="outline" onClick={runTest} disabled={testing}>Run test</Button>
+            ) : (
+              <ul className="divide-y text-sm">
+                {test.map((r) => (
+                  <li key={r.id} className="flex flex-wrap items-center gap-3 py-2">
+                    <Link href={`/conversations/${cat.id}/${r.id}`} className="min-w-40 flex-1 font-medium hover:underline">{r.person}</Link>
+                    <span className="flex items-center gap-2"><ScoreBadge score={r.before} /> → {r.error ? <Pill tone="danger" title={r.error}>error</Pill> : r.after === undefined ? <span className="text-muted-foreground">…</span> : <ScoreBadge score={r.after} />}</span>
+                    <span className="w-56 truncate text-xs text-muted-foreground">{r.afterOutcome && r.afterOutcome !== r.beforeOutcome ? `${r.beforeOutcome} → ${r.afterOutcome}` : r.beforeOutcome}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
+          <Panel title="Published versions" icon={<GitBranch className="size-4" />} description="Immutable snapshots. Each conversation stores the version it was scored with, so trends stay comparable."
+            actions={<Button size="sm" variant="outline" className="gap-1.5" disabled={!!rescoring} onClick={rescore}><RotateCcw className="size-3.5" />{rescoring ? `Re-analysing ${rescoring}` : `Re-analyse last 50 with v${cat.rubricVersion}`}</Button>}>
+            <ul className="divide-y text-sm">
+              {dirty && <li className="flex items-center justify-between py-3"><span>Draft <Pill tone="warning" className="ml-2">Unpublished</Pill></span><span className="text-muted-foreground">Local changes</span></li>}
+              {[...(meta.data?.versions ?? [cat.rubricVersion])].reverse().map((v) => (
+                <li key={v} className="flex items-center justify-between py-3"><span>Version {v} {v === cat.rubricVersion && <Pill tone="success" className="ml-2">Active</Pill>}</span><code className="text-xs text-muted-foreground">GET /api/v1/categories/{cat.id}?version={v}</code></li>
+              ))}
+            </ul>
+          </Panel>
+        </div>
       )}
     </>
   );

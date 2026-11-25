@@ -1,71 +1,84 @@
 "use client";
 
-import { Check, ChevronDown, CircleSlash, Play, X } from "lucide-react";
+import { AlertTriangle, Check, ChevronDown, CircleSlash, Play, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { InfoHint, Pill, ScoreBadge } from "@/components/app/bits";
-import { useReviewCall } from "@/lib/api-client";
-import type { CriterionResultValue } from "@/lib/domain";
+import { useAuditScorecard } from "@/lib/api-client";
+import type { Conversation, Result } from "@/lib/contract";
 import { scoreTone } from "@/lib/domain";
 import { fmtDateTime, fmtDuration } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { CallDetail } from "@/server/services/calls";
 
-// Voxxi answers every criterion Yes / No / NA
+// every criterion is answered Yes / No / NA
 const RESULT = {
-  pass: { icon: Check, label: "Yes", cls: "bg-success/15 text-success" },
-  fail: { icon: X, label: "No", cls: "bg-danger/15 text-danger" },
+  yes: { icon: Check, label: "Yes", cls: "bg-success/15 text-success" },
+  no: { icon: X, label: "No", cls: "bg-danger/15 text-danger" },
   na: { icon: CircleSlash, label: "NA", cls: "bg-muted text-muted-foreground" },
 } as const;
-const INSUFFICIENT = "Not enough information in the conversation";
 
-export function Audit({ call, canReview, onSeek, assignableTags }: { call: CallDetail; canReview: boolean; onSeek: (t: number, line?: number) => void; assignableTags: { id: string; displayName: string }[] }) {
-  const [open, setOpen] = useState<Record<string, boolean>>(() => Object.fromEntries(call.sections.map((s) => [s.id, s.met < s.total])));
-  const [reviewing, setReviewing] = useState(false);
-  const [draft, setDraft] = useState<Record<string, CriterionResultValue>>({});
-  const [note, setNote] = useState(call.reviewNote ?? "");
-  const [manualTags, setManualTags] = useState<string[]>(call.tags.filter((t) => t.source === "manual").map((t) => t.id));
-  const review = useReviewCall(call.id);
+/** The Scorecard tab: per-section answers with evidence that seeks the audio, and the human audit (PATCH /scorecard). */
+export function Audit({ call, canAudit, onSeek, assignableTags }: { call: Conversation; canAudit: boolean; onSeek: (t: number, line?: number) => void; assignableTags: { slug: string; displayName: string }[] }) {
+  const sections = call.scorecard ?? [];
+  const [open, setOpen] = useState<Record<string, boolean>>(() => Object.fromEntries(sections.map((s) => [s.sectionId, s.passed < s.applicable])));
+  const [auditing, setAuditing] = useState(false);
+  const [draft, setDraft] = useState<Record<string, Result>>({});
+  const [note, setNote] = useState(call.audit?.note ?? "");
+  const [manualTags, setManualTags] = useState<string[]>(call.tags.filter((t) => t.source === "manual").map((t) => t.slug));
+  const audit = useAuditScorecard(call.id);
 
   const lineOf = (t: number | null) => (t == null ? undefined : call.transcript?.findIndex((s) => s.start === t));
   const save = () => {
     const overrides = Object.entries(draft).map(([criterionId, result]) => ({ criterionId, result }));
-    review.mutate({ overrides, note, tagIds: manualTags }, {
-      onSuccess: (d) => { toast.success(`Review saved — score ${d.aiScore}% → ${d.score}%`); setReviewing(false); setDraft({}); },
+    audit.mutate({ overrides, note, tagSlugs: manualTags }, {
+      onSuccess: (d) => { toast.success(`Audit saved: score ${d.aiScore ?? "—"}% → ${d.score ?? "—"}%`); setAuditing(false); setDraft({}); },
       onError: (e) => toast.error(e.message),
     });
   };
+  const passed = sections.reduce((a, s) => a + s.passed, 0);
+  const applicable = sections.reduce((a, s) => a + s.applicable, 0);
+  const na = sections.reduce((a, s) => a + s.criteria.filter((c) => c.result === "na").length, 0);
+  const unverified = sections.flatMap((s) => s.criteria).filter((c) => c.result !== "na" && c.evidence && !c.evidence.verified).length;
+
+  if (!sections.length)
+    return <p className="text-sm text-muted-foreground">This conversation has an NA outcome ({call.outcome?.label}), so it is excluded from scoring.</p>;
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          {call.sections.reduce((a, s) => a + s.met, 0)} of {call.sections.reduce((a, s) => a + s.total, 0)} applicable criteria met
-          {(() => { const na = call.sections.reduce((a, s) => a + s.criteria.filter((c) => c.result === "na").length, 0); return na ? <> · {na} NA</> : null; })()}
-          {call.aiScore !== call.score && <> · AI scored <span className="tabular">{call.aiScore}%</span>, adjusted by review</>}
-          <InfoHint>Quality score = criteria answered Yes ÷ (all criteria − NA) × 100. Every criterion carries equal weight. NA criteria — not applicable by rule, or not enough information — don’t count.</InfoHint>
+          {passed} of {applicable} applicable criteria met{na ? <> · {na} NA</> : null}
+          {call.aiScore !== call.score && <> · AI scored <span className="tabular">{call.aiScore}%</span>, adjusted by audit</>}
+          <InfoHint>Quality score = criteria answered Yes ÷ (all criteria − NA) × 100. Every criterion carries equal weight. NA criteria (not applicable by rule, or not enough information) don’t count.</InfoHint>
         </p>
-        {canReview && !reviewing && <Button size="sm" variant="outline" onClick={() => { setReviewing(true); setOpen(Object.fromEntries(call.sections.map((s) => [s.id, true]))); }}>Review &amp; override</Button>}
+        {canAudit && !auditing && <Button size="sm" variant="outline" onClick={() => { setAuditing(true); setOpen(Object.fromEntries(sections.map((s) => [s.sectionId, true]))); }}>Audit &amp; override</Button>}
       </div>
 
-      {call.reviewedAt && !reviewing && (
+      {unverified > 0 && !auditing && (
+        <p className="flex items-start gap-2 rounded-xl border border-warning/30 bg-warning/8 px-3 py-2 text-xs">
+          <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-warning" />
+          {unverified} answer{unverified > 1 ? "s" : ""} cite a quote we couldn’t find in the transcript. Confidence is capped and the conversation is in the Audits “Needs review” queue.
+        </p>
+      )}
+
+      {call.audit && !auditing && (
         <div className="rounded-xl border border-info/30 bg-info/8 px-4 py-3 text-sm">
-          <p className="font-medium text-info">Reviewed by {call.reviewedByName} · {fmtDateTime(call.reviewedAt)}</p>
-          {call.reviewNote && <p className="mt-1 text-foreground/90">{call.reviewNote}</p>}
+          <p className="font-medium text-info">Audited by {call.audit.auditedByName ?? "a manager"} · {fmtDateTime(call.audit.auditedAt)}</p>
+          {call.audit.note && <p className="mt-1 text-foreground/90">{call.audit.note}</p>}
         </div>
       )}
 
-      {call.sections.map((s) => {
-        const pct = s.total ? Math.round((100 * s.met) / s.total) : null;
-        const isOpen = open[s.id];
+      {sections.map((s) => {
+        const pct = s.applicable ? Math.round((100 * s.passed) / s.applicable) : null;
+        const isOpen = open[s.sectionId];
         return (
-          <div key={s.id} className="rounded-xl border bg-background/40">
-            <button className="flex w-full items-start gap-3 p-4 text-left" onClick={() => setOpen((o) => ({ ...o, [s.id]: !o[s.id] }))} aria-expanded={isOpen}>
+          <div key={s.sectionId} className="rounded-xl border bg-background/40">
+            <button className="flex w-full items-start gap-3 p-4 text-left" onClick={() => setOpen((o) => ({ ...o, [s.sectionId]: !o[s.sectionId] }))} aria-expanded={isOpen}>
               <div className="min-w-0 flex-1">
                 <p className="font-medium">{s.name}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">{s.total ? `${s.met} out of ${s.total} criteria met` : `Not applicable — ${s.criteria[0]?.naReason ?? "rule"}`}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{s.applicable ? `${s.passed} out of ${s.applicable} criteria met` : `Not applicable: ${s.criteria[0]?.naReason ?? "rule"}`}</p>
                 <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
                   <div className={cn("h-full rounded-full", { success: "bg-success", warning: "bg-warning", danger: "bg-danger", muted: "bg-muted-foreground" }[scoreTone(pct)])} style={{ width: `${pct ?? 0}%` }} />
                 </div>
@@ -76,30 +89,33 @@ export function Audit({ call, canReview, onSeek, assignableTags }: { call: CallD
             {isOpen && (
               <ul className="divide-y border-t">
                 {s.criteria.map((c) => {
-                  const current = draft[c.id] ?? c.result;
+                  const current = draft[c.criterionId] ?? c.result;
                   const R = RESULT[current];
+                  const ev = c.evidence;
                   return (
-                    <li key={c.id} className="flex gap-3 px-4 py-3">
+                    <li key={c.criterionId} className="flex gap-3 px-4 py-3">
                       <span className={cn("mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full", R.cls)} title={R.label}><R.icon className="size-3.5" /></span>
                       <div className="min-w-0 flex-1 space-y-1.5">
                         <p className="text-sm font-medium leading-snug">{c.question}</p>
                         <p className="text-sm text-muted-foreground">{c.rationale}</p>
-                        {c.result === "na" && c.naReason && c.naReason !== INSUFFICIENT && <Pill tone="muted" className="h-5 text-[11px]">NA by rule</Pill>}
-                        {c.evidenceQuote && (
-                          <button onClick={() => onSeek(c.evidenceStart!, lineOf(c.evidenceStart))} className="group flex w-full items-start gap-2 rounded-lg border-l-2 border-primary/60 bg-muted/50 px-3 py-2 text-left text-xs hover:bg-accent/50">
+                        {c.result === "na" && c.source === "rule" && <Pill tone="muted" className="h-5 text-[11px]">NA by rule</Pill>}
+                        {ev && (
+                          <button onClick={() => ev.start != null && onSeek(ev.start, lineOf(ev.start))} disabled={ev.start == null}
+                            className={cn("group flex w-full items-start gap-2 rounded-lg border-l-2 bg-muted/50 px-3 py-2 text-left text-xs hover:bg-accent/50", ev.verified ? "border-primary/60" : "border-warning")}>
                             <Play className="mt-0.5 size-3 shrink-0 text-primary" />
-                            <span className="line-clamp-2 italic">“{c.evidenceQuote}”</span>
-                            <span className="ml-auto shrink-0 text-primary tabular group-hover:underline">{fmtDuration(c.evidenceStart)}</span>
+                            <span className="line-clamp-2 italic">“{ev.quote}”</span>
+                            <span className="ml-auto shrink-0 text-primary tabular group-hover:underline">{ev.start != null ? fmtDuration(ev.start) : ""}</span>
                           </button>
                         )}
                         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                           <span title="Model confidence">Confidence {Math.round(c.confidence * 100)}%</span>
-                          {c.overrideResult && <Pill tone="info" className="h-5 text-[11px]">Overridden · AI said {RESULT[c.aiResult].label}</Pill>}
+                          {ev && !ev.verified && <Pill tone="warning" className="h-5 text-[11px]">Quote not found in transcript</Pill>}
+                          {c.source === "audit" && <Pill tone="info" className="h-5 text-[11px]">Overridden · AI said {RESULT[c.aiResult].label}</Pill>}
                         </div>
-                        {reviewing && (
+                        {auditing && (
                           <div className="flex gap-1 pt-1" role="radiogroup" aria-label={`Override: ${c.question}`}>
-                            {(["pass", "fail", "na"] as const).map((v) => (
-                              <button key={v} role="radio" aria-checked={current === v} onClick={() => setDraft((d) => ({ ...d, [c.id]: v }))}
+                            {(["yes", "no", "na"] as const).map((v) => (
+                              <button key={v} role="radio" aria-checked={current === v} onClick={() => setDraft((d) => ({ ...d, [c.criterionId]: v }))}
                                 className={cn("rounded-md border px-2.5 py-1 text-xs", current === v ? RESULT[v].cls + " border-transparent font-medium" : "hover:bg-accent")}>
                                 {RESULT[v].label}
                               </button>
@@ -116,14 +132,14 @@ export function Audit({ call, canReview, onSeek, assignableTags }: { call: CallD
         );
       })}
 
-      {reviewing && (
+      {auditing && (
         <div className="sticky bottom-3 space-y-3 rounded-xl border bg-popover p-4 shadow-xl">
           {assignableTags.length > 0 && (
             <div className="grid gap-1.5 text-sm font-medium">Manual tags
               <div className="flex flex-wrap gap-1.5">
                 {assignableTags.map((t) => {
-                  const on = manualTags.includes(t.id);
-                  return <button key={t.id} type="button" aria-pressed={on} onClick={() => setManualTags((m) => (on ? m.filter((x) => x !== t.id) : [...m, t.id]))} className={cn("rounded-full border px-2.5 py-1 text-xs font-normal", on ? "border-primary bg-primary/15 text-primary" : "hover:bg-accent")}>{t.displayName}</button>;
+                  const on = manualTags.includes(t.slug);
+                  return <button key={t.slug} type="button" aria-pressed={on} onClick={() => setManualTags((m) => (on ? m.filter((x) => x !== t.slug) : [...m, t.slug]))} className={cn("rounded-full border px-2.5 py-1 text-xs font-normal", on ? "border-primary bg-primary/15 text-primary" : "hover:bg-accent")}>{t.displayName}</button>;
                 })}
               </div>
             </div>
@@ -132,10 +148,10 @@ export function Audit({ call, canReview, onSeek, assignableTags }: { call: CallD
             <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="What should the person do differently next time?" rows={3} />
           </label>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-muted-foreground">{Object.keys(draft).length} answer change(s). Overrides become calibration data.</span>
+            <span className="text-xs text-muted-foreground">{Object.keys(draft).length} answer change(s). Overrides feed the AI–auditor agreement metric.</span>
             <div className="flex gap-2">
-              <Button variant="ghost" onClick={() => { setReviewing(false); setDraft({}); }}>Cancel</Button>
-              <Button onClick={save} disabled={review.isPending}>{review.isPending ? "Saving…" : "Save review"}</Button>
+              <Button variant="ghost" onClick={() => { setAuditing(false); setDraft({}); }}>Cancel</Button>
+              <Button onClick={save} disabled={audit.isPending}>{audit.isPending ? "Saving…" : "Save audit"}</Button>
             </div>
           </div>
         </div>

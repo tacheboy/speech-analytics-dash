@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { PageHeader, Panel, Pill } from "@/components/app/bits";
-import { useAnalytics, useWorkspace } from "@/lib/api-client";
+import { useDashboard, useWorkspace } from "@/lib/api-client";
 
 /** The org's tag taxonomy (tag › subtag › detail), how each tag gets applied, and how often it fired in the last 30 days. */
 export default function TagsPage() {
   const { data: ws } = useWorkspace();
-  const { data: a } = useAnalytics({ dimension: "org" });
+  const { data: a } = useDashboard({ dimension: "org" });
   if (!ws) return null;
-  const counts = new Map(a?.intelligence.tags.map((t) => [t.slug, t.calls]));
+  const counts = new Map(a?.intelligence.tags.map((t) => [t.slug, t.conversations]));
   const ruleFor = (slug: string) => ws.categories.flatMap((c) => c.rubric.targetingRules.filter((r) => r.targetType === "tag" && r.targetId === slug).map((r) => `${c.name}: ${r.description}`));
   const sorted = [...ws.tags].sort((x, y) => x.slug.localeCompare(y.slug));
   return (

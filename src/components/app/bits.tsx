@@ -50,14 +50,17 @@ export function InfoHint({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function StatusBadge({ status, title }: { status: "processing" | "done" | "failed"; title?: string }) {
-  if (status === "processing")
+const STAGE_LABEL: Record<string, string> = { ingesting: "Ingesting", transcribing: "Transcribing", analyzing: "Analyzing" };
+
+export function StatusBadge({ status, stage, title }: { status: "queued" | "processing" | "completed" | "failed" | "skipped"; stage?: string | null; title?: string }) {
+  if (status === "queued" || status === "processing")
     return (
       <Pill tone="primary" title={title}>
-        <span className="size-1.5 animate-pulse rounded-full bg-primary" /> Processing
+        <span className="size-1.5 animate-pulse rounded-full bg-primary" /> {status === "queued" ? "Queued" : STAGE_LABEL[stage ?? ""] ?? "Processing"}
       </Pill>
     );
   if (status === "failed") return <Pill tone="danger" title={title}>Failed</Pill>;
+  if (status === "skipped") return <Pill tone="muted" title={title}>Skipped</Pill>;
   return <Pill tone="success">Analyzed</Pill>;
 }
 

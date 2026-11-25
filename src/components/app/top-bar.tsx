@@ -12,7 +12,7 @@ import { useWorkspace } from "@/lib/api-client";
 
 const LABELS: Record<string, string> = {
   platform: "Platform", conversations: "Conversations", analytics: "Analytics", people: "People", cohorts: "Cohorts", audits: "Audits",
-  workspace: "Workspace", users: "Users", tags: "Tags", billing: "Billing", integrations: "Integrations", settings: "Settings",
+  workspace: "Workspace", users: "Users", tags: "Tags", billing: "Billing", integrations: "Integrations", pipeline: "Pipeline", settings: "Settings",
   configuration: "Configuration", all: "All conversations", org: "Organization", category: "Category", team: "Cohort", agent: "Person",
 };
 
@@ -22,7 +22,7 @@ export function TopBar() {
   const { resolvedTheme, setTheme } = useTheme();
   const parts = pathname.split("/").filter(Boolean);
   const name = (seg: string) =>
-    LABELS[seg] ?? ws?.categories.find((c) => c.id === seg)?.name ?? ws?.teams.find((t) => t.id === seg)?.name ?? ws?.agents.find((a) => a.id === seg)?.name ?? (seg.startsWith("call_") ? seg.replace("call_", "Conversation ") : seg);
+    LABELS[seg] ?? ws?.categories.find((c) => c.id === seg)?.name ?? ws?.cohorts.find((t) => t.id === seg)?.name ?? ws?.people.find((a) => a.id === seg)?.name ?? (seg.startsWith("conv_") ? "Conversation" : seg);
   const crumbs = parts
     .map((seg, i) => ({ seg, href: "/" + parts.slice(0, i + 1).join("/") }))
     .filter((c, i) => !(parts[0] === "analytics" && i === 1)); // hide the dimension segment

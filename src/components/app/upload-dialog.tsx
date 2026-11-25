@@ -7,26 +7,17 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCreateCall, useWorkspace } from "@/lib/api-client";
+import { useCreateConversation, useWorkspace } from "@/lib/api-client";
 import { fmtDuration } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const LANG = { "ta-en": "Tamil–English", "kn-en": "Kannada–English", "hi-en": "Hindi–English" } as const;
 
-function readDuration(file: File) {
-  return new Promise<number | undefined>((resolve) => {
-    const a = new Audio();
-    a.preload = "metadata";
-    a.onloadedmetadata = () => { resolve(Number.isFinite(a.duration) ? Math.max(1, Math.round(a.duration)) : undefined); URL.revokeObjectURL(a.src); };
-    a.onerror = () => resolve(undefined);
-    a.src = URL.createObjectURL(file);
-  });
-}
 
 export function UploadDialog({ defaultCategoryId, trigger }: { defaultCategoryId?: string; trigger?: React.ReactElement }) {
   const router = useRouter();
   const { data: ws } = useWorkspace();
-  const create = useCreateCall();
+  const create = useCreateConversation();
   const [open, setOpen] = useState(false);
   const [categoryId, setCategoryId] = useState(defaultCategoryId && defaultCategoryId !== "all" ? defaultCategoryId : "");
   const [agentId, setAgentId] = useState("");
@@ -36,22 +27,22 @@ export function UploadDialog({ defaultCategoryId, trigger }: { defaultCategoryId
   const [drag, setDrag] = useState(false);
   const input = useRef<HTMLInputElement>(null);
 
-  const agent = ws?.agents.find((a) => a.id === agentId);
-  const agentLang = ws?.teams.find((t) => t.id === agent?.teamId)?.language;
+  const agent = ws?.people.find((a) => a.id === agentId);
+  const agentLang = ws?.cohorts.find((t) => t.id === agent?.cohortId)?.language;
   const samples = (ws?.samples ?? []).filter((s) => s.categoryId === categoryId).sort((a, b) => Number(b.language === agentLang) - Number(a.language === agentLang));
   const valid = categoryId && agentId && (mode === "sample" ? sampleId : files.length > 0);
 
   const addFiles = (list: FileList | null) => {
-    const ok = [...(list ?? [])].filter((f) => /\.(mp3|wav|m4a)$/i.test(f.name) && f.size <= 50 * 1024 * 1024);
-    if (list && ok.length < list.length) toast.error("Only MP3, WAV or M4A files up to 50 MB are accepted");
+    const ok = [...(list ?? [])].filter((f) => /\.(mp3|wav|m4a|ogg|opus|flac|webm|aac|amr)$/i.test(f.name) && f.size <= 500 * 1024 * 1024);
+    if (list && ok.length < list.length) toast.error("Only audio files (MP3, WAV, M4A, OGG, FLAC…) up to 500 MB are accepted");
     setFiles((prev) => [...prev, ...ok]);
   };
 
   const submit = async () => {
     try {
-      if (mode === "sample") await create.mutateAsync({ categoryId, agentId, sampleId });
-      else for (const file of files) await create.mutateAsync({ categoryId, agentId, file, durationSec: await readDuration(file) });
-      toast.success(mode === "sample" ? "Conversation uploaded — analysis takes a few seconds" : `${files.length} recording(s) uploaded — analysis takes a few seconds`);
+      if (mode === "sample") await create.mutateAsync({ categoryId, personId: agentId, sampleId });
+      else for (const file of files) await create.mutateAsync({ categoryId, personId: agentId, file });
+      toast.success(mode === "sample" ? "Conversation submitted: it is being analysed" : `${files.length} recording(s) uploaded: they are being analysed`);
       setOpen(false);
       setFiles([]);
       setSampleId("");
@@ -62,7 +53,7 @@ export function UploadDialog({ defaultCategoryId, trigger }: { defaultCategoryId
   };
 
   const catItems = (ws?.categories ?? []).map((c) => ({ value: c.id, label: c.name }));
-  const agentItems = (ws?.agents ?? []).map((a) => ({ value: a.id, label: a.name }));
+  const agentItems = (ws?.people ?? []).map((a) => ({ value: a.id, label: a.name }));
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -72,7 +63,7 @@ export function UploadDialog({ defaultCategoryId, trigger }: { defaultCategoryId
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Upload conversation recording</DialogTitle>
-          <DialogDescription>The conversation is scored against the category’s rubric. Status moves from Processing to Analyzed in a few seconds.</DialogDescription>
+          <DialogDescription>The recording is transcribed and scored against the category’s rubric. Status moves through Ingesting, Transcribing and Analyzing.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -120,11 +111,11 @@ export function UploadDialog({ defaultCategoryId, trigger }: { defaultCategoryId
               >
                 <Upload className="size-5 text-muted-foreground" />
                 <span className="font-medium">Click or drop recordings</span>
-                <span className="text-xs text-muted-foreground">MP3, WAV, M4A up to 50 MB</span>
-                <input ref={input} type="file" accept=".mp3,.wav,.m4a,audio/*" multiple hidden onChange={(e) => addFiles(e.target.files)} />
+                <span className="text-xs text-muted-foreground">MP3, WAV, M4A, OGG, FLAC up to 500 MB · stereo: person on the left</span>
+                <input ref={input} type="file" accept="audio/*,.mp3,.wav,.m4a,.ogg,.opus,.flac,.webm,.aac,.amr" multiple hidden onChange={(e) => addFiles(e.target.files)} />
               </div>
               {files.length > 0 && <ul className="mt-2 space-y-1 text-sm">{files.map((f, i) => <li key={i} className="flex justify-between gap-2 text-muted-foreground"><span className="truncate">{f.name}</span><span>{(f.size / 1e6).toFixed(1)} MB</span></li>)}</ul>}
-              <p className="mt-2 text-xs text-muted-foreground">No speech-to-text runs in this demo build, so your recording plays back, but its transcript and scores come from a matching demo conversation and are labelled <em>Simulated</em>.</p>
+              {ws?.system.mock && <p className="mt-2 text-xs text-muted-foreground">No speech-to-text or LLM key is configured, so your recording plays back but its transcript and scores come from a matching demo script and are labelled <em>Simulated</em>. Add keys in <code>.env</code> for a real analysis.</p>}
             </div>
           )}
         </div>

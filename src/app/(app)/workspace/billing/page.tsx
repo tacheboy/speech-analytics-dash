@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DemoBadge, PageHeader, Panel } from "@/components/app/bits";
 import { KpiCard } from "@/components/app/kpi";
-import { useAnalytics } from "@/lib/api-client";
+import { useDashboard } from "@/lib/api-client";
 
 const CREDITS = [
   { date: "2026-09-01", minutes: 50000, note: "Annual plan — Q3 allocation" },
@@ -15,7 +15,7 @@ const CREDITS = [
 
 /** Mockup billing: minute balance and usage, derived from analyzed conversation volume. */
 export default function BillingPage() {
-  const { data: a } = useAnalytics({ dimension: "org" });
+  const { data: a } = useDashboard({ dimension: "org" });
   const minutesUsed = a ? Math.round((a.kpis.volume.value * a.kpis.avgDurationSec.value) / 60) : 0;
   const total = CREDITS.reduce((s, c) => s + c.minutes, 0);
   const balance = total - minutesUsed * 2.1; // earlier periods consumed too

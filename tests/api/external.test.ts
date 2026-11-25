@@ -1,10 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import fs from "node:fs/promises";
-import http from "node:http";
-import type { AddressInfo } from "node:net";
-import path from "node:path";
 import { eq } from "drizzle-orm";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { GET as listAgents, POST as createAgent } from "@/app/api/external/v1/agents/route";
 import { DELETE as deleteAgent, PATCH as patchAgent } from "@/app/api/external/v1/agents/[id]/route";
 import { POST as createCall } from "@/app/api/external/v1/calls/route";
@@ -13,12 +9,13 @@ import { GET as getAnalysis } from "@/app/api/external/v1/calls/[callId]/analysi
 import { GET as listCategories } from "@/app/api/external/v1/categories/route";
 import { GET as getCategory } from "@/app/api/external/v1/categories/[categoryId]/route";
 import { PUT as putUpload } from "@/app/api/external/v1/uploads/[key]/route";
-import { GET as listKeys, POST as createKey } from "@/app/api/v1/integrations/keys/route";
-import { DELETE as revokeKey } from "@/app/api/v1/integrations/keys/[id]/route";
-import { GET as listHooks, POST as createHook } from "@/app/api/v1/integrations/webhooks/route";
+import { GET as listHooks, POST as createHook } from "@/app/api/internal/integrations/webhooks/route";
 import { db, schema } from "@/server/db/client";
+import { generateApiKey } from "@/server/external/auth";
 import { parseCallDate } from "@/server/external/dates";
-import { UPLOAD_DIR } from "@/server/services/ingest";
+import { readUpload } from "@/server/external/uploads";
+import { startWorker, stopWorker } from "@/server/pipeline/worker";
+import { localServer, toneMp3, waitFor } from "./helpers";
 
 const BASE = "http://test/api/external/v1";
 const AUTH = { authorization: "Bearer test_key" };
@@ -32,22 +29,29 @@ const none = undefined as never;
 const json = async (r: Response) => ({ status: r.status, body: await r.json() });
 const uniq = () => Math.random().toString(36).slice(2, 8);
 const created: string[] = [];
+const audio = toneMp3(25);
+let server: Awaited<ReturnType<typeof localServer>>;
 
+beforeAll(async () => {
+  await startWorker();
+  server = await localServer(audio);
+}, 60_000);
 afterAll(async () => {
-  await Promise.all(created.map((f) => fs.rm(path.join(UPLOAD_DIR, f), { force: true })));
+  await stopWorker();
+  await server.close();
 });
 
 /** presigned URL + PUT, as in the quickstart; returns the publicUrl */
 async function upload(filename = "demo-call.mp3") {
   const { key, presignedUrl, publicUrl } = (await json(await presign(req("/calls/presigned-url", { method: "POST", json: { filename, contentType: "audio/mpeg" } }), none))).body.data;
   created.push(key);
-  await putUpload(new Request(presignedUrl, { method: "PUT", body: new Uint8Array(512).fill(1) }), { params: Promise.resolve({ key }) });
+  await putUpload(new Request(presignedUrl, { method: "PUT", body: new Uint8Array(audio) }), { params: Promise.resolve({ key }) });
   return publicUrl as string;
 }
 
+/** Polls the analysis endpoint until the pipeline finishes, as an integrator would. */
 async function finish(callId: string) {
-  await db.update(schema.calls).set({ readyAt: new Date(Date.now() - 1000) }).where(eq(schema.calls.id, callId));
-  return json(await getAnalysis(req(`/calls/${callId}/analysis`), { params: Promise.resolve({ callId }) }));
+  return waitFor(async () => json(await getAnalysis(req(`/calls/${callId}/analysis`), { params: Promise.resolve({ callId }) })), (r) => r.body.data.status !== "processing");
 }
 
 describe("auth", () => {
@@ -58,18 +62,15 @@ describe("auth", () => {
   });
 
   it("accepts keys created in Integrations until they are revoked", async () => {
-    const k = await json(await createKey(new Request("http://test/api/v1/integrations/keys", { method: "POST", headers: { "x-api-key": "test_key" }, body: JSON.stringify({ name: "CRM" }) }), none));
-    expect(k.status).toBe(201);
-    expect(k.body.data.key).toMatch(/^vb_live_/);
-    expect(k.body.data.prefix).toBe(k.body.data.key.slice(0, 12));
-    const key = k.body.data.key as string;
-    expect((await listCategories(req("/categories", { key: { "x-api-key": key } }), none)).status).toBe(200);
-    const keys = (await json(await listKeys(new Request("http://test/api/v1/integrations/keys", { headers: { authorization: `Bearer ${key}` } }), none))).body.data;
-    const row = keys.find((x: { id: string }) => x.id === k.body.data.id);
+    const g = generateApiKey();
+    const id = `key_${uniq()}`;
+    await db.insert(schema.apiKeys).values({ id, orgId: "org_kaveri", name: "CRM", prefix: g.prefix, hash: g.hash });
+    expect(g.key).toMatch(/^vb_live_/);
+    expect((await listCategories(req("/categories", { key: { "x-api-key": g.key } }), none)).status).toBe(200);
+    const [row] = await db.select().from(schema.apiKeys).where(eq(schema.apiKeys.id, id));
     expect(row.lastUsedAt).not.toBeNull();
-    expect(row).not.toHaveProperty("hash");
-    await revokeKey(new Request("http://test", { method: "DELETE", headers: { "x-api-key": "test_key" } }), { params: Promise.resolve({ id: k.body.data.id }) });
-    expect((await json(await listCategories(req("/categories", { key: { "x-api-key": key } }), none))).body).toEqual({ error: "Invalid API key" });
+    await db.update(schema.apiKeys).set({ revokedAt: new Date() }).where(eq(schema.apiKeys.id, id));
+    expect((await json(await listCategories(req("/categories", { key: { "x-api-key": g.key } }), none))).body).toEqual({ error: "Invalid API key" });
   });
 });
 
@@ -88,12 +89,12 @@ describe("quickstart", () => {
     created.push(key);
     expect(publicUrl).toBe(`http://test/uploads/${key}`);
 
-    const bytes = new Uint8Array(2048).fill(7);
+    const bytes = new Uint8Array(audio);
     const bad = await putUpload(new Request(presignedUrl.replace(/sig=\w+/, "sig=" + "0".repeat(64)), { method: "PUT", body: bytes }), { params: Promise.resolve({ key }) });
     expect(bad.status).toBe(403);
     const put = await putUpload(new Request(presignedUrl, { method: "PUT", headers: { "content-type": "audio/mpeg" }, body: bytes }), { params: Promise.resolve({ key }) });
     expect(put.status).toBe(200);
-    expect((await fs.stat(path.join(UPLOAD_DIR, key))).size).toBe(2048);
+    expect((await readUpload(key))?.length).toBe(audio.length);
 
     const call = await json(await createCall(req("/calls", { method: "POST", json: { memberId: MEMBER_ID, categoryId: "early-bucket", audio_url: publicUrl, udfs: { leadId: "lead_123" } } }), none));
     expect(call.status).toBe(202);
@@ -105,6 +106,7 @@ describe("quickstart", () => {
 
     const done = (await finish(CALL_ID)).body.data;
     expect(done.status).toBe("completed");
+    expect(done.metadata.duration).toBe(25);
     expect(done.metadata).toMatchObject({ audioUrl: publicUrl, udfs: { leadId: "lead_123" } });
     expect(done.metadata.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     const a = done.analysis;
@@ -133,23 +135,17 @@ describe("quickstart", () => {
   });
 
   it("stores the call date, accepts an agent email, and fails remote recordings that can't be ingested", async () => {
-    const r = await json(await createCall(req("/calls", { method: "POST", json: { memberId: "rahul.sharma@kaverifinance.in", categoryId: "early-bucket", audio_url: "http://127.0.0.1:1/missing.mp3", date: "2026-04-09" } }), none));
+    const r = await json(await createCall(req("/calls", { method: "POST", json: { memberId: "rahul.sharma@kaverifinance.in", categoryId: "early-bucket", audio_url: `${server.url}/missing.mp3`, date: "2026-04-09" } }), none));
     expect(r.status).toBe(202);
     const id = r.body.data.callId;
-    const [row] = await db.select().from(schema.calls).where(eq(schema.calls.id, id));
-    expect(row.callAt.toISOString()).toBe("2026-04-09T03:30:00.000Z");
-    // remote ingestion runs fire-and-forget outside a request; wait for it to record the failure
-    for (let i = 0; i < 50; i++) {
-      const [c] = await db.select({ f: schema.calls.failureReason }).from(schema.calls).where(eq(schema.calls.id, id));
-      if (c.f) break;
-      await new Promise((res) => setTimeout(res, 100));
-    }
+    const [row] = await db.select().from(schema.conversations).where(eq(schema.conversations.id, id));
+    expect(row.occurredAt.toISOString()).toBe("2026-04-09T03:30:00.000Z");
     const done = (await finish(id)).body.data;
     expect(done.status).toBe("failed");
     expect(done.analysis).toBeNull();
-    const [failed] = await db.select().from(schema.calls).where(eq(schema.calls.id, id));
-    expect(failed.failureReason).toMatch(/^Unable to ingest recording: /);
-  });
+    const [failed] = await db.select().from(schema.conversations).where(eq(schema.conversations.id, id));
+    expect(failed.failureCode).toBe("audio_forbidden");
+  }, 60_000);
 });
 
 describe("date parsing", () => {
@@ -216,26 +212,18 @@ describe("categories", () => {
 
 describe("webhooks", () => {
   it("delivers a signed call.analysis_complete to a local endpoint and logs it", async () => {
-    const received: { headers: http.IncomingHttpHeaders; body: string }[] = [];
-    const server = http.createServer((rq, rs) => {
-      let body = "";
-      rq.on("data", (c) => (body += c));
-      rq.on("end", () => {
-        received.push({ headers: rq.headers, body });
-        rs.writeHead(200, { "content-type": "application/json" }).end('{"ok":true}');
-      });
-    });
-    await new Promise<void>((res) => server.listen(0, "127.0.0.1", res));
-    const port = (server.address() as AddressInfo).port;
+    const received = server.received;
+    received.length = 0;
     try {
-      const hook = await json(await createHook(new Request("http://test/api/v1/integrations/webhooks", { method: "POST", headers: { "x-api-key": "test_key" }, body: JSON.stringify({ url: `http://127.0.0.1:${port}/hook`, events: ["call.analysis_complete"] }) }), none));
+      const hook = await json(await createHook(new Request("http://test/api/internal/integrations/webhooks", { method: "POST", headers: { "x-api-key": "test_key" }, body: JSON.stringify({ url: `${server.url}/hook`, events: ["call.analysis_complete"] }) }), none));
       expect(hook.status).toBe(201);
-      const secret = hook.body.data.secret as string;
+      const secret = hook.body.secret as string;
 
       const call = await json(await createCall(req("/calls", { method: "POST", json: { memberId: "rahul.sharma@kaverifinance.in", categoryId: "early-bucket", audio_url: await upload(), udfs: { source: "test" } } }), none));
       const callId = call.body.data.callId;
       expect((await finish(callId)).body.data.status).toBe("completed");
 
+      await waitFor(async () => received.length, (n) => n >= 1, 20_000);
       expect(received).toHaveLength(1);
       const { headers, body } = received[0];
       expect(headers["x-insights-event"]).toBe("call.analysis_complete");
@@ -246,18 +234,17 @@ describe("webhooks", () => {
       const payload = JSON.parse(body);
       expect(payload.id).toBe(headers["x-insights-delivery-id"]);
       expect(payload.type).toBe("call.analysis_complete");
-      expect(payload.data).toMatchObject({ callId, organizationId: "org_kaveri", memberId: "u_rahul_sharma", categoryId: "early-bucket", udfs: { source: "test" }, uploadedBy: "u_admin" });
+      expect(payload.data).toMatchObject({ callId, organizationId: "org_kaveri", memberId: "per_rahul_sharma", categoryId: "early-bucket", udfs: { source: "test" } });
       expect(payload.data.audioUrl).toMatch(/^https?:\/\/.+\/uploads\/.+\.mp3$/);
       expect(payload.data.transcript[0]).toEqual({ start: expect.any(Number), end: expect.any(Number), speaker: expect.any(String), content: expect.any(String) });
       expect(payload.data.analytics[0].criterias[0]).toEqual({ criteriaId: expect.any(String), question: expect.any(String), result: expect.anything(), rationale: expect.any(String) });
       expect(Array.isArray(payload.data.tags)).toBe(true);
 
-      const hooks = (await json(await listHooks(new Request("http://test/api/v1/integrations/webhooks", { headers: { "x-api-key": "test_key" } }), none))).body.data;
-      const h = hooks.find((x: { id: string }) => x.id === hook.body.data.id);
+      const hooks = (await json(await listHooks(new Request("http://test/api/internal/integrations/webhooks", { headers: { "x-api-key": "test_key" } }), none))).body;
+      const h = hooks.find((x: { id: string }) => x.id === hook.body.id);
       expect(h).not.toHaveProperty("secret");
       expect(h.deliveries[0]).toMatchObject({ event: "call.analysis_complete", statusCode: 200, responseBody: '{"ok":true}', error: null });
     } finally {
-      server.close();
       await db.delete(schema.webhooks);
     }
   });

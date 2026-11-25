@@ -4,16 +4,17 @@ import { redirect } from "next/navigation";
 import { AppSidebar } from "@/components/app/app-sidebar";
 import { TopBar } from "@/components/app/top-bar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { DEMO_COOKIE } from "@/server/auth";
+import { demoLogin, readSession, SESSION_COOKIE } from "@/server/session";
 import { db, schema } from "@/server/db/client";
 
-const DEMO_SWITCH = ["u_admin", "u_mgr_south", "u_mgr_north", "u_karthik_subramanian", "u_amit_chauhan", "u_kavya_hegde"];
+const DEMO_SWITCH = ["u_admin", "u_mgr_south", "u_mgr_north", "per_karthik_subramanian", "per_amit_chauhan", "per_kavya_hegde"];
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
-  const userId = (await cookies()).get(DEMO_COOKIE)?.value;
+  const userId = readSession((await cookies()).get(SESSION_COOKIE)?.value);
   const me = userId ? (await db.select().from(schema.users).where(eq(schema.users.id, userId)))[0] : undefined;
-  if (!me) redirect("/login");
-  const demoUsers = await db.select({ id: schema.users.id, name: schema.users.name, role: schema.users.role }).from(schema.users).where(inArray(schema.users.id, DEMO_SWITCH));
+  if (!me || me.deactivatedAt) redirect("/login");
+  // the user switcher is a demo affordance only
+  const demoUsers = demoLogin() ? await db.select({ id: schema.users.id, name: schema.users.name, role: schema.users.role }).from(schema.users).where(inArray(schema.users.id, DEMO_SWITCH)) : [];
   return (
     <SidebarProvider>
       <AppSidebar me={me} demoUsers={demoUsers.sort((a, b) => DEMO_SWITCH.indexOf(a.id) - DEMO_SWITCH.indexOf(b.id))} />

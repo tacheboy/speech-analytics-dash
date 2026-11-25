@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+storage
+.test-storage
+eval/g2
+eval/runs
+test-results
+playwright-report
+.env
+.env.*
+!.env.example
+*.log

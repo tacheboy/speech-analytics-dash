@@ -1,0 +1,49 @@
+# Single box: the whole product on one machine with Docker.
+#   cp .env.example .env   # set APP_SECRET, POSTGRES_PASSWORD, provider keys, PUBLIC_BASE_URL
+#   docker compose -f compose.prod.yml up -d --build
+#   docker compose -f compose.prod.yml exec app npm run admin -- org:create --name "Acme" --admin-email you@acme.in --starter
+# Add `--profile https` with DOMAIN set for automatic HTTPS via Caddy.
+# Demo instead: SEED_DEMO=true DEMO_LOGIN=true docker compose -f compose.prod.yml up -d --build
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      ROLE: all
+      SEED_DEMO: ${SEED_DEMO:-false}
+      DEMO_LOGIN: ${DEMO_LOGIN:-false}
+      DATABASE_URL: postgres://insights:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/insights
+      DATA_DIR: /data
+    ports: ["${PORT:-3000}:3000"]
+    volumes: ["audio:/data"]
+    depends_on:
+      db: { condition: service_healthy }
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: insights
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: insights
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "insights", "-d", "insights"]
+      interval: 5s
+      retries: 20
+
+  # optional: automatic HTTPS for DOMAIN (docker compose --profile https up -d)
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["https"]
+    restart: unless-stopped
+    command: caddy reverse-proxy --from ${DOMAIN:-localhost} --to app:3000
+    ports: ["80:80", "443:443"]
+    volumes: ["caddy:/data"]
+    depends_on: [app]
+
+volumes:
+  pgdata:
+  audio:
+  caddy:

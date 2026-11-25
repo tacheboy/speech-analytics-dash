@@ -1,17 +1,16 @@
-import path from "node:path";
 import { and, asc, eq, isNull, ne, or, sql } from "drizzle-orm";
-import { after } from "next/server";
 import { z } from "zod";
+import { ApiError, type Actor } from "@/server/auth";
 import { db, schema } from "@/server/db/client";
-import { advancePipeline } from "@/server/pipeline/advance";
-import { insertCall, type IngestAudio } from "@/server/services/ingest";
+import { newId } from "@/server/ids";
+import { createConversation } from "@/server/services/conversations";
 import type { ExternalCaller } from "./auth";
 import { parseCallDate } from "./dates";
 import { ExternalError } from "./errors";
 import { analysisBody, categoryDetail, categorySummary, loadCall } from "./present";
-import { audioExt, MAX_UPLOAD_BYTES, presign, storedFile, writeUpload } from "./uploads";
+import { audioExt, presign } from "./uploads";
 
-const { users, categories, calls } = schema;
+const { users, categories } = schema;
 const email = z.string().trim().toLowerCase().pipe(z.email("Invalid email"));
 const name = z.string().trim().min(1, "name is required").max(200);
 
@@ -33,9 +32,9 @@ export async function listAgents(c: ExternalCaller) {
 export async function createAgent(c: ExternalCaller, raw: unknown) {
   const body = z.object({ name, email }).parse(raw);
   if (await emailTaken(body.email)) throw new ExternalError(409, "Email already in use");
-  const id = `u_${crypto.randomUUID().replaceAll("-", "").slice(0, 12)}`;
+  const id = newId("per");
   try {
-    await db.insert(users).values({ id, orgId: c.orgId, teamId: null, name: body.name, email: body.email, role: "member" });
+    await db.insert(users).values({ id, orgId: c.orgId, cohortId: null, name: body.name, email: body.email, role: "member" });
   } catch (e) {
     if ((e as { code?: string; cause?: { code?: string } }).cause?.code === "23505" || (e as { code?: string }).code === "23505") throw new ExternalError(409, "Email already in use");
     throw e;
@@ -49,7 +48,7 @@ export async function updateAgent(c: ExternalCaller, id: string, raw: unknown) {
   if (!agent) throw new ExternalError(404, "Agent not found");
   if (body.email && (await emailTaken(body.email, id))) throw new ExternalError(409, "Email already in use");
   const patch = { ...(body.name ? { name: body.name } : {}), ...(body.email ? { email: body.email } : {}) };
-  const [u] = Object.keys(patch).length ? await db.update(users).set(patch).where(eq(users.id, id)).returning() : [agent];
+  const [u] = Object.keys(patch).length ? await db.update(users).set({ ...patch, updatedAt: new Date() }).where(eq(users.id, id)).returning() : [agent];
   return { data: { memberId: u.id, userId: u.id, name: u.name, email: u.email, image: null } };
 }
 
@@ -77,85 +76,42 @@ const createCallBody = z.object({
   date: z.string().nullish(),
 });
 
-/** Our own `/uploads/<file>` URL (any host, so a localhost publicUrl still resolves behind a proxy). */
-function ownUploadName(url: URL, origin: string) {
-  const m = url.pathname.match(/^\/uploads\/([^/]+)$/);
-  if (!m) return null;
-  const sameHost = url.origin === origin || ["localhost", "127.0.0.1"].includes(url.hostname) || url.host === new URL(origin).host;
-  return sameHost ? decodeURIComponent(m[1]) : null;
+/** The adapter acts as the org's admin and hands off to the platform's createConversation. */
+async function adminActor(c: ExternalCaller): Promise<Actor> {
+  const admin = c.userId ? (await db.select().from(users).where(eq(users.id, c.userId)))[0] : null;
+  if (!admin) throw new ExternalError(401, "Invalid API key");
+  return { userId: admin.id, orgId: c.orgId, role: "admin", name: admin.name, keyId: c.keyId, scope: "write", viaKey: true };
 }
 
 export async function createExternalCall(c: ExternalCaller, raw: unknown, origin: string) {
   const body = createCallBody.parse(raw);
-  let url: URL;
   try {
-    url = new URL(body.audio_url);
-    if (!["http:", "https:"].includes(url.protocol)) throw new Error();
+    const u = new URL(body.audio_url);
+    if (!["http:", "https:"].includes(u.protocol)) throw new Error();
   } catch {
     throw new ExternalError(400, "audio_url must be an absolute http(s) URL");
   }
-  let callAt: Date | undefined;
+  let occurredAt: string | undefined;
   if (body.date) {
     const d = parseCallDate(body.date);
     if (!d) throw new ExternalError(400, "Invalid date: use YYYY-MM-DD, ISO-8601, YYYY/MM/DD, DD-MM-YYYY or DD/MM/YYYY (optionally with HH:mm)");
-    callAt = d;
+    occurredAt = d.toISOString();
   }
-
-  const [category] = await db.select().from(categories).where(and(eq(categories.id, body.categoryId), eq(categories.orgId, c.orgId)));
-  if (!category) throw new ExternalError(404, "Category not found");
-  const [agent] = await db.select().from(users).where(and(
+  const [agent] = await db.select({ id: users.id }).from(users).where(and(
     or(eq(users.id, body.memberId), sql`lower(${users.email}) = ${body.memberId.toLowerCase()}`),
     eq(users.orgId, c.orgId), eq(users.role, "member"), isNull(users.deactivatedAt),
   ));
   if (!agent) throw new ExternalError(404, "Agent not found");
-
-  const id = `call_${crypto.randomUUID().slice(0, 8)}`;
-  const own = ownUploadName(url, origin);
-  const stored = own ? await storedFile(own) : null;
-  const audio: IngestAudio = own && stored
-    ? { kind: "stored", url: `/uploads/${own}`, fileName: own, empty: stored.size === 0 }
-    : { kind: "url", url: body.audio_url };
-  const res = await insertCall({ id, orgId: c.orgId, category, agent, uploadedBy: c.userId, audio, callAt, udfs: body.udfs ?? null });
-  if (audio.kind === "url") runAfterResponse(() => ingestRemote(id, body.audio_url));
-  return { data: { callId: res.callId, status: "processing" as const } };
-}
-
-function runAfterResponse(work: () => Promise<void>) {
   try {
-    after(work);
-  } catch {
-    void work(); // outside a request (tests/scripts): fire and forget
-  }
-}
-
-/**
- * Downloads a remote recording into storage/uploads. On failure the call keeps "processing" with a
- * failure reason, and lazy completion turns it into `failed` + `call.ingestion_failed`.
- */
-export async function ingestRemote(callId: string, audioUrl: string) {
-  try {
-    const res = await fetch(audioUrl, { signal: AbortSignal.timeout(30_000) });
-    if (!res.ok) throw new Error(`HTTP ${res.status} fetching recording`);
-    const len = Number(res.headers.get("content-length") ?? 0);
-    if (len > MAX_UPLOAD_BYTES) throw new Error("recording is larger than 50 MB");
-    const bytes = new Uint8Array(await res.arrayBuffer());
-    if (!bytes.byteLength) throw new Error("file is empty (0 bytes)");
-    if (bytes.byteLength > MAX_UPLOAD_BYTES) throw new Error("recording is larger than 50 MB");
-    const ext = audioExt(new URL(audioUrl).pathname, res.headers.get("content-type") ?? "");
-    if (!ext) throw new Error(`unsupported content type ${res.headers.get("content-type") ?? "unknown"}`);
-    const file = `${callId}.${ext}`;
-    await writeUpload(file, bytes);
-    // downloaded: analysis can start now (lazy completion picks it up a few seconds later)
-    await db.update(calls).set({ audioUrl: `/uploads/${file}`, fileName: path.basename(new URL(audioUrl).pathname) || file, ingestPending: false, readyAt: new Date(Date.now() + 6000) }).where(eq(calls.id, callId));
+    const { conversation } = await createConversation(await adminActor(c), { categoryId: body.categoryId, personId: agent.id, audioUrl: body.audio_url, occurredAt, metadata: body.udfs ?? undefined }, origin);
+    return { data: { callId: conversation.id, status: "processing" as const } };
   } catch (e) {
-    const err = e as Error & { cause?: { code?: string } };
-    const reason = err.name === "TimeoutError" ? "download timed out" : err.cause?.code ?? err.message;
-    await db.update(calls).set({ failureReason: `Unable to ingest recording: ${reason}`, ingestPending: false }).where(and(eq(calls.id, callId), eq(calls.status, "processing")));
+    if (e instanceof ApiError) throw new ExternalError(e.status, e.code === "category_not_found" ? "Category not found" : e.message);
+    throw e;
   }
 }
 
 export async function getAnalysis(c: ExternalCaller, callId: string, origin: string) {
-  await advancePipeline(c.orgId);
   const l = await loadCall(c.orgId, callId);
   if (!l) throw new ExternalError(404, "Call not found");
   return analysisBody(l, origin);

@@ -16,7 +16,7 @@ export default function UsersPage() {
   const [invites, setInvites] = useState<{ email: string; role: string }[]>([{ email: "qa.lead@kaverifinance.in", role: "manager" }]);
   const [email, setEmail] = useState("");
   const [open, setOpen] = useState(false);
-  const users = [...(ws?.staff ?? []), ...(ws?.agents ?? [])];
+  const users = [...(ws?.staff ?? []), ...(ws?.people ?? [])];
   return (
     <>
       <PageHeader title="Users" description="Who can access the workspace and what they can do." actions={<><DemoBadge />
@@ -39,7 +39,7 @@ export default function UsersPage() {
                   <TableRow key={u.id}>
                     <TableCell className="py-3 pl-5"><div className="flex items-center gap-3"><AgentAvatar name={u.name} size="sm" /><div><p className="font-medium">{u.name}</p><p className="text-xs text-muted-foreground">{u.email}</p></div></div></TableCell>
                     <TableCell><Pill tone={u.role === "admin" ? "primary" : u.role === "manager" ? "info" : "muted"} className="capitalize">{u.role}</Pill></TableCell>
-                    <TableCell className="text-muted-foreground">{ws?.teams.find((t) => t.id === u.teamId)?.name ?? "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">{ws?.cohorts.find((t) => t.id === u.cohortId)?.name ?? "—"}</TableCell>
                     <TableCell className="pr-5 text-muted-foreground tabular">{fmtDate(u.createdAt)}</TableCell>
                   </TableRow>
                 ))}

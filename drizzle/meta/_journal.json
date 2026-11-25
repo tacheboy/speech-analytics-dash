@@ -36,6 +36,20 @@
       "when": 1795576105823,
       "tag": "0004_rename_agent_role_to_member",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795610919530,
+      "tag": "0005_platform_api_and_pipeline",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795613725691,
+      "tag": "0006_user_passwords",
+      "breakpoints": true
     }
   ]
 }

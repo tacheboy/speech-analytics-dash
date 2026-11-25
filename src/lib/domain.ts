@@ -66,7 +66,7 @@ export type Outcome = z.infer<typeof outcomeSchema>;
 
 /* ---------- Transcript + analysis ---------- */
 
-export const LANGS = ["en", "ta", "kn", "hi"] as const;
+export const LANGS = ["en", "ta", "kn", "hi", "te", "ml", "mr", "bn", "gu", "pa", "or"] as const;
 export type Lang = (typeof LANGS)[number];
 export type Speaker = "agent" | "customer";
 
@@ -92,6 +92,7 @@ export type CallMetrics = {
   silencePct: number;
   questionsAsked: number;
   languageMix: Partial<Record<Lang, number>>; // share of speaking time, 0..1
+  interruptions?: number; // turns that start before the other side finished
 };
 
 /* ---------- Authored call templates (content/call-templates/*.json) ---------- */
@@ -159,4 +160,4 @@ export const DURATION_BUCKETS = {
   gt10: { label: "10+ min", min: 600, max: 1e9 },
 } as const;
 
-export const LANG_LABEL: Record<Lang, string> = { en: "English", ta: "Tamil", kn: "Kannada", hi: "Hindi" };
+export const LANG_LABEL: Record<Lang, string> = { en: "English", ta: "Tamil", kn: "Kannada", hi: "Hindi", te: "Telugu", ml: "Malayalam", mr: "Marathi", bn: "Bengali", gu: "Gujarati", pa: "Punjabi", or: "Odia" };

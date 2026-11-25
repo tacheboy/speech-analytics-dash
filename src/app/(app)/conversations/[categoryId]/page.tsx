@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/app/bits";
-import { CallsTable } from "@/components/app/calls-table";
+import { ConversationsTable } from "@/components/app/conversations-table";
 import { UploadDialog } from "@/components/app/upload-dialog";
 import { useWorkspace } from "@/lib/api-client";
 
@@ -28,7 +28,7 @@ export default function CategoryCallsPage() {
           </>
         )}
       />
-      <CallsTable categoryId={categoryId} />
+      <ConversationsTable categoryId={categoryId} />
     </>
   );
 }

@@ -21,12 +21,12 @@ export function readApiKey(req: Request): string | null {
 }
 
 /** Resolves a key to its org (the env demo key maps to the seeded org). Updates `lastUsedAt`. */
-export async function resolveApiKey(key: string): Promise<{ orgId: string; keyId: string | null; createdBy: string | null } | null> {
-  if (process.env.DEMO_API_KEY && key === process.env.DEMO_API_KEY) return { orgId: DEMO_ORG_ID, keyId: null, createdBy: null };
+export async function resolveApiKey(key: string): Promise<{ orgId: string; keyId: string | null; createdBy: string | null; scope: "read" | "write" } | null> {
+  if (process.env.DEMO_API_KEY && key === process.env.DEMO_API_KEY) return { orgId: DEMO_ORG_ID, keyId: null, createdBy: null, scope: "write" };
   const [row] = await db.select().from(apiKeys).where(and(eq(apiKeys.hash, hashKey(key)), isNull(apiKeys.revokedAt)));
   if (!row) return null;
-  await db.update(apiKeys).set({ lastUsedAt: new Date() }).where(eq(apiKeys.id, row.id));
-  return { orgId: row.orgId, keyId: row.id, createdBy: row.createdBy };
+  if (!row.lastUsedAt || Date.now() - row.lastUsedAt.getTime() > 60_000) await db.update(apiKeys).set({ lastUsedAt: new Date() }).where(eq(apiKeys.id, row.id));
+  return { orgId: row.orgId, keyId: row.id, createdBy: row.createdBy, scope: row.scope };
 }
 
 export async function firstAdmin(orgId: string) {
@@ -36,7 +36,7 @@ export async function firstAdmin(orgId: string) {
 
 export type ExternalCaller = { orgId: string; keyId: string | null; userId: string | null };
 
-/** External API auth: 401 `{ error: "Missing API key" | "Invalid API key" }`. */
+/** External (Voxxi-compatible) API auth: 401 `{ error: "Missing API key" | "Invalid API key" }`. */
 export async function authenticate(req: Request): Promise<ExternalCaller> {
   const key = readApiKey(req);
   if (!key) throw new ExternalError(401, "Missing API key");

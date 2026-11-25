@@ -12,6 +12,6 @@ export default defineConfig({
     command: "npx next start --port 3200",
     url: "http://localhost:3200/login",
     reuseExistingServer: false,
-    env: { DATABASE_URL: TEST_DB, DEMO_API_KEY: "test_key" },
+    env: { DATABASE_URL: TEST_DB, DEMO_API_KEY: "test_key", DEMO_LOGIN: "true", ALLOW_HTTP_COOKIES: "true" },
   },
 });

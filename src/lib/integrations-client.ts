@@ -1,21 +1,21 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ApiKeyRow, DeliveryRow, WebhookRow } from "@/server/external/manage";
+import type { ApiKeyRow, DeliveryRow, WebhookRow } from "@/server/services/integrations";
 
 /** Serialised over JSON: dates arrive as strings. */
 type Json<T> = { [K in keyof T]: T[K] extends Date ? string : T[K] extends Date | null ? string | null : T[K] extends (infer U)[] ? Json<U>[] : T[K] };
 export type ApiKey = Json<ApiKeyRow>;
 export type Delivery = Json<DeliveryRow>;
 export type WebhookEndpoint = Omit<Json<WebhookRow>, "deliveries"> & { deliveries: Delivery[] };
-export type CreatedKey = { id: string; name: string; prefix: string; createdAt: string; key: string };
+export type CreatedKey = { id: string; name: string; scope: "read" | "write"; prefix: string; createdAt: string; key: string };
 export type CreatedWebhook = { id: string; url: string; events: string[]; active: boolean; createdAt: string; secret: string };
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`/api/v1/integrations${path}`, { ...init, headers: init?.body ? { "content-type": "application/json" } : undefined });
-  const body = await res.json().catch(() => ({}));
+  const res = await fetch(`/api/internal/integrations${path}`, { ...init, headers: init?.body ? { "content-type": "application/json" } : undefined });
+  const body = res.status === 204 ? null : await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body?.error?.message ?? res.statusText);
-  return body.data as T;
+  return body as T;
 }
 
 const KEYS = ["integrations", "keys"];
@@ -26,7 +26,7 @@ export const useApiKeys = () => useQuery({ queryKey: KEYS, queryFn: () => api<Ap
 export function useCreateApiKey() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (name: string) => api<CreatedKey>("/keys", { method: "POST", body: JSON.stringify({ name }) }),
+    mutationFn: (input: { name: string; scope: "read" | "write" }) => api<CreatedKey>("/keys", { method: "POST", body: JSON.stringify(input) }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEYS }),
   });
 }

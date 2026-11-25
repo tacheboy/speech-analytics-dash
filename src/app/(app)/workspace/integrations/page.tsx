@@ -19,24 +19,30 @@ import {
 import { cn } from "@/lib/utils";
 
 const EVENTS = [
-  ["call.analysis_complete", "Analysis finished"],
-  ["call.analysis_failed", "Analysis failed"],
-  ["call.ingestion_failed", "Recording could not be ingested"],
+  ["conversation.completed", "Analysis finished: the full conversation object"],
+  ["conversation.failed", "Failed or skipped, with a typed failure code"],
+  ["conversation.updated", "Audited, re-analysed or erased"],
+] as const;
+const LEGACY_EVENTS = [
+  ["call.analysis_complete", "Voxxi-compatible: analysis finished"],
+  ["call.analysis_failed", "Voxxi-compatible: analysis failed"],
+  ["call.ingestion_failed", "Voxxi-compatible: recording could not be ingested"],
 ] as const;
 
 const ENDPOINTS = [
-  ["GET", "/agents", "List active agents"],
-  ["POST", "/agents", "Create an agent { name, email } → 201"],
-  ["PATCH", "/agents/{id}", "Update name and/or email"],
-  ["DELETE", "/agents/{id}", "Remove an agent (call history is kept)"],
-  ["POST", "/calls/presigned-url", "Signed upload URL { filename, contentType }"],
-  ["POST", "/calls", "{ memberId, categoryId, audio_url, udfs?, date? } → 202"],
-  ["GET", "/calls/{callId}/analysis", "Status, scored sections, extractions, metadata"],
-  ["GET", "/categories", "Call categories"],
-  ["GET", "/categories/{categoryId}", "Outcomes, rubric, extraction fields, targeting, tags"],
+  ["POST", "/conversations", "Submit a recording { audioUrl, categoryId, person, externalId } → 202"],
+  ["GET", "/conversations/{id}", "The full object: scorecard, outcome, extractions, transcript (ext:<id> works too)"],
+  ["GET", "/conversations", "List, filter, and sync with updatedSince"],
+  ["POST", "/uploads", "Presigned PUT for your own files"],
+  ["PATCH", "/conversations/{id}/scorecard", "Human audit: overrides, outcome, manual tags"],
+  ["POST", "/conversations/{id}/analyze", "Re-score, or dry-run a draft rubric"],
+  ["DELETE", "/conversations/{id}", "Erasure (a tombstone stays for sync)"],
+  ["GET", "/analytics", "metrics × groupBy aggregates"],
+  ["GET · PUT", "/categories/{id}", "Rubrics as config; each PUT publishes a version"],
+  ["GET · POST", "/people · /cohorts · /webhooks", "Supporting resources; PUT /tags/{slug}"],
 ] as const;
 
-const METHOD_TONE = { GET: "info", POST: "success", PATCH: "warning", DELETE: "danger" } as const;
+const METHOD_TONE: Record<string, "info" | "success" | "warning" | "danger" | "primary"> = { GET: "info", POST: "success", PATCH: "warning", DELETE: "danger" };
 
 const noop = () => () => {};
 /** window.location.origin on the client, "" during SSR. */
@@ -73,11 +79,12 @@ function ConfirmButton({ label, confirm, onConfirm, disabled }: { label: React.R
 function CreateKeyDialog() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [scope, setScope] = useState<"read" | "write">("write");
   const [created, setCreated] = useState<CreatedKey | null>(null);
   const create = useCreateApiKey();
   const reset = (o: boolean) => {
     setOpen(o);
-    if (!o) { setName(""); setCreated(null); }
+    if (!o) { setName(""); setScope("write"); setCreated(null); }
   };
   return (
     <Dialog open={open} onOpenChange={reset}>
@@ -85,21 +92,32 @@ function CreateKeyDialog() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{created ? "Copy your API key" : "Create an API key"}</DialogTitle>
-          <DialogDescription>{created ? "This is the only time the full key is shown. Store it somewhere safe." : "Keys authenticate the external API for this organization."}</DialogDescription>
+          <DialogDescription>{created ? "This is the only time the full key is shown. Store it somewhere safe." : "Keys authenticate the platform API (and the Voxxi-compatible API) for this organization."}</DialogDescription>
         </DialogHeader>
         {created ? (
           <CopyField value={created.key} label="API key" />
         ) : (
-          <div className="grid gap-1.5">
-            <Label htmlFor="key-name">Name</Label>
-            <Input id="key-name" placeholder="e.g. Dialer integration" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+          <div className="grid gap-4">
+            <div className="grid gap-1.5">
+              <Label htmlFor="key-name">Name</Label>
+              <Input id="key-name" placeholder="e.g. Dialer integration" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+            </div>
+            <fieldset className="grid gap-2">
+              <legend className="mb-1 text-sm font-medium">Access</legend>
+              {([["write", "Read and write", "Dialers and CRMs that submit conversations"], ["read", "Read only", "BI and warehouse syncs"]] as const).map(([v, l, d]) => (
+                <label key={v} className="flex items-start gap-2.5 text-sm">
+                  <input type="radio" name="scope" className="mt-1 accent-primary" checked={scope === v} onChange={() => setScope(v)} />
+                  <span>{l}<span className="block text-xs text-muted-foreground">{d}</span></span>
+                </label>
+              ))}
+            </fieldset>
           </div>
         )}
         <DialogFooter>
           {created ? (
             <Button onClick={() => reset(false)}>Done</Button>
           ) : (
-            <Button disabled={!name.trim() || create.isPending} onClick={() => create.mutate(name.trim(), { onSuccess: setCreated, onError: (e) => toast.error(e.message) })}>
+            <Button disabled={!name.trim() || create.isPending} onClick={() => create.mutate({ name: name.trim(), scope }, { onSuccess: setCreated, onError: (e) => toast.error(e.message) })}>
               Create key
             </Button>
           )}
@@ -125,6 +143,7 @@ function ApiKeysPanel() {
               <TableRow>
                 <TableHead className="pl-5">Name</TableHead>
                 <TableHead>Key</TableHead>
+                <TableHead>Access</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Last used</TableHead>
                 <TableHead className="pr-5 text-right" />
@@ -135,6 +154,7 @@ function ApiKeysPanel() {
                 <TableRow key={k.id} className={cn(k.revokedAt && "opacity-60")}>
                   <TableCell className="pl-5 font-medium">{k.name}{k.createdByName && <span className="block text-xs font-normal text-muted-foreground">by {k.createdByName}</span>}</TableCell>
                   <TableCell><code className="text-xs">{k.prefix}…</code></TableCell>
+                  <TableCell><Pill tone={k.scope === "read" ? "info" : "primary"}>{k.scope === "read" ? "Read only" : "Read & write"}</Pill></TableCell>
                   <TableCell className="text-muted-foreground">{fmtAgo(k.createdAt)}</TableCell>
                   <TableCell className="text-muted-foreground">{k.lastUsedAt ? fmtAgo(k.lastUsedAt) : "Never"}</TableCell>
                   <TableCell className="pr-5 text-right">
@@ -160,12 +180,13 @@ function CreateWebhookDialog() {
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [events, setEvents] = useState<string[]>(EVENTS.map(([e]) => e));
+  const [legacy, setLegacy] = useState(false);
   const [created, setCreated] = useState<CreatedWebhook | null>(null);
   const create = useCreateWebhook();
   const reset = (o: boolean) => {
     setOpen(o);
     if (o) setUrl(`${window.location.origin}/api/dev/webhook-sink`);
-    else { setCreated(null); setEvents(EVENTS.map(([e]) => e)); }
+    else { setCreated(null); setEvents(EVENTS.map(([e]) => e)); setLegacy(false); }
   };
   const validUrl = /^https?:\/\/\S+$/.test(url.trim());
   return (
@@ -175,7 +196,7 @@ function CreateWebhookDialog() {
         <DialogHeader>
           <DialogTitle>{created ? "Copy your signing secret" : "Add a webhook endpoint"}</DialogTitle>
           <DialogDescription>
-            {created ? "Verify X-Insights-Signature with this secret. It is only shown once." : "We POST a signed JSON event to this URL when a call finishes or fails."}
+            {created ? "Verify the webhook-signature header with this secret (any Standard Webhooks library works). It is only shown once." : "We POST a signed JSON event to this URL when a conversation finishes, fails or changes. Failed deliveries are retried with backoff."}
           </DialogDescription>
         </DialogHeader>
         {created ? (
@@ -189,12 +210,13 @@ function CreateWebhookDialog() {
             </div>
             <fieldset className="grid gap-2">
               <legend className="mb-1 text-sm font-medium">Events</legend>
-              {EVENTS.map(([e, d]) => (
+              {[...EVENTS, ...(legacy ? LEGACY_EVENTS : [])].map(([e, d]) => (
                 <label key={e} className="flex items-start gap-2.5 text-sm">
                   <Checkbox className="mt-0.5" checked={events.includes(e)} onCheckedChange={(on) => setEvents((xs) => (on ? [...xs, e] : xs.filter((x) => x !== e)))} />
                   <span><code className="text-xs">{e}</code><span className="block text-xs text-muted-foreground">{d}</span></span>
                 </label>
               ))}
+              {!legacy && <button type="button" className="w-fit text-xs text-muted-foreground underline" onClick={() => setLegacy(true)}>Show Voxxi-compatible events</button>}
             </fieldset>
           </div>
         )}
@@ -248,15 +270,20 @@ function WebhookCard({ h }: { h: WebhookEndpoint }) {
   const test = useTestWebhook();
   return (
     <div className="rounded-xl border">
+      {(h.disabledAt || h.failingSince) && (
+        <p className={cn("border-b px-3 py-2 text-xs", h.disabledAt ? "bg-danger/10 text-danger" : "bg-warning/10 text-warning")}>
+          {h.disabledAt ? `Disabled ${fmtAgo(h.disabledAt)} after failing for 3 days. Fix the endpoint, then switch it back on.` : `Deliveries failing since ${fmtAgo(h.failingSince!)}. It will be disabled after 3 days.`}
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b p-3">
         <div className="min-w-0 flex-1">
           <code className="block truncate text-sm">{h.url}</code>
-          <div className="mt-1.5 flex flex-wrap gap-1.5">{h.events.map((e) => <Pill key={e}>{e}</Pill>)}</div>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">{h.events.map((e: string) => <Pill key={e}>{e}</Pill>)}</div>
         </div>
         <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Switch checked={h.active} disabled={update.isPending}
+          <Switch checked={h.active && !h.disabledAt} disabled={update.isPending}
             onCheckedChange={(active) => update.mutate({ id: h.id, active }, { onError: (e) => toast.error(e.message) })} />
-          {h.active ? "Active" : "Paused"}
+          {h.disabledAt ? "Disabled" : h.active ? "Active" : "Paused"}
         </label>
         <div className="flex items-center gap-1">
           <Button variant="outline" size="sm" className="gap-1.5" disabled={test.isPending}
@@ -275,7 +302,7 @@ function WebhookCard({ h }: { h: WebhookEndpoint }) {
         {h.deliveries.length ? (
           <ul className="divide-y">{h.deliveries.map((d) => <DeliveryItem key={d.id} d={d} />)}</ul>
         ) : (
-          <p className="pb-3 text-sm text-muted-foreground">No deliveries yet. Send a test event or upload a call.</p>
+          <p className="pb-3 text-sm text-muted-foreground">No deliveries yet. Send a test event or upload a conversation.</p>
         )}
       </div>
     </div>
@@ -286,11 +313,11 @@ function WebhooksPanel() {
   const { data: hooks, isLoading } = useWebhooks();
   return (
     <Panel title="Webhooks" icon={<Webhook className="size-4" />} actions={<CreateWebhookDialog />}
-      description={<>Signed with HMAC-SHA256 over <code>{"<timestamp>.<body>"}</code>, sent as <code>X-Insights-Signature: v1=…</code>.</>}>
+      description={<>Signed per the <a className="underline" href="https://www.standardwebhooks.com" target="_blank" rel="noreferrer">Standard Webhooks</a> spec: <code>webhook-id</code>, <code>webhook-timestamp</code>, <code>webhook-signature</code>. At-least-once; dedupe on the event id.</>}>
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
       ) : !hooks?.length ? (
-        <EmptyState icon={<Webhook className="size-6" />} title="No webhook endpoints" description="Add an endpoint to be notified when call analysis completes or fails." />
+        <EmptyState icon={<Webhook className="size-6" />} title="No webhook endpoints" description="Add an endpoint to be notified when a conversation's analysis completes or fails." />
       ) : (
         <div className="space-y-4">{hooks.map((h) => <WebhookCard key={h.id} h={h} />)}</div>
       )}
@@ -302,30 +329,26 @@ function WebhooksPanel() {
 
 function ReferencePanel() {
   const origin = useOrigin();
-  const base = `${origin || "http://localhost:3000"}/api/external/v1/`;
+  const base = `${origin || "http://localhost:3000"}/api/v1`;
   const [copied, setCopied] = useState(false);
   const curl = `export BASE_URL="${base}"
 export API_KEY="<your API key>"
 
-# 1. agent → MEMBER_ID
-curl -X POST "\${BASE_URL}agents" -H "Authorization: Bearer $API_KEY" \\
-  -H "Content-Type: application/json" -d '{"name":"Jane Agent","email":"jane.agent@example.com"}'
-# 2. upload URL → PRESIGNED_URL, PUBLIC_URL
-curl -X POST "\${BASE_URL}calls/presigned-url" -H "Authorization: Bearer $API_KEY" \\
-  -H "Content-Type: application/json" -d '{"filename":"demo-call.mp3","contentType":"audio/mpeg"}'
-# 3. upload the recording
-curl -X PUT "$PRESIGNED_URL" -H "Content-Type: audio/mpeg" --data-binary @demo-call.mp3
-# 4. create the call → CALL_ID
-curl -X POST "\${BASE_URL}calls" -H "Authorization: Bearer $API_KEY" -H "Content-Type: application/json" \\
-  -d '{"memberId":"'"$MEMBER_ID"'","categoryId":"early-bucket","audio_url":"'"$PUBLIC_URL"'"}'
-# 5. poll until data.status is "completed"
-curl "\${BASE_URL}calls/$CALL_ID/analysis" -H "Authorization: Bearer $API_KEY"`;
+# 1. submit a recording (re-posting the same externalId is safe: you get the same conversation back)
+curl -X POST "$BASE_URL/conversations" -H "Authorization: Bearer $API_KEY" -H "Content-Type: application/json" \\
+  -d '{"externalId":"CALL-1001","audioUrl":"https://…/recording.mp3","categoryId":"early-bucket",
+       "person":{"externalId":"AGT-204","name":"Rahul Sharma"},"metadata":{"loanId":"LN-2231"}}'
+# 2. get the result (or receive conversation.completed on your webhook)
+curl "$BASE_URL/conversations/ext:CALL-1001" -H "Authorization: Bearer $API_KEY"
+# 3. nightly sync into your warehouse
+curl "$BASE_URL/conversations?updatedSince=2026-11-24T00:00:00Z&limit=200" -H "Authorization: Bearer $API_KEY"`;
   return (
-    <Panel title="External API" icon={<Code2 className="size-4" />} description={<>Base URL <code>{base}</code> · errors are <code>{'{ "error": "…" }'}</code> with 400 / 401 / 404 / 409.</>}>
+    <Panel title="Platform API" icon={<Code2 className="size-4" />}
+      description={<>Base URL <code>{base}</code> · errors are <code>{'{ "error": { type, code, message, requestId } }'}</code> · <a className="underline" href="/docs/api">full reference</a> · <a className="underline" href="/api/v1/openapi.json">OpenAPI</a></>}>
       <ul className="divide-y text-sm">
         {ENDPOINTS.map(([m, p, d]) => (
-          <li key={m + p} className="grid grid-cols-[4.5rem_1fr] gap-x-3 gap-y-0.5 py-2 md:grid-cols-[4.5rem_16rem_1fr]">
-            <Pill tone={METHOD_TONE[m]} className="w-fit">{m}</Pill>
+          <li key={m + p} className="grid grid-cols-[5.5rem_1fr] gap-x-3 gap-y-0.5 py-2 md:grid-cols-[5.5rem_19rem_1fr]">
+            <Pill tone={METHOD_TONE[m] ?? "primary"} className="w-fit">{m}</Pill>
             <code className="text-xs leading-6">{p}</code>
             <span className="col-span-2 text-muted-foreground md:col-span-1">{d}</span>
           </li>
@@ -339,6 +362,9 @@ curl "\${BASE_URL}calls/$CALL_ID/analysis" -H "Authorization: Bearer $API_KEY"`;
           {copied ? <Check /> : <Copy />}
         </Button>
       </div>
+      <p className="mt-4 text-xs text-muted-foreground">
+        Migrating from Voxxi? A compatible API (same paths and payloads as docs.voxxi.ai) is served at <code>{origin || "http://localhost:3000"}/api/external/v1</code> with the same keys. It is frozen: new features land in the platform API only.
+      </p>
     </Panel>
   );
 }
@@ -346,7 +372,7 @@ curl "\${BASE_URL}calls/$CALL_ID/analysis" -H "Authorization: Bearer $API_KEY"`;
 export default function IntegrationsPage() {
   return (
     <>
-      <PageHeader title="Integrations" description="API keys, webhooks and the external API for your dialer, CRM or BI tools." />
+      <PageHeader title="Integrations" description="API keys, webhooks and the platform API for your dialer, CRM or BI tools." />
       <div className="space-y-5">
         <ApiKeysPanel />
         <WebhooksPanel />

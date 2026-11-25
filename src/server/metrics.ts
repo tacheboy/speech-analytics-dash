@@ -2,7 +2,10 @@ import type { CallMetrics, Lang, TranscriptSegment } from "@/lib/domain";
 import lexicon from "../../content/generated/english-lexicon.json";
 
 const ENGLISH = new Set<string>(lexicon);
-const SCRIPT: [RegExp, Lang][] = [[/[\u0B80-\u0BFF]/, "ta"], [/[\u0C80-\u0CFF]/, "kn"], [/[\u0900-\u097F]/, "hi"]];
+const SCRIPT: [RegExp, Lang][] = [
+  [/[\u0B80-\u0BFF]/, "ta"], [/[\u0C80-\u0CFF]/, "kn"], [/[\u0900-\u097F]/, "hi"], [/[\u0C00-\u0C7F]/, "te"], [/[\u0D00-\u0D7F]/, "ml"],
+  [/[\u0980-\u09FF]/, "bn"], [/[\u0A80-\u0AFF]/, "gu"], [/[\u0A00-\u0A7F]/, "pa"], [/[\u0B00-\u0B7F]/, "or"],
+];
 
 /** Word-level language attribution: native script → that language; Latin words → English if in the lexicon, else the segment's language (romanised speech). */
 export function wordLanguages(text: string, segLang: Lang): Lang[] {
@@ -14,7 +17,7 @@ export function wordLanguages(text: string, segLang: Lang): Lang[] {
 
 /** Deterministic conversation metrics computed from the diarised transcript (no LLM). */
 export function computeMetrics(segments: TranscriptSegment[], durationSec: number): CallMetrics {
-  let agent = 0, speech = 0, longest = 0, run = 0, questions = 0;
+  let agent = 0, speech = 0, longest = 0, run = 0, questions = 0, interruptions = 0;
   const langs: Partial<Record<Lang, number>> = {};
   segments.forEach((s, i) => {
     const d = Math.max(0, s.end - s.start);
@@ -26,6 +29,7 @@ export function computeMetrics(segments: TranscriptSegment[], durationSec: numbe
     const words = wordLanguages(s.text, s.lang);
     for (const l of words) langs[l] = (langs[l] ?? 0) + d / words.length;
     run = i > 0 && segments[i - 1].speaker === s.speaker ? run + d : d;
+    if (i > 0 && segments[i - 1].speaker !== s.speaker && s.start < segments[i - 1].end - 0.3) interruptions++;
     longest = Math.max(longest, run);
   });
   const languageMix: Partial<Record<Lang, number>> = {};
@@ -36,5 +40,6 @@ export function computeMetrics(segments: TranscriptSegment[], durationSec: numbe
     silencePct: durationSec ? +Math.max(0, 1 - speech / durationSec).toFixed(3) : 0,
     questionsAsked: questions,
     languageMix,
+    interruptions,
   };
 }

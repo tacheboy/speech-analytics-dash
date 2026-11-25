@@ -7,8 +7,8 @@ import { useWorkspace } from "@/lib/api-client";
 export default function AgentProfilePage() {
   const { agentId } = useParams<{ agentId: string }>();
   const { data: ws } = useWorkspace();
-  const agent = ws?.agents.find((a) => a.id === agentId);
-  const team = ws?.teams.find((t) => t.id === agent?.teamId);
+  const agent = ws?.people.find((a) => a.id === agentId);
+  const team = ws?.cohorts.find((t) => t.id === agent?.cohortId);
   const self = ws?.me.id === agentId;
   return (
     <AnalyticsView

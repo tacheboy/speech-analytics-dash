@@ -1,6 +1,6 @@
 "use client";
 
-import { AudioWaveform, BarChart3, ChevronsUpDown, ClipboardCheck, CreditCard, KeyRound, LayoutDashboard, LogOut, Phone, Settings, Tags, UserCog, Users, UsersRound } from "lucide-react";
+import { Activity, AudioWaveform, BarChart3, ChevronsUpDown, ClipboardCheck, CreditCard, KeyRound, LayoutDashboard, LogOut, Phone, Settings, Tags, UserCog, Users, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,7 +12,7 @@ import { BRAND } from "@/config/brand";
 import type { Role } from "@/lib/domain";
 
 type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
-type Me = { id: string; name: string; email: string; role: Role };
+type Me = { id: string; name: string; email: string | null; role: Role };
 type DemoUser = { id: string; name: string; role: Role };
 
 export function AppSidebar({ me, demoUsers }: { me: Me; demoUsers: DemoUser[] }) {
@@ -42,11 +42,12 @@ export function AppSidebar({ me, demoUsers }: { me: Me; demoUsers: DemoUser[] })
         { href: "/workspace/tags", label: "Tags", icon: Tags },
         { href: "/workspace/billing", label: "Billing", icon: CreditCard },
         { href: "/workspace/integrations", label: "Integrations", icon: KeyRound },
+        { href: "/workspace/pipeline", label: "Pipeline", icon: Activity },
       ];
   const active = (href: string) => pathname === href || (href !== "/platform" && pathname.startsWith(`${href}/`)) || (href === "/conversations" && pathname.startsWith("/conversations"));
 
-  const switchTo = (id: string) => {
-    signInAs(id);
+  const switchTo = async (id: string) => {
+    await signInAs(id);
     qc.clear();
     router.push("/platform");
     router.refresh();
@@ -115,7 +116,7 @@ export function AppSidebar({ me, demoUsers }: { me: Me; demoUsers: DemoUser[] })
               ))}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => { signOut(); qc.clear(); router.push("/login"); router.refresh(); }}>
+            <DropdownMenuItem onClick={async () => { await signOut(); qc.clear(); router.push("/login"); router.refresh(); }}>
               <LogOut className="size-4" /> Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

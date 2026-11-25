@@ -1,10 +1,16 @@
 import { and, eq, inArray } from "drizzle-orm";
 import type { Rubric } from "@/lib/domain";
 import { db, schema } from "@/server/db/client";
+import type { LegacyEvent } from "@/server/events";
+import { playbackUrl } from "@/server/presenters/conversation";
+import { rubricFor } from "@/server/rubrics";
 import { istDay } from "./dates";
-import { absoluteUrl } from "./http";
 
-const { calls, categories, criterionResults, callTags, tags, users } = schema;
+/**
+ * Presenters for the frozen Voxxi-compatible API (/api/external/v1) and its call.* webhooks.
+ * They map our conversations onto the payloads documented at docs.voxxi.ai; nothing new goes here.
+ */
+const { conversations: calls, categories, criterionResults, conversationTags: callTags, tags, users } = schema;
 type Call = typeof calls.$inferSelect;
 type Category = typeof categories.$inferSelect;
 type CriterionRow = typeof criterionResults.$inferSelect;
@@ -14,19 +20,20 @@ type ExtractionField = Rubric["extractionFields"][number];
 const fieldType = (t: ExtractionField["fieldType"]) => (t === "text" ? "string" : t);
 const enumValues = (f: ExtractionField) => (f.enumOptions?.length ? f.enumOptions.map((o) => o.value) : null);
 
-export const externalStatus = (s: Call["status"]) => (s === "done" ? "completed" : s === "failed" ? "failed" : "processing");
+export const externalStatus = (s: Call["status"]) => (s === "completed" ? "completed" : s === "failed" || s === "skipped" ? "failed" : "processing");
 
 /** Everything needed to render a call for the external API / webhooks. */
 export async function loadCall(orgId: string, callId: string) {
   const [call] = await db.select().from(calls).where(and(eq(calls.id, callId), eq(calls.orgId, orgId)));
-  if (!call) return null;
-  const [[category], results, tagRows, people] = await Promise.all([
+  if (!call || call.deletedAt) return null;
+  const [[cat], results, tagRows, people] = await Promise.all([
     db.select().from(categories).where(eq(categories.id, call.categoryId)),
-    db.select().from(criterionResults).where(eq(criterionResults.callId, callId)),
-    db.select({ id: tags.id, slug: tags.slug, displayName: tags.displayName, description: tags.description }).from(callTags).innerJoin(tags, eq(tags.id, callTags.tagId)).where(eq(callTags.callId, callId)),
-    db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(inArray(users.id, [call.agentId, call.uploadedBy ?? call.agentId])),
+    db.select().from(criterionResults).where(eq(criterionResults.conversationId, callId)),
+    db.select({ id: tags.id, slug: tags.slug, displayName: tags.displayName, description: tags.description }).from(callTags).innerJoin(tags, eq(tags.id, callTags.tagId)).where(eq(callTags.conversationId, callId)),
+    db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(inArray(users.id, [call.personId, call.uploadedBy ?? call.personId])),
   ]);
-  return { call, category, results, tags: tagRows, agent: people.find((p) => p.id === call.agentId) ?? null, uploader: call.uploadedBy ? people.find((p) => p.id === call.uploadedBy) ?? null : null };
+  const category = { ...cat, rubric: await rubricFor(cat, call.rubricVersion) };
+  return { call, category, results, tags: tagRows, agent: people.find((p) => p.id === call.personId) ?? null, uploader: call.uploadedBy ? people.find((p) => p.id === call.uploadedBy) ?? null : null };
 }
 export type LoadedCall = NonNullable<Awaited<ReturnType<typeof loadCall>>>;
 
@@ -64,7 +71,7 @@ const outcomeLabel = (rubric: Rubric, id: string | null) => rubric.outcomes.find
 const updatedAt = (c: Call) => c.completedAt ?? c.createdAt;
 
 /** GET /calls/{id}/analysis body. */
-export function analysisBody({ call, category, results }: LoadedCall, origin: string) {
+export async function analysisBody({ call, category, results }: LoadedCall, origin: string) {
   const status = externalStatus(call.status);
   const rubric = category.rubric;
   return {
@@ -95,12 +102,12 @@ export function analysisBody({ call, category, results }: LoadedCall, origin: st
             }
           : null,
       metadata: {
-        date: istDay(call.callAt),
+        date: istDay(call.occurredAt),
         duration: call.durationSec,
         summary: call.summary,
-        audioUrl: absoluteUrl(call.audioUrl, origin),
-        udfs: call.udfs ?? {},
-        createdAt: call.callAt.toISOString(),
+        audioUrl: call.sourceUrl ?? (await playbackUrl(call, origin)),
+        udfs: call.metadata ?? {},
+        createdAt: call.occurredAt.toISOString(),
         updatedAt: updatedAt(call).toISOString(),
       },
     },
@@ -108,19 +115,19 @@ export function analysisBody({ call, category, results }: LoadedCall, origin: st
 }
 
 /** `call.analysis_complete` webhook data. */
-export function analysisCompleteData(l: LoadedCall, origin: string) {
+export async function analysisCompleteData(l: LoadedCall, origin: string) {
   const { call, category, results, agent, uploader } = l;
   const rubric = category.rubric;
   return {
     callId: call.id,
     organizationId: call.orgId,
-    memberId: call.agentId,
+    memberId: call.personId,
     memberName: agent?.name ?? null,
     categoryId: call.categoryId,
     duration: call.durationSec,
-    date: istDay(call.callAt),
-    audioUrl: absoluteUrl(call.audioUrl, origin),
-    udfs: call.udfs ?? null,
+    date: istDay(call.occurredAt),
+    audioUrl: call.sourceUrl ?? (await playbackUrl(call, origin)),
+    udfs: call.metadata ?? null,
     score: call.score ?? 0,
     outcomeLabel: outcomeLabel(rubric, call.outcomeId),
     outcomeRationale: call.outcomeRationale,
@@ -146,8 +153,21 @@ export function analysisCompleteData(l: LoadedCall, origin: string) {
     uploadedByEmail: uploader?.email ?? null,
     tags: l.tags.map((t) => ({ id: t.id, slug: t.slug, displayName: t.displayName, description: t.description })),
     completedAt: (call.completedAt ?? new Date()).toISOString(),
-    createdAt: call.callAt.toISOString(),
+    createdAt: call.occurredAt.toISOString(),
   };
+}
+
+/** Payload of a legacy call.* webhook event. */
+export async function legacyEventData(orgId: string, event: LegacyEvent, callId: string, origin: string): Promise<Record<string, unknown> | null> {
+  if (event === "call.analysis_complete") {
+    const l = await loadCall(orgId, callId);
+    return l ? analysisCompleteData(l, origin) : null;
+  }
+  const [c] = await db.select().from(calls).where(and(eq(calls.id, callId), eq(calls.orgId, orgId)));
+  if (!c) return null;
+  const failedAt = (c.completedAt ?? new Date()).toISOString();
+  if (event === "call.analysis_failed") return { callId, organizationId: orgId, message: c.failureMessage ?? "Call analysis failed", failedAt };
+  return { callId, organizationId: orgId, recordingUrl: c.sourceUrl ?? (await playbackUrl(c, origin)) ?? "", errorMessage: c.failureMessage ?? "Unable to ingest recording", failedAt };
 }
 
 /* ---------- categories ---------- */

@@ -46,3 +46,10 @@ storage/
 # test artifacts
 /test-results/
 /playwright-report/
+
+# evaluation data and reports
+/eval/g2/
+/eval/runs/
+# local audio storage
+/storage/
+/.test-storage/

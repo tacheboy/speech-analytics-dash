@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import type { Analytics } from "@/server/services/analytics";
+import type { Dashboard as Analytics } from "@/server/services/dashboard";
 
 const AXIS = { stroke: "var(--muted-foreground)", fontSize: 11, tickLine: false, axisLine: false } as const;
 

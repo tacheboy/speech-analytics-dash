@@ -1,7 +1,6 @@
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
-import fs from "node:fs/promises";
 import path from "node:path";
-import { UPLOAD_DIR } from "@/server/services/ingest";
+import { storage } from "@/server/storage";
 
 export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 export const UPLOAD_TTL_SEC = 15 * 60;
@@ -42,17 +41,11 @@ export function verifySignature(key: string, expires: string | null, sig: string
   return Number(expires) < Date.now() / 1000 ? "expired" : "ok";
 }
 
-export async function storedFile(name: string): Promise<{ size: number } | null> {
-  if (!KEY_RE.test(name) && !/^[\w.-]+\.(mp3|wav|m4a)$/.test(name)) return null;
-  try {
-    const st = await fs.stat(path.join(UPLOAD_DIR, path.basename(name)));
-    return st.isFile() ? { size: st.size } : null;
-  } catch {
-    return null;
-  }
+/** Legacy uploads live in storage under uploads/<key>. */
+export async function writeUpload(name: string, bytes: Uint8Array) {
+  await (await storage()).put(`uploads/${path.basename(name)}`, bytes);
 }
 
-export async function writeUpload(name: string, bytes: Uint8Array) {
-  await fs.mkdir(UPLOAD_DIR, { recursive: true });
-  await fs.writeFile(path.join(UPLOAD_DIR, path.basename(name)), bytes);
+export async function readUpload(name: string) {
+  return (await storage()).get(`uploads/${path.basename(name)}`);
 }

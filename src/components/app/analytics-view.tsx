@@ -4,19 +4,21 @@ import { Activity, AlertTriangle, ArrowRight, BarChart3, Clock, Gauge, Medal, Ph
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useAnalytics, useWorkspace } from "@/lib/api-client";
+import { api, qs, useDashboard, useWorkspace } from "@/lib/api-client";
+import type { AnalyticsResult } from "@/lib/contract";
 import { scoreTone } from "@/lib/domain";
 import { fmtDuration, fmtPct, shortName } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { Analytics } from "@/server/services/analytics";
+import type { Dashboard as Analytics } from "@/server/services/dashboard";
 import { AgentAvatar, Delta, EmptyState, PageHeader, Panel, Pill, ScoreBadge, Sparkline } from "./bits";
 import { DurationChart, OutcomeBars, TrendChart } from "./charts";
-import { CallsTable } from "./calls-table";
+import { ConversationsTable } from "./conversations-table";
 import { DateRangePicker, useDateRange } from "./date-range";
 import { CallIntelligence } from "./intelligence";
 import { KpiCard, METRIC_HELP } from "./kpi";
@@ -27,8 +29,8 @@ const TABS = ["overview", "quality", "intelligence", "agents"] as const;
 /** Builds a conversation-list URL for the current scope plus extra filters. */
 function callsHref(dimension: Dimension, id: string | null, extra: Record<string, string> = {}) {
   const sp = new URLSearchParams(extra);
-  if (dimension === "team" && id) sp.set("teamId", id);
-  if (dimension === "agent" && id) sp.set("agentId", id);
+  if (dimension === "team" && id) sp.set("cohortId", id);
+  if (dimension === "agent" && id) sp.set("personId", id);
   return `/conversations/${dimension === "category" && id ? id : "all"}?${sp}`;
 }
 
@@ -39,7 +41,7 @@ function ScopeSwitcher({ dimension, id }: { dimension: Dimension; id: string | n
   const items = [
     { value: "org/all", label: "All conversations" },
     ...ws.categories.map((c) => ({ value: `category/${c.id}`, label: c.name })),
-    ...ws.teams.map((t) => ({ value: `team/${t.id}`, label: t.name })),
+    ...ws.cohorts.map((t) => ({ value: `team/${t.id}`, label: t.name })),
   ];
   return (
     <Select items={items} value={`${dimension}/${id ?? "all"}`} onValueChange={(v) => router.push(`/analytics/${v}`)}>
@@ -47,7 +49,7 @@ function ScopeSwitcher({ dimension, id }: { dimension: Dimension; id: string | n
       <SelectContent>
         <SelectItem value="org/all">All conversations</SelectItem>
         <SelectGroup><SelectLabel>Categories</SelectLabel>{ws.categories.map((c) => <SelectItem key={c.id} value={`category/${c.id}`}>{c.name}</SelectItem>)}</SelectGroup>
-        <SelectGroup><SelectLabel>Cohorts</SelectLabel>{ws.teams.map((t) => <SelectItem key={t.id} value={`team/${t.id}`}>{t.name}</SelectItem>)}</SelectGroup>
+        <SelectGroup><SelectLabel>Cohorts</SelectLabel>{ws.cohorts.map((t) => <SelectItem key={t.id} value={`team/${t.id}`}>{t.name}</SelectItem>)}</SelectGroup>
       </SelectContent>
     </Select>
   );
@@ -60,7 +62,7 @@ function Kpis({ a }: { a: Analytics }) {
       <KpiCard label="Quality score" info={METRIC_HELP.quality} icon={<Gauge className="size-4 text-chart-1" />} value={fmtPct(a.kpis.quality.value, 1)} delta={a.kpis.quality.delta} hint="vs previous period" spark={t.map((d) => d.quality)} />
       <KpiCard label="Success rate" info={METRIC_HELP.success} icon={<Target className="size-4 text-chart-2" />} value={fmtPct(a.kpis.successRate.value, 1)} delta={a.kpis.successRate.delta} hint="vs previous period" spark={t.map((d) => d.successRate)} />
       <KpiCard label="Conversations analyzed" icon={<Phone className="size-4 text-muted-foreground" />} value={a.kpis.volume.value.toLocaleString("en-IN")} delta={a.kpis.volume.delta} deltaSuffix="" hint={`avg ${fmtDuration(a.kpis.avgDurationSec.value)} per conversation`} spark={t.map((d) => d.volume)} />
-      <KpiCard label="Risk flags" info={METRIC_HELP.compliance} icon={<ShieldAlert className="size-4 text-danger" />} value={fmtPct(a.kpis.complianceRate.value, 1)} delta={a.kpis.complianceRate.delta} invertDelta hint="of conversations" spark={t.map((d) => d.complianceRate)} />
+      <KpiCard label="Risk flags" info={METRIC_HELP.compliance} icon={<ShieldAlert className="size-4 text-danger" />} value={fmtPct(a.kpis.riskRate.value, 1)} delta={a.kpis.riskRate.delta} invertDelta hint="of conversations" spark={t.map((d) => d.riskRate)} />
     </div>
   );
 }
@@ -85,9 +87,9 @@ function Overview({ a, dimension, id }: { a: Analytics; dimension: Dimension; id
           <div className="rounded-2xl border bg-card p-5">
             <p className="flex items-center gap-2 text-sm font-medium text-warning"><Trophy className="size-4" /> Top performer</p>
             {h.topPerformer ? (
-              <Link href={`/people/${h.topPerformer.agentId}`} className="mt-2 flex items-center gap-3 hover:underline">
+              <Link href={`/people/${h.topPerformer.personId}`} className="mt-2 flex items-center gap-3 hover:underline">
                 <AgentAvatar name={h.topPerformer.name} size="sm" />
-                <span><span className="block font-medium">{h.topPerformer.name}</span><span className="text-sm text-muted-foreground">{fmtPct(h.topPerformer.quality)} quality · {h.topPerformer.calls} conversations</span></span>
+                <span><span className="block font-medium">{h.topPerformer.name}</span><span className="text-sm text-muted-foreground">{fmtPct(h.topPerformer.quality)} quality · {h.topPerformer.conversations} conversations</span></span>
               </Link>
             ) : <p className="mt-2 text-sm text-muted-foreground">No person data.</p>}
           </div>
@@ -113,7 +115,7 @@ function Overview({ a, dimension, id }: { a: Analytics; dimension: Dimension; id
         </Panel>
         {dimension !== "agent" ? (
           <Panel className="lg:col-span-3" title="Person leaderboard" description="Ranked by quality, then success rate, then volume" bodyClassName="p-0">
-            <Leaderboard agents={a.agents.slice(0, 6)} compact />
+            <Leaderboard agents={a.people.slice(0, 6)} compact />
           </Panel>
         ) : (
           <Panel className="lg:col-span-3" title="Section scores" description="Where this person wins and loses points">
@@ -138,7 +140,7 @@ function SectionBars({ sections }: { sections: Analytics["sections"] }) {
   );
 }
 
-function Leaderboard({ agents, compact }: { agents: Analytics["agents"]; compact?: boolean }) {
+function Leaderboard({ agents, compact }: { agents: Analytics["people"]; compact?: boolean }) {
   const router = useRouter();
   if (!agents.length) return <EmptyState title="No person data in this period" />;
   return (
@@ -152,13 +154,13 @@ function Leaderboard({ agents, compact }: { agents: Analytics["agents"]; compact
         </TableHeader>
         <TableBody>
           {agents.map((r) => (
-            <TableRow key={r.agentId} className="cursor-pointer" onClick={() => router.push(`/people/${r.agentId}`)}>
+            <TableRow key={r.personId} className="cursor-pointer" onClick={() => router.push(`/people/${r.personId}`)}>
               <TableCell className="pl-5 tabular text-muted-foreground">{r.rank <= 3 ? <Medal className={cn("size-4", r.rank === 1 ? "text-warning" : "text-muted-foreground")} /> : r.rank}</TableCell>
-              <TableCell><div className="flex items-center gap-2.5"><AgentAvatar name={r.name} size="sm" /><span className="min-w-0"><span className="block truncate font-medium">{r.name}</span>{!compact && <span className="text-xs text-muted-foreground">{r.teamName}</span>}</span></div></TableCell>
-              <TableCell className="text-right tabular">{r.calls}</TableCell>
+              <TableCell><div className="flex items-center gap-2.5"><AgentAvatar name={r.name} size="sm" /><span className="min-w-0"><span className="block truncate font-medium">{r.name}</span>{!compact && <span className="text-xs text-muted-foreground">{r.cohortName}</span>}</span></div></TableCell>
+              <TableCell className="text-right tabular">{r.conversations}</TableCell>
               <TableCell><ScoreBadge score={r.quality == null ? null : Math.round(r.quality)} /></TableCell>
               <TableCell className="text-right tabular">{fmtPct(r.successRate)}</TableCell>
-              {!compact && <TableCell className="text-right tabular">{r.complianceFlags ? <span className="text-danger">{r.complianceFlags}</span> : <span className="text-muted-foreground">0</span>}</TableCell>}
+              {!compact && <TableCell className="text-right tabular">{r.riskFlags ? <span className="text-danger">{r.riskFlags}</span> : <span className="text-muted-foreground">0</span>}</TableCell>}
               <TableCell><Sparkline values={r.trend.map((t) => t.quality ?? 0)} width={80} height={24} /></TableCell>
               <TableCell className="pr-5 text-right"><Delta value={r.delta} suffix="" /></TableCell>
             </TableRow>
@@ -172,16 +174,23 @@ function Leaderboard({ agents, compact }: { agents: Analytics["agents"]; compact
 function Quality({ a, dimension, id }: { a: Analytics; dimension: Dimension; id: string | null }) {
   const [q, setQ] = useState("");
   const rows = a.criteria.filter((c) => !q || c.question.toLowerCase().includes(q.toLowerCase()) || c.sectionName.toLowerCase().includes(q.toLowerCase()));
+  // AI–auditor agreement per criterion, from the public analytics API (the calibration loop)
+  const scope = dimension === "category" ? { categoryId: id } : dimension === "team" ? { cohortId: id } : dimension === "agent" ? { personId: id } : {};
+  const { data: agreement } = useQuery({
+    queryKey: ["agreement", dimension, id, a.range.from, a.range.to],
+    queryFn: () => api<AnalyticsResult>(`/api/v1/analytics${qs({ metrics: "agreement", groupBy: "criterion", from: a.range.from, to: a.range.to, ...scope })}`),
+  });
+  const agree = new Map(agreement?.rows.map((r) => [String(r.key), r]));
   return (
     <div className="grid items-start gap-5 xl:grid-cols-3">
       <Panel title="Section scores" description="Pass rate of applicable criteria">
         <SectionBars sections={a.sections} />
       </Panel>
-      <Panel className="xl:col-span-2" title="Quality improvement hub" description="Every rubric criterion, worst first. People listed fail it most often." bodyClassName="p-0"
+      <Panel className="xl:col-span-2" title="Quality improvement hub" description="Every rubric criterion, worst first. People listed fail it most often. Agreement below 70% means the criterion needs rewriting." bodyClassName="p-0"
         actions={<div className="relative w-52"><Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" /><Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filter criteria…" className="h-8 pl-8 text-sm" aria-label="Filter criteria" /></div>}>
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader><TableRow className="hover:bg-transparent"><TableHead className="pl-5">Criterion</TableHead><TableHead className="w-40">Failure rate</TableHead><TableHead className="text-right">Checked</TableHead><TableHead className="pr-5">{dimension === "agent" ? "" : "Most misses"}</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow className="hover:bg-transparent"><TableHead className="pl-5">Criterion</TableHead><TableHead className="w-40">Failure rate</TableHead><TableHead className="text-right">Checked</TableHead><TableHead className="text-right" title="Share of answers auditors kept, on audited conversations">AI–auditor agreement</TableHead><TableHead className="pr-5">{dimension === "agent" ? "" : "Most misses"}</TableHead></TableRow></TableHeader>
             <TableBody>
               {rows.map((c) => (
                 <TableRow key={c.criterionId}>
@@ -190,8 +199,15 @@ function Quality({ a, dimension, id }: { a: Analytics; dimension: Dimension; id:
                     <div className="flex items-center gap-2"><div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted"><div className={cn("h-full rounded-full", c.failRate >= 40 ? "bg-danger" : c.failRate >= 20 ? "bg-warning" : "bg-success")} style={{ width: `${c.failRate}%` }} /></div><span className="text-sm tabular">{c.failRate}%</span></div>
                   </TableCell>
                   <TableCell className="text-right tabular text-muted-foreground">{c.evaluated}</TableCell>
+                  <TableCell className="text-right tabular">
+                    {(() => {
+                      const r = agree.get(c.criterionId);
+                      if (!r || r.agreement == null) return <span className="text-muted-foreground">—</span>;
+                      return <span className={cn(Number(r.agreement) < 70 ? "text-danger" : Number(r.agreement) < 85 ? "text-warning" : "")} title={`${r.auditedAnswers} audited answers`}>{r.agreement}% <span className="text-xs text-muted-foreground">({r.auditedAnswers})</span></span>;
+                    })()}
+                  </TableCell>
                   <TableCell className="pr-5">
-                    {dimension !== "agent" && <div className="flex flex-wrap gap-1">{c.topFailingAgents.map((g) => <Link key={g.agentId} href={callsHref(dimension, id, { agentId: g.agentId, scoreBucket: "poor" })} className="rounded-full border px-2 py-0.5 text-xs hover:bg-accent">{shortName(g.name)} · {g.fails}</Link>)}</div>}
+                    {dimension !== "agent" && <div className="flex flex-wrap gap-1">{c.topFailingPeople.map((g) => <Link key={g.personId} href={callsHref(dimension, id, { personId: g.personId, score: "poor" })} className="rounded-full border px-2 py-0.5 text-xs hover:bg-accent">{shortName(g.name)} · {g.fails}</Link>)}</div>}
                   </TableCell>
                 </TableRow>
               ))}
@@ -205,11 +221,11 @@ function Quality({ a, dimension, id }: { a: Analytics; dimension: Dimension; id:
 }
 
 function AgentsTab({ a }: { a: Analytics }) {
-  const best = (k: "quality" | "successRate" | "calls") => [...a.agents].filter((x) => x.calls >= 3).sort((x, y) => (y[k] ?? 0) - (x[k] ?? 0))[0];
+  const best = (k: "quality" | "successRate" | "conversations") => [...a.people].filter((x) => x.conversations >= 3).sort((x, y) => (y[k] ?? 0) - (x[k] ?? 0))[0];
   const cards = [
-    { label: "Highest quality", icon: Gauge, r: best("quality"), v: (r: Analytics["agents"][number]) => fmtPct(r.quality) },
-    { label: "Highest success", icon: Target, r: best("successRate"), v: (r: Analytics["agents"][number]) => fmtPct(r.successRate) },
-    { label: "Highest volume", icon: BarChart3, r: best("calls"), v: (r: Analytics["agents"][number]) => `${r.calls} conversations` },
+    { label: "Highest quality", icon: Gauge, r: best("quality"), v: (r: Analytics["people"][number]) => fmtPct(r.quality) },
+    { label: "Highest success", icon: Target, r: best("successRate"), v: (r: Analytics["people"][number]) => fmtPct(r.successRate) },
+    { label: "Highest volume", icon: BarChart3, r: best("conversations"), v: (r: Analytics["people"][number]) => `${r.conversations} conversations` },
   ];
   return (
     <div className="space-y-5">
@@ -217,11 +233,11 @@ function AgentsTab({ a }: { a: Analytics }) {
         {cards.map((c) => (
           <div key={c.label} className="rounded-2xl border bg-card p-5">
             <p className="flex items-center gap-2 text-sm text-muted-foreground"><c.icon className="size-4" />{c.label}</p>
-            {c.r ? <Link href={`/people/${c.r.agentId}`} className="mt-2 flex items-center gap-3 hover:underline"><AgentAvatar name={c.r.name} size="sm" /><span className="font-medium">{c.r.name}</span><span className="ml-auto font-semibold tabular">{c.v(c.r)}</span></Link> : <p className="mt-2 text-sm text-muted-foreground">—</p>}
+            {c.r ? <Link href={`/people/${c.r.personId}`} className="mt-2 flex items-center gap-3 hover:underline"><AgentAvatar name={c.r.name} size="sm" /><span className="font-medium">{c.r.name}</span><span className="ml-auto font-semibold tabular">{c.v(c.r)}</span></Link> : <p className="mt-2 text-sm text-muted-foreground">—</p>}
           </div>
         ))}
       </div>
-      <Panel title="People audited" description="Click a person for their coaching profile" bodyClassName="p-0"><Leaderboard agents={a.agents} /></Panel>
+      <Panel title="People audited" description="Click a person for their coaching profile" bodyClassName="p-0"><Leaderboard agents={a.people} /></Panel>
     </div>
   );
 }
@@ -243,12 +259,12 @@ function CriteriaList({ items, empty, tone }: { items: { criterionId: string; qu
 
 function Profile({ a, id }: { a: Analytics; id: string }) {
   const p = a.profile!;
-  const vsTeam = a.kpis.quality.value != null && p.teamQuality != null ? Math.round((a.kpis.quality.value - p.teamQuality) * 10) / 10 : null;
+  const vsTeam = a.kpis.quality.value != null && p.cohortQuality != null ? Math.round((a.kpis.quality.value - p.cohortQuality) * 10) / 10 : null;
   return (
     <div className="space-y-5">
       <Kpis a={a} />
       <div className="rounded-2xl border bg-card p-5 text-sm">
-        <span className="text-muted-foreground">Quality vs cohort average ({fmtPct(p.teamQuality, 1)}): </span>
+        <span className="text-muted-foreground">Quality vs cohort average ({fmtPct(p.cohortQuality, 1)}): </span>
         <span className={cn("font-semibold tabular", (vsTeam ?? 0) >= 0 ? "text-success" : "text-danger")}>{vsTeam == null ? "—" : `${vsTeam > 0 ? "+" : ""}${vsTeam} pts`}</span>
       </div>
       <div className="grid gap-5 lg:grid-cols-2">
@@ -263,7 +279,7 @@ function Profile({ a, id }: { a: Analytics; id: string }) {
       </div>
       <CallIntelligence intel={a.intelligence} href={(q) => callsHref("agent", id, q)} />
       <Panel title="Lowest-scoring recent conversations" actions={<Link href={callsHref("agent", id)} className="flex items-center gap-1 text-sm text-primary hover:underline">All conversations <ArrowRight className="size-3.5" /></Link>} bodyClassName="p-0">
-        <CallsTable compact hideFilters pageSize={5} fixed={{ agentId: [id], sort: "score", order: "asc", status: "done", page: 1, from: a.range.from, to: a.range.to }} />
+        <ConversationsTable compact hideFilters pageSize={5} fixed={{ personId: id, sort: "score", order: "asc", status: "completed", from: a.range.from, to: a.range.to }} />
       </Panel>
     </div>
   );
@@ -272,7 +288,7 @@ function Profile({ a, id }: { a: Analytics; id: string }) {
 export function AnalyticsView({ dimension, id, title, description }: { dimension: Dimension; id: string | null; title?: string; description?: string }) {
   const { from, to } = useDateRange();
   const [tab, setTab] = useQueryState("tab", parseAsStringLiteral(TABS).withDefault("overview"));
-  const { data: a, isLoading, isError, isFetching } = useAnalytics({ dimension, id: id ?? undefined, from, to });
+  const { data: a, isLoading, isError, isFetching } = useDashboard({ dimension, id: id ?? undefined, from, to });
   const isMember = dimension === "agent";
   const heading = useMemo(() => title ?? (a ? `${a.scope.name}${isMember ? "" : " analytics"}` : "Analytics"), [title, a, isMember]);
 
