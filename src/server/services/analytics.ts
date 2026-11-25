@@ -1,12 +1,12 @@
-import { and, eq, gte, lte, type SQL } from "drizzle-orm";
+import { and, eq, gte, inArray, lte, type SQL } from "drizzle-orm";
 import { db, schema } from "@/server/db/client";
 import { ApiError, type Actor } from "@/server/auth";
 import { advancePipeline } from "@/server/pipeline/advance";
 import { successRate } from "@/server/scoring";
 import { analyticsQuery } from "@/lib/contracts";
-import { DURATION_BUCKETS } from "@/lib/domain";
+import { DURATION_BUCKETS, outcomeType, type OutcomeType } from "@/lib/domain";
 
-const { calls, users, teams, categories, criterionResults } = schema;
+const { calls, users, teams, categories, criterionResults, callTags, tags } = schema;
 const DAY = 86400_000;
 const IST = 5.5 * 3600_000;
 const istDay = (d: Date) => new Date(d.getTime() + IST).toISOString().slice(0, 10);
@@ -17,7 +17,7 @@ const pct = (x: number | null) => (x == null ? null : Math.round(x * 1000) / 10)
 type Row = {
   id: string; agentId: string; agentName: string; teamId: string | null; categoryId: string;
   score: number | null; isSuccess: boolean | null; isNotApplicable: boolean | null; complianceFlag: boolean | null;
-  outcomeId: string | null; durationSec: number; callAt: Date;
+  outcomeId: string | null; durationSec: number; callAt: Date; extractions: Record<string, unknown> | null;
 };
 
 async function loadRows(orgId: string, filters: SQL[], from: Date, to: Date): Promise<Row[]> {
@@ -25,7 +25,7 @@ async function loadRows(orgId: string, filters: SQL[], from: Date, to: Date): Pr
     .select({
       id: calls.id, agentId: calls.agentId, agentName: users.name, teamId: users.teamId, categoryId: calls.categoryId,
       score: calls.score, isSuccess: calls.isSuccess, isNotApplicable: calls.isNotApplicable, complianceFlag: calls.complianceFlag,
-      outcomeId: calls.outcomeId, durationSec: calls.durationSec, callAt: calls.callAt,
+      outcomeId: calls.outcomeId, durationSec: calls.durationSec, callAt: calls.callAt, extractions: calls.extractions,
     })
     .from(calls)
     .innerJoin(users, eq(users.id, calls.agentId))
@@ -116,7 +116,7 @@ export async function getAnalytics(actor: Actor, raw: unknown) {
   // rubric lookups (criterion/section ids are shared across categories where the wording is the same)
   const question = new Map<string, string>();
   const sectionName = new Map<string, string>();
-  const outcomeById = new Map<string, { label: string; isSuccess: boolean | null; isNotApplicable: boolean }>();
+  const outcomeById = new Map<string, { label: string; isSuccess: boolean; isNotApplicable: boolean }>();
   for (const c of cats)
     for (const s of c.rubric.sections) {
       sectionName.set(s.id, s.name);
@@ -125,11 +125,11 @@ export async function getAnalytics(actor: Actor, raw: unknown) {
   for (const c of cats) for (const o of c.rubric.outcomes) outcomeById.set(`${c.id}:${o.id}`, o);
 
   // outcomes, grouped by label
-  const outcomeCounts = new Map<string, { label: string; isSuccess: boolean | null; isNotApplicable: boolean; count: number }>();
+  const outcomeCounts = new Map<string, { label: string; type: OutcomeType; isSuccess: boolean; isNotApplicable: boolean; count: number }>();
   for (const r of rows) {
     const o = outcomeById.get(`${r.categoryId}:${r.outcomeId}`);
     if (!o) continue;
-    const e = outcomeCounts.get(o.label) ?? { label: o.label, isSuccess: o.isSuccess, isNotApplicable: o.isNotApplicable, count: 0 };
+    const e = outcomeCounts.get(o.label) ?? { label: o.label, type: outcomeType(o), isSuccess: o.isSuccess, isNotApplicable: o.isNotApplicable, count: 0 };
     e.count++;
     outcomeCounts.set(o.label, e);
   }
@@ -223,6 +223,54 @@ export async function getAnalytics(actor: Actor, raw: unknown) {
     };
   }
 
+  /* ---------- call intelligence: tags (hierarchical) and extracted data ---------- */
+  const ids = rows.map((r) => r.id);
+  const tagAssignments = ids.length
+    ? await db.select({ callId: callTags.callId, slug: tags.slug }).from(callTags).innerJoin(tags, eq(tags.id, callTags.tagId)).where(inArray(callTags.callId, ids))
+    : [];
+  const tagDefs = await db.select({ slug: tags.slug, displayName: tags.displayName }).from(tags).where(eq(tags.orgId, actor.orgId));
+  const tagName = new Map(tagDefs.map((x) => [x.slug, x.displayName]));
+  const byCall = new Map(rows.map((r) => [r.id, r]));
+  // a call counts once per node, however many of its leaves sit under that node
+  const nodeCalls = new Map<string, Set<string>>();
+  for (const a of tagAssignments) {
+    const parts = a.slug.split("/");
+    for (let i = 1; i <= parts.length; i++) {
+      const node = parts.slice(0, i).join("/");
+      (nodeCalls.get(node) ?? nodeCalls.set(node, new Set()).get(node)!).add(a.callId);
+    }
+  }
+  const rate = (callIds: Set<string>) => pct(successRate([...callIds].map((id) => byCall.get(id)!)));
+  const tagTree = [...nodeCalls.entries()]
+    .map(([slug, set]) => ({ slug, displayName: tagName.get(slug) ?? slug, depth: slug.split("/").length - 1, parent: slug.includes("/") ? slug.slice(0, slug.lastIndexOf("/")) : null, calls: set.size, pct: pct(set.size / Math.max(rows.length, 1)), successRate: rate(set) }))
+    .sort((a, b) => b.calls - a.calls);
+  // PDF: "why certain calls were unsuccessful" → tags on Standard-outcome (eligible, not successful) calls
+  const standardIds = new Set(rows.filter((r) => !r.isNotApplicable && !r.isSuccess).map((r) => r.id));
+  const reasonCounts = new Map<string, number>();
+  for (const a of tagAssignments) if (standardIds.has(a.callId) && !a.slug.startsWith("compliance") && !a.slug.startsWith("coaching")) reasonCounts.set(a.slug, (reasonCounts.get(a.slug) ?? 0) + 1);
+  const unsuccessfulReasons = [...reasonCounts.entries()]
+    .map(([slug, n]) => ({ slug, displayName: tagName.get(slug) ?? slug, path: slug.split("/").slice(0, -1).map((p, i, arr) => tagName.get(arr.slice(0, i + 1).join("/")) ?? p).join(" › "), calls: n, pct: pct(n / Math.max(standardIds.size, 1)) }))
+    .sort((a, b) => b.calls - a.calls)
+    .slice(0, 8);
+
+  const fieldDefs = new Map<string, { fieldName: string; displayName: string; fieldType: string; enumValues?: string[] }>();
+  for (const c of cats) if (dimension !== "category" || c.id === id) for (const f of c.rubric.extractionFields) if (!fieldDefs.has(f.fieldName)) fieldDefs.set(f.fieldName, { fieldName: f.fieldName, displayName: f.displayName, fieldType: f.fieldType, enumValues: f.enumOptions?.map((o) => o.value) });
+  const extractionReports = [...fieldDefs.values()].map((f) => {
+    const withField = rows.filter((r) => r.extractions && f.fieldName in r.extractions);
+    const captured = withField.filter((r) => r.extractions![f.fieldName] != null);
+    const base = { ...f, calls: withField.length, captured: captured.length, captureRate: pct(captured.length / Math.max(withField.length, 1)) };
+    if (f.fieldType === "number") {
+      const nums = captured.map((r) => Number(r.extractions![f.fieldName])).filter(Number.isFinite).sort((a, b) => a - b);
+      return { ...base, values: [], stats: { sum: nums.reduce((a, b) => a + b, 0), avg: Math.round(avg(nums) ?? 0), median: nums.length ? nums[Math.floor(nums.length / 2)] : 0, max: nums.at(-1) ?? 0 } };
+    }
+    const groups = Map.groupBy(captured, (r) => String(r.extractions![f.fieldName]));
+    const values = [...groups.entries()]
+      .map(([value, rs]) => ({ value, calls: rs.length, pct: pct(rs.length / Math.max(captured.length, 1)), successRate: pct(successRate(rs)) }))
+      .sort((a, b) => b.calls - a.calls)
+      .slice(0, f.fieldType === "text" ? 6 : 12);
+    return { ...base, values, stats: null };
+  }).filter((f) => f.calls > 0);
+
   return {
     scope: { dimension, id: id ?? null, name: scopeName, categoryId: q.categoryId ?? null },
     range: { from: istDay(from), to: istDay(to), prevFrom: istDay(prevFrom), prevTo: istDay(prevTo), granularity: step === 1 ? "day" : "week" },
@@ -241,6 +289,7 @@ export async function getAnalytics(actor: Actor, raw: unknown) {
     agents,
     highlights,
     profile,
+    intelligence: { tags: tagTree, unsuccessfulReasons, standardCalls: standardIds.size, extractions: extractionReports },
   };
 }
 export type Analytics = Awaited<ReturnType<typeof getAnalytics>>;

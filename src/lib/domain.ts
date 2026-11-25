@@ -14,24 +14,31 @@ export const sectionSchema = z.object({
   criteria: z.array(criterionSchema).min(1),
 });
 
+/** Voxxi's three outcome types: Success (isSuccess), Standard (neither flag), NA (isNotApplicable — call excluded from scoring). */
 export const outcomeSchema = z.object({
   id: z.string(),
   label: z.string(),
   description: z.string(),
-  isSuccess: z.boolean().nullable(), // null = standard (neither success nor failure)
+  isSuccess: z.boolean(),
   isNotApplicable: z.boolean().default(false),
 });
+export type OutcomeType = "success" | "standard" | "na";
+export const outcomeType = (o: { isSuccess: boolean | null; isNotApplicable: boolean | null }): OutcomeType =>
+  o.isNotApplicable ? "na" : o.isSuccess ? "success" : "standard";
+export const OUTCOME_TYPE_LABEL: Record<OutcomeType, string> = { success: "Success", standard: "Standard", na: "NA" };
 
 export const extractionFieldSchema = z.object({
   fieldName: z.string(),
   displayName: z.string(),
   fieldType: z.enum(["text", "enum", "number", "boolean"]),
-  description: z.string(),
-  enumValues: z.array(z.string()).optional(),
+  description: z.string(), // LLM hint
+  required: z.boolean().default(false),
+  enumOptions: z.array(z.object({ value: z.string(), hint: z.string().optional() })).optional(),
 });
 
+/** JSONLogic rules. section/criterion: becomes NA unless the rule matches. tag: tag is applied when the rule matches. */
 export const targetingRuleSchema = z.object({
-  targetType: z.literal("section"),
+  targetType: z.enum(["section", "criterion", "tag"]),
   targetId: z.string(),
   description: z.string(),
   expression: z.record(z.string(), z.unknown()), // JSONLogic
@@ -42,11 +49,17 @@ export const rubricSchema = z.object({
   name: z.string(),
   description: z.string(),
   icon: z.string(),
+  intendedPurpose: z.string(),
+  additionalLLMContext: z.string(),
   sections: z.array(sectionSchema),
   outcomes: z.array(outcomeSchema),
   extractionFields: z.array(extractionFieldSchema),
   targetingRules: z.array(targetingRuleSchema),
+  tagTargets: z.array(z.string()), // tag slugs this category can apply
 });
+
+export const tagSchema = z.object({ slug: z.string(), displayName: z.string(), description: z.string().optional(), assignable: z.boolean().optional() });
+export type TagDef = z.infer<typeof tagSchema>;
 
 export type Rubric = z.infer<typeof rubricSchema>;
 export type Outcome = z.infer<typeof outcomeSchema>;
@@ -66,7 +79,8 @@ export type TranscriptSegment = {
   roman?: string;
 };
 
-export type CriterionResultValue = "pass" | "fail" | "na";
+export type CriterionResultValue = "pass" | "fail" | "na"; // shown to users as Yes / No / NA
+export const RESULT_LABEL: Record<CriterionResultValue, string> = { pass: "Yes", fail: "No", na: "NA" };
 
 export const MOMENT_TYPES = ["ptp", "objection", "compliance_risk", "dispute", "hardship", "payment"] as const;
 export type MomentType = (typeof MOMENT_TYPES)[number];

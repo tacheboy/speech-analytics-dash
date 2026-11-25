@@ -16,6 +16,7 @@ export function toRows(callId: string, rubric: Rubric, r: AnalysisResult) {
     evidenceQuote: c.evidenceQuote,
     evidenceStart: c.evidenceStart,
     confidence: c.confidence,
+    naReason: c.naReason,
   }));
   const score = callScore(criterionRows);
   return {
@@ -26,7 +27,7 @@ export function toRows(callId: string, rubric: Rubric, r: AnalysisResult) {
       score,
       aiScore: score,
       outcomeId: r.outcomeId,
-      isSuccess: outcome.isSuccess === true ? true : outcome.isSuccess === false ? false : null,
+      isSuccess: outcome.isSuccess,
       isNotApplicable: outcome.isNotApplicable,
       complianceFlag: criterionRows.some((c) => c.sectionId === "compliance" && c.finalResult === "fail"),
       summary: r.summary,
@@ -38,5 +39,6 @@ export function toRows(callId: string, rubric: Rubric, r: AnalysisResult) {
       moments: r.moments,
     },
     criterionRows,
+    tagSlugs: r.tags,
   };
 }

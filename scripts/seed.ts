@@ -6,7 +6,7 @@
 import "dotenv/config";
 import { sql } from "drizzle-orm";
 import { db, schema } from "@/server/db/client";
-import { loadRubrics, loadTemplates, loadTimings } from "@/server/content";
+import { loadRubrics, loadTagDefs, loadTemplates, loadTimings } from "@/server/content";
 import { mockAnalyzer } from "@/server/pipeline/mock-analyzer";
 import { toRows } from "@/server/pipeline/persist";
 import type { CallTemplate } from "@/lib/domain";
@@ -40,12 +40,7 @@ const PERSONAS: Record<string, (t: number) => Record<Q, number>> = {
   newhire: (t) => ({ good: 0.2 + 0.15 * t, average: 0.5, poor: 0.3 - 0.15 * t }),
 };
 const PERSONA_ORDER = ["top", "steady", "improving", "regressing", "compliance", "newhire"];
-const TAGS = [
-  { id: "tag_coaching", slug: "coaching-example", displayName: "Coaching example" },
-  { id: "tag_escalation", slug: "escalation", displayName: "Escalation" },
-  { id: "tag_highvalue", slug: "high-value", displayName: "High value (₹50K+)" },
-  { id: "tag_repeat", slug: "repeat-defaulter", displayName: "Repeat defaulter" },
-];
+const tagId = (slug: string) => `tag_${slug.replace(/[/-]/g, "_")}`;
 const slug = (n: string) => n.toLowerCase().replace(/[^a-z]+/g, ".");
 const pad = (n: number) => n.toString().padStart(5, "0");
 
@@ -56,7 +51,7 @@ async function main() {
   const playable = templates.filter((t) => timings[t.id]);
   if (!playable.length) throw new Error("No templates with audio — run `npm run audio:generate` first.");
 
-  await db.execute(sql`TRUNCATE call_tags, criterion_results, calls, tags, categories, users, teams, organizations CASCADE`);
+  await db.execute(sql`TRUNCATE webhook_deliveries, webhooks, api_keys, call_tags, criterion_results, calls, tags, categories, users, teams, organizations CASCADE`);
   await db.insert(schema.organizations).values({ id: ORG, name: "Kaveri Finance" });
   await db.insert(schema.teams).values(TEAMS.map((t) => ({ id: t.id, orgId: ORG, name: t.name, language: t.language })));
 
@@ -78,7 +73,7 @@ async function main() {
     })),
   );
   await db.insert(schema.categories).values(rubrics.map((r) => ({ id: r.id, orgId: ORG, name: r.name, description: r.description, icon: r.icon, rubric: r })));
-  await db.insert(schema.tags).values(TAGS.map((t) => ({ ...t, orgId: ORG })));
+  await db.insert(schema.tags).values(loadTagDefs().map((t) => ({ id: tagId(t.slug), orgId: ORG, slug: t.slug, displayName: t.displayName, description: t.description ?? null, assignable: t.assignable ?? false })));
 
   const rubricById = new Map(rubrics.map((r) => [r.id, r]));
   const byKey = new Map<string, CallTemplate[]>();
@@ -93,7 +88,7 @@ async function main() {
 
   const callRows: (typeof schema.calls.$inferInsert)[] = [];
   const crRows: (typeof schema.criterionResults.$inferInsert)[] = [];
-  const tagRows: { callId: string; tagId: string }[] = [];
+  const tagRows: { callId: string; tagId: string; source: "rule" | "manual" }[] = [];
   let n = 0;
 
   for (let d = 59; d >= 0; d--) {
@@ -116,18 +111,20 @@ async function main() {
         if (callAt > now) callAt.setTime(now.getTime() - Math.floor(rand() * 3600_000));
         const id = `call_${pad(++n)}`;
         const analysis = mockAnalyzer.analyze({ rubric, templateId: tpl.id });
-        const { callPatch, criterionRows } = toRows(id, rubric, analysis);
+        const { callPatch, criterionRows, tagSlugs } = toRows(id, rubric, analysis);
         const fromApi = rand() < 0.7;
         callRows.push({
           id, orgId: ORG, categoryId: tpl.categoryId, agentId: a.id,
           uploadedBy: fromApi ? null : a.language === "hi-en" ? "u_mgr_north" : "u_mgr_south",
-          audioUrl: `/audio/${tpl.id}.m4a`, callAt, createdAt: callAt, readyAt: callAt, language: tpl.language, templateId: tpl.id,
+          audioUrl: `/audio/${tpl.id}.m4a`, callAt, createdAt: callAt, readyAt: callAt, completedAt: new Date(callAt.getTime() + 90_000), language: tpl.language, templateId: tpl.id,
           udfs: { loanId: `KF-${(100000 + Math.floor(rand() * 899999)).toString()}`, dpd: tpl.categoryId === "early-bucket" ? 1 + Math.floor(rand() * 30) : 31 + Math.floor(rand() * 60) },
           ...callPatch,
         });
         crRows.push(...criterionRows);
-        if (rand() < 0.12) tagRows.push({ callId: id, tagId: pick(TAGS).id });
-        if (callPatch.complianceFlag && rand() < 0.5) tagRows.push({ callId: id, tagId: "tag_escalation" });
+        // tags are applied by the category's rules; managers add a few by hand
+        for (const slug of tagSlugs) tagRows.push({ callId: id, tagId: tagId(slug), source: "rule" });
+        if ((callPatch.score ?? 0) >= 95 && rand() < 0.08) tagRows.push({ callId: id, tagId: tagId("coaching/example"), source: "manual" });
+        if (callPatch.complianceFlag && rand() < 0.25) tagRows.push({ callId: id, tagId: tagId("coaching/escalate"), source: "manual" });
       }
     }
   }
@@ -136,7 +133,7 @@ async function main() {
     callRows.push({
       id: `call_${pad(++n)}`, orgId: ORG, categoryId: "early-bucket", agentId: a.id, status: "failed",
       failureReason: "Recording is empty or corrupted (0 bytes received from dialer)", durationSec: 0,
-      callAt: daysAgo(Math.floor(rand() * 5)), language: a.language, readyAt: now,
+      callAt: daysAgo(Math.floor(rand() * 5)), language: a.language, readyAt: now, completedAt: now,
     });
   }
   // a sample of manager-reviewed calls with notes

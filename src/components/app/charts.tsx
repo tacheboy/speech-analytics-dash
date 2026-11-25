@@ -57,15 +57,15 @@ export function TrendChart({ data, granularity }: { data: Analytics["trend"]; gr
   );
 }
 
-const outcomeColor = (o: { isSuccess: boolean | null; isNotApplicable: boolean }) =>
-  o.isNotApplicable ? "var(--muted-foreground)" : o.isSuccess === true ? "var(--success)" : o.isSuccess === false ? "var(--danger)" : "var(--info)";
+const outcomeColor = (o: { type: string }) => (o.type === "success" ? "var(--success)" : o.type === "standard" ? "var(--info)" : "var(--muted-foreground)");
+const TYPE_TEXT: Record<string, string> = { success: "success", standard: "standard", na: "NA · excluded" };
 
 /** Outcome share as labelled horizontal bars (status colour + text label, never colour alone). */
 export function OutcomeBars({ data: all, onSelect, limit = 7 }: { data: Analytics["outcomes"]; onSelect?: (label: string) => void; limit?: number }) {
   // never more than `limit` rows: the tail folds into "Other"
   const rest = all.slice(limit - 1);
   const data = all.length > limit
-    ? [...all.slice(0, limit - 1), { label: `Other (${rest.length})`, isSuccess: null, isNotApplicable: true, count: rest.reduce((s, o) => s + o.count, 0), pct: Math.round(rest.reduce((s, o) => s + (o.pct ?? 0), 0) * 10) / 10 }]
+    ? [...all.slice(0, limit - 1), { label: `Other (${rest.length})`, type: "other", isSuccess: false, isNotApplicable: false, count: rest.reduce((s, o) => s + o.count, 0), pct: Math.round(rest.reduce((s, o) => s + (o.pct ?? 0), 0) * 10) / 10 }]
     : all;
   const max = Math.max(1, ...data.map((d) => d.count));
   return (
@@ -75,7 +75,7 @@ export function OutcomeBars({ data: all, onSelect, limit = 7 }: { data: Analytic
           <button type="button" disabled={o.label.startsWith("Other (")} onClick={() => onSelect?.(o.label)} className="group w-full text-left disabled:cursor-default" title={`View ${o.label} calls`}>
             <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
               <span className="truncate group-hover:underline">{o.label}
-                <span className="ml-2 text-xs text-muted-foreground">{o.label.startsWith("Other (") ? "" : o.isNotApplicable ? "not applicable" : o.isSuccess ? "success" : o.isSuccess === false ? "unsuccessful" : "neutral"}</span>
+                <span className="ml-2 text-xs text-muted-foreground">{TYPE_TEXT[o.type] ?? ""}</span>
               </span>
               <span className="shrink-0 tabular text-muted-foreground"><span className="font-medium text-foreground">{o.pct}%</span> · {o.count}</span>
             </div>

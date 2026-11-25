@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, ArrowLeft, Download, FlaskConical, Link2, Loader2, ShieldAlert } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Download, FlaskConical, Link2, Loader2, ShieldAlert, Tag } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
@@ -62,7 +62,11 @@ export default function CallDetailPage() {
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <OutcomeBadge label={call.outcome?.label ?? null} isSuccess={call.isSuccess} isNotApplicable={call.isNotApplicable} />
               {call.complianceFlag && <Pill tone="danger"><ShieldAlert className="size-3" /> RBI compliance flag</Pill>}
-              {call.tags.map((t) => <Pill key={t.id}>{t.displayName}</Pill>)}
+              {call.tags.map((t) => (
+                <Link key={t.id} href={`/calls/all?tag=${encodeURIComponent(t.slug)}`} title={`${t.slug}${t.source === "manual" ? " · added by a manager" : " · applied by rule"}`}>
+                  <Pill tone={t.source === "manual" ? "primary" : "muted"} className="hover:border-primary/50"><Tag className="size-3" />{t.displayName}</Pill>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
@@ -110,7 +114,7 @@ export default function CallDetailPage() {
                 <TabsTrigger value="data">Data</TabsTrigger>
               </TabsList>
               <TabsContent value="summary"><Summary call={call} /></TabsContent>
-              <TabsContent value="audit"><Audit key={call.reviewedAt ? String(call.reviewedAt) : "new"} call={call} canReview={canReview} onSeek={seek} /></TabsContent>
+              <TabsContent value="audit"><Audit key={call.reviewedAt ? String(call.reviewedAt) : "new"} call={call} canReview={canReview} onSeek={seek} assignableTags={(ws?.tags ?? []).filter((t) => t.assignable && t.slug.includes("/")).map((t) => ({ id: t.id, displayName: t.displayName }))} /></TabsContent>
               <TabsContent value="data"><Extractions call={call} /></TabsContent>
             </Tabs>
           </div>

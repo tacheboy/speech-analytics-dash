@@ -27,7 +27,8 @@ const filterParsers = {
   agentId: parseAsString,
   teamId: parseAsString,
   outcome: parseAsString,
-  tag: parseAsString,
+  tag: parseAsString, // tag slug, any level of the hierarchy
+  ext: parseAsString, // extracted value "field:value"
   status: parseAsStringLiteral(["all", "done", "processing", "failed"] as const),
   scoreBucket: parseAsStringLiteral(Object.keys(SCORE_BUCKETS) as (keyof typeof SCORE_BUCKETS)[]),
   durationBucket: parseAsStringLiteral(Object.keys(DURATION_BUCKETS) as (keyof typeof DURATION_BUCKETS)[]),
@@ -81,7 +82,7 @@ export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, comp
 
   const query: ListCallsQuery = {
     categoryId: categoryId === "all" ? undefined : categoryId,
-    q: f.q ?? undefined, agentId: f.agentId ?? undefined, teamId: f.teamId ?? undefined, outcome: f.outcome ?? undefined, tag: f.tag ?? undefined,
+    q: f.q ?? undefined, agentId: f.agentId ?? undefined, teamId: f.teamId ?? undefined, outcome: f.outcome ?? undefined, tag: f.tag ?? undefined, ext: f.ext ?? undefined,
     status: f.status ?? "all", scoreBucket: f.scoreBucket ?? undefined, durationBucket: f.durationBucket ?? undefined,
     reviewed: f.reviewed ?? undefined, compliance: f.compliance ?? undefined, from: f.from ?? undefined, to: f.to ?? undefined,
     sort: f.sort ?? "date", order: f.order ?? "desc", page: f.page ?? 1, pageSize,
@@ -94,6 +95,8 @@ export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, comp
     const cats = ws?.categories.filter((c) => !categoryId || categoryId === "all" || c.id === categoryId) ?? [];
     return [...new Set(cats.flatMap((c) => c.rubric.outcomes.map((o) => o.label)))].map((l) => ({ value: l, label: l }));
   }, [ws, categoryId]);
+  const tagPath = (slug: string) => slug.split("/").map((_, i, a) => ws?.tags.find((x) => x.slug === a.slice(0, i + 1).join("/"))?.displayName ?? a[i]).join(" › ");
+  const tagOptions = [...(ws?.tags ?? [])].sort((a, b) => a.slug.localeCompare(b.slug)).map((x) => ({ value: x.slug, label: `${"\u00a0\u00a0".repeat(x.slug.split("/").length - 1)}${x.slug.includes("/") ? "› " : ""}${x.displayName}` }));
   const name = (list: { id: string; name?: string; displayName?: string }[] | undefined, id: string | null) => list?.find((x) => x.id === id)?.name ?? list?.find((x) => x.id === id)?.displayName ?? id;
 
   const chips: { label: string; clear: () => void }[] = [];
@@ -103,7 +106,12 @@ export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, comp
   if (f.status && f.status !== "all") chips.push({ label: `Status: ${f.status === "done" ? "Analyzed" : f.status}`, clear: () => setF({ status: null, page: null }) });
   if (f.scoreBucket) chips.push({ label: `Score: ${SCORE_BUCKETS[f.scoreBucket].label}`, clear: () => setF({ scoreBucket: null, page: null }) });
   if (f.durationBucket) chips.push({ label: `Duration: ${DURATION_BUCKETS[f.durationBucket].label}`, clear: () => setF({ durationBucket: null, page: null }) });
-  if (f.tag) chips.push({ label: `Tag: ${name(ws?.tags, f.tag)}`, clear: () => setF({ tag: null, page: null }) });
+  if (f.tag) chips.push({ label: `Tag: ${tagPath(f.tag)}${ws?.tags.some((x) => x.slug.startsWith(`${f.tag}/`)) ? " (all)" : ""}`, clear: () => setF({ tag: null, page: null }) });
+  if (f.ext) {
+    const [field, ...rest] = f.ext.split(":");
+    const def = ws?.categories.flatMap((c) => c.rubric.extractionFields).find((x) => x.fieldName === field);
+    chips.push({ label: `${def?.displayName ?? field}: ${rest.join(":").replace(/_/g, " ")}`, clear: () => setF({ ext: null, page: null }) });
+  }
   if (f.reviewed) chips.push({ label: f.reviewed === "true" ? "Reviewed" : "Not reviewed", clear: () => setF({ reviewed: null, page: null }) });
   if (f.compliance) chips.push({ label: "Compliance flagged", clear: () => setF({ compliance: null, page: null }) });
   if (f.from && f.to) chips.push({ label: `${fmtDate(f.from)} – ${fmtDate(f.to)}`, clear: () => setF({ from: null, to: null, page: null }) });
@@ -138,7 +146,7 @@ export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, comp
               <FilterSelect label="Analysis status" value={f.status === "all" ? null : f.status} options={[{ value: "done", label: "Analyzed" }, { value: "processing", label: "Processing" }, { value: "failed", label: "Failed" }]} onChange={(v) => setF({ status: v as typeof f.status, page: null })} />
               <FilterSelect label="Quality score" value={f.scoreBucket} options={Object.entries(SCORE_BUCKETS).map(([k, b]) => ({ value: k, label: b.label }))} onChange={(v) => setF({ scoreBucket: v as typeof f.scoreBucket, page: null })} />
               <FilterSelect label="Duration" value={f.durationBucket} options={Object.entries(DURATION_BUCKETS).map(([k, b]) => ({ value: k, label: b.label }))} onChange={(v) => setF({ durationBucket: v as typeof f.durationBucket, page: null })} />
-              <FilterSelect label="Tag" value={f.tag} options={(ws?.tags ?? []).map((t) => ({ value: t.id, label: t.displayName }))} onChange={(v) => setF({ tag: v, page: null })} />
+              <FilterSelect label="Tag (any level)" value={f.tag} options={tagOptions} onChange={(v) => setF({ tag: v, page: null })} />
               {!fixed?.reviewed && <FilterSelect label="Manager review" value={f.reviewed} options={[{ value: "true", label: "Reviewed" }, { value: "false", label: "Not reviewed" }]} onChange={(v) => setF({ reviewed: v as typeof f.reviewed, page: null })} />}
               {!fixed?.compliance && <FilterSelect label="Compliance" value={f.compliance} options={[{ value: "true", label: "Flagged calls only" }]} onChange={(v) => setF({ compliance: v as typeof f.compliance, page: null })} />}
             </PopoverContent>

@@ -9,7 +9,7 @@ import { AgentAvatar, PageHeader, Panel, ScoreBadge } from "@/components/app/bit
 import { CallsTable } from "@/components/app/calls-table";
 import { OutcomeBars, TrendChart } from "@/components/app/charts";
 import { DateRangePicker, useDateRange } from "@/components/app/date-range";
-import { KpiCard } from "@/components/app/kpi";
+import { KpiCard, METRIC_HELP } from "@/components/app/kpi";
 import { UploadDialog } from "@/components/app/upload-dialog";
 import { useAnalytics, useWorkspace } from "@/lib/api-client";
 import { fmtDuration, fmtPct } from "@/lib/format";
@@ -55,13 +55,13 @@ export default function DashboardPage() {
       ) : (
         <div className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <KpiCard label={isAgent ? "My quality score" : "Quality score"} icon={<Gauge className="size-4 text-chart-1" />} value={fmtPct(a.kpis.quality.value, 1)} delta={a.kpis.quality.delta} hint="vs previous period" spark={a.trend.map((d) => d.quality)} />
-            <KpiCard label="Success rate" icon={<Target className="size-4 text-chart-2" />} value={fmtPct(a.kpis.successRate.value, 1)} delta={a.kpis.successRate.delta} hint="vs previous period" spark={a.trend.map((d) => d.successRate)} />
+            <KpiCard label={isAgent ? "My quality score" : "Quality score"} info={METRIC_HELP.quality} icon={<Gauge className="size-4 text-chart-1" />} value={fmtPct(a.kpis.quality.value, 1)} delta={a.kpis.quality.delta} hint="vs previous period" spark={a.trend.map((d) => d.quality)} />
+            <KpiCard label="Success rate" info={METRIC_HELP.success} icon={<Target className="size-4 text-chart-2" />} value={fmtPct(a.kpis.successRate.value, 1)} delta={a.kpis.successRate.delta} hint="vs previous period" spark={a.trend.map((d) => d.successRate)} />
             <KpiCard label={isAgent ? "My calls" : "Calls analyzed"} icon={<Phone className="size-4 text-muted-foreground" />} value={a.kpis.volume.value.toLocaleString("en-IN")} delta={a.kpis.volume.delta} deltaSuffix="" hint={`avg ${fmtDuration(a.kpis.avgDurationSec.value)}`} spark={a.trend.map((d) => d.volume)} />
             {isAgent && a.profile ? (
               <KpiCard label="Score vs team average" icon={<ClipboardCheck className="size-4 text-primary" />} value={a.kpis.quality.value != null && a.profile.teamQuality != null ? `${a.kpis.quality.value - a.profile.teamQuality > 0 ? "+" : ""}${(a.kpis.quality.value - a.profile.teamQuality).toFixed(1)}` : "—"} hint={`team avg ${fmtPct(a.profile.teamQuality, 1)}`} />
             ) : (
-              <KpiCard label="Compliance flags" icon={<ShieldAlert className="size-4 text-danger" />} value={fmtPct(a.kpis.complianceRate.value, 1)} delta={a.kpis.complianceRate.delta} invertDelta hint="of calls" spark={a.trend.map((d) => d.complianceRate)} />
+              <KpiCard label="Compliance flags" info={METRIC_HELP.compliance} icon={<ShieldAlert className="size-4 text-danger" />} value={fmtPct(a.kpis.complianceRate.value, 1)} delta={a.kpis.complianceRate.delta} invertDelta hint="of calls" spark={a.trend.map((d) => d.complianceRate)} />
             )}
           </div>
 

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DemoBadge, PageHeader, Panel, Pill } from "@/components/app/bits";
 import { useWorkspace } from "@/lib/api-client";
-import type { Rubric } from "@/lib/domain";
+import { OUTCOME_TYPE_LABEL, outcomeType, type Rubric } from "@/lib/domain";
 import type { Workspace } from "@/server/services/workspace";
 import { cn } from "@/lib/utils";
 
@@ -20,10 +20,11 @@ export default function ConfigurationPage() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const { data: ws } = useWorkspace();
   const cat = ws?.categories.find((c) => c.id === categoryId);
-  return cat ? <Editor key={cat.id} cat={cat} /> : null;
+  return cat && ws ? <Editor key={cat.id} cat={cat} tags={ws.tags} /> : null;
 }
 
-function Editor({ cat }: { cat: Workspace["categories"][number] }) {
+function Editor({ cat, tags }: { cat: Workspace["categories"][number]; tags: Workspace["tags"] }) {
+  const tagName = (slug: string) => slug.split("/").map((_, i, a) => tags.find((x) => x.slug === a.slice(0, i + 1).join("/"))?.displayName ?? a[i]).join(" › ");
   const [tab, setTab] = useState<(typeof TABS)[number]>(TABS[0]);
   const [draft, setDraft] = useState<Rubric>(() => structuredClone(cat.rubric));
   const [dirty, setDirty] = useState(false);
@@ -42,8 +43,14 @@ function Editor({ cat }: { cat: Workspace["categories"][number] }) {
 
       {tab === "Sections & criteria" && (
         <div className="space-y-4">
+          <Panel title="About this category" description="Context the model receives with every call in this category.">
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="grid gap-1.5 text-sm font-medium">Intended purpose<Textarea rows={3} value={draft.intendedPurpose} onChange={(e) => edit((r) => { r.intendedPurpose = e.target.value; })} /></label>
+              <label className="grid gap-1.5 text-sm font-medium">Additional LLM context<Textarea rows={3} value={draft.additionalLLMContext} onChange={(e) => edit((r) => { r.additionalLLMContext = e.target.value; })} /></label>
+            </div>
+          </Panel>
           {draft.sections.map((s, si) => {
-            const rule = draft.targetingRules.find((r) => r.targetId === s.id);
+            const rule = draft.targetingRules.find((r) => r.targetType === "section" && r.targetId === s.id);
             return (
               <Panel key={s.id} title={<Input value={s.name} onChange={(e) => edit((r) => { r.sections[si].name = e.target.value; })} className="h-8 max-w-md font-semibold" aria-label="Section name" />}
                 actions={<div className="flex items-center gap-2">{rule && <Pill tone="info">Targeted · {rule.description}</Pill>}<span className="text-xs text-muted-foreground">{s.criteria.length} criteria</span></div>}>
@@ -53,7 +60,7 @@ function Editor({ cat }: { cat: Workspace["categories"][number] }) {
                       <div className="grid gap-2">
                         <Input value={c.question} onChange={(e) => edit((r) => { r.sections[si].criteria[ci].question = e.target.value; })} aria-label="Criterion question" />
                         <Textarea rows={1} value={c.context ?? ""} placeholder="What counts as evidence? (optional guidance for the model)" onChange={(e) => edit((r) => { r.sections[si].criteria[ci].context = e.target.value; })} className="text-sm" />
-                        <code className="text-xs text-muted-foreground">{c.id}</code>
+                        <span className="flex flex-wrap items-center gap-2"><code className="text-xs text-muted-foreground">{c.id}</code>{draft.targetingRules.some((r) => r.targetType === "criterion" && r.targetId === c.id) && <Pill tone="info" className="h-5 text-[11px]">NA by rule: {draft.targetingRules.find((r) => r.targetType === "criterion" && r.targetId === c.id)!.description}</Pill>}</span>
                       </div>
                       <Button variant="ghost" size="icon" aria-label="Delete criterion" onClick={() => edit((r) => { r.sections[si].criteria.splice(ci, 1); })}><Trash2 className="size-4" /></Button>
                     </li>
@@ -67,13 +74,18 @@ function Editor({ cat }: { cat: Workspace["categories"][number] }) {
       )}
 
       {tab === "Outcomes" && (
-        <Panel title="Possible outcomes" description="The model picks exactly one per call. Success outcomes drive the success rate; N/A outcomes are excluded from it.">
+        <Panel title="Possible outcomes" description="Exactly one per call. Success = objective achieved; Standard = valid but not successful; NA = tracked but excluded from quality score and success rate.">
           <ul className="divide-y">
             {draft.outcomes.map((o, oi) => (
               <li key={o.id} className="grid gap-2 py-3 md:grid-cols-[14rem_1fr_auto] md:items-center">
                 <Input value={o.label} onChange={(e) => edit((r) => { r.outcomes[oi].label = e.target.value; })} aria-label="Outcome label" />
                 <p className="text-sm text-muted-foreground">{o.description}</p>
-                <Pill tone={o.isNotApplicable ? "muted" : o.isSuccess ? "success" : o.isSuccess === false ? "danger" : "info"}>{o.isNotApplicable ? "Not applicable" : o.isSuccess ? "Success" : o.isSuccess === false ? "Unsuccessful" : "Standard"}</Pill>
+                <div className="inline-flex rounded-lg border p-0.5 text-xs" role="radiogroup" aria-label={`${o.label} type`}>
+                  {(["success", "standard", "na"] as const).map((ty) => (
+                    <button key={ty} role="radio" aria-checked={outcomeType(o) === ty} onClick={() => edit((r) => { r.outcomes[oi].isSuccess = ty === "success"; r.outcomes[oi].isNotApplicable = ty === "na"; })}
+                      className={cn("rounded-md px-2.5 py-1", outcomeType(o) === ty ? (ty === "success" ? "bg-success/15 text-success" : ty === "na" ? "bg-muted" : "bg-info/15 text-info") : "text-muted-foreground")}>{OUTCOME_TYPE_LABEL[ty]}</button>
+                  ))}
+                </div>
               </li>
             ))}
           </ul>
@@ -84,10 +96,10 @@ function Editor({ cat }: { cat: Workspace["categories"][number] }) {
         <Panel title="Extraction fields" description="Structured data the model pulls from every call. Fields can drive targeting rules.">
           <ul className="divide-y">
             {draft.extractionFields.map((f) => (
-              <li key={f.fieldName} className="grid gap-1 py-3 md:grid-cols-[14rem_6rem_1fr]">
-                <span><span className="block font-medium">{f.displayName}</span><code className="text-xs text-muted-foreground">{f.fieldName}</code></span>
-                <Pill className="w-fit">{f.fieldType}</Pill>
-                <span className="text-sm text-muted-foreground">{f.description}{f.enumValues && <span className="mt-1 flex flex-wrap gap-1">{f.enumValues.map((v) => <Pill key={v} className="h-5 text-[11px]">{v}</Pill>)}</span>}</span>
+              <li key={f.fieldName} className="grid gap-1 py-3 md:grid-cols-[14rem_7rem_1fr]">
+                <span><span className="block font-medium">{f.displayName}{f.required && <span className="ml-1.5 text-xs text-danger">required</span>}</span><code className="text-xs text-muted-foreground">{f.fieldName}</code></span>
+                <Pill className="w-fit">{{ text: "Free text", enum: "Choice", number: "Number", boolean: "Yes / No" }[f.fieldType]}</Pill>
+                <span className="text-sm text-muted-foreground">{f.description}{f.enumOptions && <span className="mt-1 flex flex-wrap gap-1">{f.enumOptions.map((o) => <Pill key={o.value} className="h-5 text-[11px]" title={o.hint}>{o.value}{o.hint ? " ⓘ" : ""}</Pill>)}</span>}</span>
               </li>
             ))}
           </ul>
@@ -95,17 +107,30 @@ function Editor({ cat }: { cat: Workspace["categories"][number] }) {
       )}
 
       {tab === "Targeting rules" && (
-        <Panel title="Targeting rules" description="JSONLogic over extractions and outcome. A targeted section is only scored when its rule matches.">
-          {draft.targetingRules.length === 0 && <p className="text-sm text-muted-foreground">No targeting rules — every section applies to every call.</p>}
-          <div className="space-y-4">
-            {draft.targetingRules.map((r) => (
-              <div key={r.targetId} className="rounded-xl border p-4">
-                <p className="font-medium">{draft.sections.find((s) => s.id === r.targetId)?.name} <span className="font-normal text-muted-foreground">— {r.description}</span></p>
-                <pre className="mt-2 overflow-x-auto rounded-lg bg-muted/60 p-3 text-xs">{JSON.stringify(r.expression, null, 2)}</pre>
-              </div>
-            ))}
-          </div>
-        </Panel>
+        <div className="space-y-4">
+          {([
+            ["section", "Section rules", "The whole section becomes NA unless the rule matches."],
+            ["criterion", "Criterion rules", "A single question becomes NA unless the rule matches (“configured to become NA when certain conditions are met”)."],
+            ["tag", "Tag rules", "The tag is applied when the rule matches. Rules can read extracted data, the outcome and rubric answers (criteria.<id> = pass | fail | na)."],
+          ] as const).map(([type, title, desc]) => {
+            const rules = draft.targetingRules.filter((r) => r.targetType === type);
+            const name = (id: string) => type === "section" ? draft.sections.find((s) => s.id === id)?.name : type === "criterion" ? draft.sections.flatMap((s) => s.criteria).find((c) => c.id === id)?.question : tagName(id);
+            return (
+              <Panel key={type} title={`${title} (${rules.length})`} description={desc}>
+                {rules.length === 0 ? <p className="text-sm text-muted-foreground">None.</p> : (
+                  <ul className="divide-y">
+                    {rules.map((r) => (
+                      <li key={r.targetId} className="grid gap-2 py-3 lg:grid-cols-[1fr_1.1fr]">
+                        <div><p className="text-sm font-medium">{name(r.targetId) ?? r.targetId}</p><p className="text-xs text-muted-foreground">{r.description}</p></div>
+                        <pre className="overflow-x-auto rounded-lg bg-muted/60 p-2.5 text-[11px] leading-snug">{JSON.stringify(r.expression)}</pre>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Panel>
+            );
+          })}
+        </div>
       )}
 
       {tab === "Versions" && (

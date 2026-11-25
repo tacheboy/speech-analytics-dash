@@ -116,7 +116,7 @@
       "id": "escalated",
       "label": "Escalated",
       "description": "Call escalated to a supervisor or grievance officer.",
-      "isSuccess": null,
+      "isSuccess": false,
       "isNotApplicable": false
     },
     {
@@ -130,7 +130,7 @@
       "id": "wrong_party",
       "label": "Wrong Party",
       "description": "Borrower not reached; someone else answered or wrong number.",
-      "isSuccess": null,
+      "isSuccess": false,
       "isNotApplicable": true
     }
   ],
@@ -140,10 +140,17 @@
       "displayName": "Call Intent",
       "fieldType": "enum",
       "description": "Whether the call is about a dispute, a settlement, or both.",
-      "enumValues": [
-        "dispute",
-        "settlement",
-        "both"
+      "required": true,
+      "enumOptions": [
+        {
+          "value": "dispute"
+        },
+        {
+          "value": "settlement"
+        },
+        {
+          "value": "both"
+        }
       ]
     },
     {
@@ -151,19 +158,31 @@
       "displayName": "Dispute Type",
       "fieldType": "enum",
       "description": "What the customer disputes, if anything.",
-      "enumValues": [
-        "wrong_charges",
-        "already_paid",
-        "fraud",
-        "service_issue",
-        "none"
+      "required": false,
+      "enumOptions": [
+        {
+          "value": "wrong_charges"
+        },
+        {
+          "value": "already_paid"
+        },
+        {
+          "value": "fraud"
+        },
+        {
+          "value": "service_issue"
+        },
+        {
+          "value": "none"
+        }
       ]
     },
     {
       "fieldName": "settlement_amount",
       "displayName": "Settlement Amount (₹)",
       "fieldType": "number",
-      "description": "Settlement amount discussed, in rupees."
+      "description": "Settlement amount discussed, in rupees.",
+      "required": false
     }
   ],
   "targetingRules": [
@@ -198,6 +217,163 @@
           ]
         ]
       }
+    },
+    {
+      "targetType": "criterion",
+      "targetId": "st_written_confirmation",
+      "description": "Not applicable when the settlement offer was rejected",
+      "expression": {
+        "!=": [
+          {
+            "var": "outcome.id"
+          },
+          "offer_rejected"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "compliance/threats",
+      "description": "Threat criterion answered No",
+      "expression": {
+        "==": [
+          {
+            "var": "criteria.cp_no_threats"
+          },
+          "fail"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "compliance/abusive",
+      "description": "Respect criterion answered No",
+      "expression": {
+        "==": [
+          {
+            "var": "criteria.cp_respectful"
+          },
+          "fail"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "compliance/third-party",
+      "description": "Third-party criterion answered No",
+      "expression": {
+        "==": [
+          {
+            "var": "criteria.cp_no_third_party"
+          },
+          "fail"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "compliance/no-recording-disclosure",
+      "description": "Recording disclosure answered No",
+      "expression": {
+        "==": [
+          {
+            "var": "criteria.op_recording_disclosure"
+          },
+          "fail"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "objection/dispute/wrong-charges",
+      "description": "Dispute type is wrong charges",
+      "expression": {
+        "==": [
+          {
+            "var": "extractions.dispute_type"
+          },
+          "wrong_charges"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "objection/dispute/already-paid",
+      "description": "Dispute type is already paid",
+      "expression": {
+        "==": [
+          {
+            "var": "extractions.dispute_type"
+          },
+          "already_paid"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "objection/dispute/fraud",
+      "description": "Dispute type is fraud",
+      "expression": {
+        "==": [
+          {
+            "var": "extractions.dispute_type"
+          },
+          "fraud"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "objection/dispute/service-issue",
+      "description": "Dispute type is service issue",
+      "expression": {
+        "==": [
+          {
+            "var": "extractions.dispute_type"
+          },
+          "service_issue"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "objection/unwilling/offer-rejected",
+      "description": "Outcome is Offer Rejected",
+      "expression": {
+        "==": [
+          {
+            "var": "outcome.id"
+          },
+          "offer_rejected"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "value/high",
+      "description": "Settlement of ₹50,000 or more",
+      "expression": {
+        ">=": [
+          {
+            "var": "extractions.settlement_amount"
+          },
+          50000
+        ]
+      }
     }
+  ],
+  "intendedPurpose": "Calls where the borrower disputes charges or negotiates a one-time settlement.",
+  "additionalLLMContext": "Calls are code-mixed (Tamil/Kannada/Hindi with English). Judge intent, not exact wording. RBI Fair Practices Code applies: calls only 08:00–19:00, no threats, no disclosure to third parties.",
+  "tagTargets": [
+    "compliance/threats",
+    "compliance/abusive",
+    "compliance/third-party",
+    "compliance/no-recording-disclosure",
+    "objection/dispute/wrong-charges",
+    "objection/dispute/already-paid",
+    "objection/dispute/fraud",
+    "objection/dispute/service-issue",
+    "objection/unwilling/offer-rejected",
+    "value/high"
   ]
 }

@@ -1,38 +1,38 @@
 "use client";
 
-import { Plus } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { DemoBadge, PageHeader, Panel } from "@/components/app/bits";
-import { useWorkspace } from "@/lib/api-client";
+import { PageHeader, Panel, Pill } from "@/components/app/bits";
+import { useAnalytics, useWorkspace } from "@/lib/api-client";
 
-type Tag = { id: string; slug: string; displayName: string };
-
+/** The org's tag taxonomy (tag › subtag › detail), how each tag gets applied, and how often it fired in the last 30 days. */
 export default function TagsPage() {
   const { data: ws } = useWorkspace();
-  return ws ? <TagList initial={ws.tags} /> : null;
-}
-
-function TagList({ initial }: { initial: Tag[] }) {
-  const [tags, setTags] = useState<Tag[]>(initial);
-  const [name, setName] = useState("");
+  const { data: a } = useAnalytics({ dimension: "org" });
+  if (!ws) return null;
+  const counts = new Map(a?.intelligence.tags.map((t) => [t.slug, t.calls]));
+  const ruleFor = (slug: string) => ws.categories.flatMap((c) => c.rubric.targetingRules.filter((r) => r.targetType === "tag" && r.targetId === slug).map((r) => `${c.name}: ${r.description}`));
+  const sorted = [...ws.tags].sort((x, y) => x.slug.localeCompare(y.slug));
   return (
     <>
-      <PageHeader title="Tags" description="Labels that make calls easier to find, filter and analyze." actions={<DemoBadge />} />
-      <Panel title="Workspace tags" actions={
-        <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); if (!name.trim()) return; setTags((t) => [...t, { id: `local_${Date.now()}`, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"), displayName: name.trim() }]); setName(""); }}>
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="New tag name" className="h-8 w-48" aria-label="New tag name" />
-          <Button size="sm" type="submit" className="gap-1"><Plus className="size-3.5" />Create</Button>
-        </form>}>
-        <ul className="divide-y text-sm">
-          {tags.map((t) => (
-            <li key={t.id} className="flex items-center justify-between gap-3 py-3">
-              <span><span className="block font-medium">{t.displayName}</span><code className="text-xs text-muted-foreground">{t.slug}</code></span>
-              {!t.id.startsWith("local_") && <Link href={`/calls/all?tag=${t.id}`} className="text-primary hover:underline">View calls</Link>}
-            </li>
-          ))}
+      <PageHeader title="Tags" description="Tags add detail beyond the outcome. Most are applied automatically from extracted data and rubric answers; a few are added by managers. Filter calls by any level — a parent includes everything beneath it." />
+      <Panel title="Taxonomy" description="Counts are calls in the last 30 days." bodyClassName="p-0">
+        <ul className="divide-y">
+          {sorted.map((t) => {
+            const depth = t.slug.split("/").length - 1;
+            const rules = ruleFor(t.slug);
+            const isLeafish = !sorted.some((x) => x.slug.startsWith(`${t.slug}/`));
+            return (
+              <li key={t.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-5 py-2.5" style={{ paddingLeft: 20 + depth * 22 }}>
+                <span className={depth === 0 ? "font-semibold" : "text-sm"}>{t.displayName}</span>
+                <code className="text-xs text-muted-foreground">{t.slug}</code>
+                {t.assignable ? <Pill tone="primary" className="h-5 text-[11px]">Manual</Pill> : isLeafish && rules.length > 0 ? <Pill className="h-5 text-[11px]" title={rules.join("\n")}>Rule · {rules.length} categor{rules.length === 1 ? "y" : "ies"}</Pill> : null}
+                <span className="ml-auto flex items-center gap-3 text-sm">
+                  <span className="tabular text-muted-foreground">{counts.get(t.slug) ?? 0} calls</span>
+                  <Link href={`/calls/all?tag=${encodeURIComponent(t.slug)}`} className="text-primary hover:underline">View</Link>
+                </span>
+              </li>
+            );
+          })}
         </ul>
       </Panel>
     </>

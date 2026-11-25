@@ -31,9 +31,12 @@ test("upload a demo recording: processing → analyzed", async ({ page }) => {
   await dialog.getByRole("combobox").nth(1).click();
   await page.getByRole("option", { name: "Rahul Sharma" }).click();
   await dialog.getByRole("button", { name: /Call with/ }).first().click();
+  const created = page.waitForResponse((r) => r.url().endsWith("/api/v1/calls") && r.request().method() === "POST");
   await dialog.getByRole("button", { name: "Upload & analyze" }).click();
-  await expect(page.getByText("Processing").first()).toBeVisible();
-  await expect(page.locator("tbody tr").first().getByText("Analyzed")).toBeVisible({ timeout: 30_000 });
+  const { data } = await (await created).json();
+  const row = page.locator("tbody tr", { hasText: data.callId.replace("call_", "#") });
+  await expect(row.getByText("Processing")).toBeVisible();
+  await expect(row.getByText("Analyzed")).toBeVisible({ timeout: 30_000 });
 });
 
 test("call detail: transcript seeks audio, manager override changes the score", async ({ page }) => {
@@ -49,10 +52,19 @@ test("call detail: transcript seeks audio, manager override changes the score", 
   const ring = page.getByRole("img", { name: /Overall score/ });
   const before = await ring.getAttribute("aria-label");
   await page.getByRole("button", { name: "Review & override" }).click();
-  await page.getByRole("radio", { name: "Missed" }).first().click();
+  await page.getByRole("radio", { name: "No", exact: true }).first().click();
   await page.getByRole("button", { name: "Save review" }).click();
   await expect(page.getByText(/Reviewed by Ananya Iyer/)).toBeVisible();
   await expect(ring).not.toHaveAttribute("aria-label", before!);
+});
+
+test("call intelligence: tag tree drills into calls at any level", async ({ page }) => {
+  await signIn(page, "u_admin");
+  await page.goto("/analytics/org/all?tab=intelligence");
+  await expect(page.getByText("Why calls weren’t successful")).toBeVisible();
+  await page.getByRole("link", { name: "Customer objection", exact: true }).click();
+  await expect(page).toHaveURL(/tag=objection/);
+  await expect(page.getByRole("button", { name: /Tag: Customer objection \(all\)/ })).toBeVisible();
 });
 
 test("analytics tabs and drill-through to calls", async ({ page }) => {

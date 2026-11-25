@@ -17,7 +17,7 @@ export async function getWorkspace(actor: Actor) {
     me: users.find((u) => u.id === actor.userId)!,
     categories: cats.map((c) => ({ id: c.id, name: c.name, description: c.description, icon: c.icon, rubricVersion: c.rubricVersion, rubric: c.rubric })),
     teams,
-    agents: users.filter((u) => u.role === "agent"),
+    agents: users.filter((u) => u.role === "agent" && !u.deactivatedAt),
     staff: users.filter((u) => u.role !== "agent"),
     tags,
     /** bundled demo recordings that can be "uploaded" for a fully consistent analysis */

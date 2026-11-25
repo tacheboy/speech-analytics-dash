@@ -12,6 +12,7 @@ export type AnalysisResult = {
   extractions: Record<string, string | number | boolean | null>;
   moments: Moment[];
   metrics: CallMetrics;
+  tags: string[]; // tag slugs applied by rules
   criteria: {
     sectionId: string;
     criterionId: string;
@@ -20,6 +21,7 @@ export type AnalysisResult = {
     evidenceQuote: string | null;
     evidenceStart: number | null;
     confidence: number;
+    naReason: string | null;
   }[];
 };
 

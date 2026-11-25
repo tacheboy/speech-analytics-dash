@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { db, schema } from "@/server/db/client";
 import type { Role } from "@/lib/domain";
+import { firstAdmin, resolveApiKey } from "@/server/external/auth";
 
 export type Actor = { userId: string; orgId: string; role: Role; name: string };
 export const DEMO_COOKIE = "demo_user";
@@ -12,13 +13,18 @@ export class ApiError extends Error {
   }
 }
 
-/** Demo auth: a seeded user id in a cookie (set on /login), or `x-api-key` which acts as the org admin. */
+/** Demo auth: a seeded user id in a cookie (set on /login), or an API key (`x-api-key` / Bearer) which acts as the org admin. */
 export async function getActor(req?: Request): Promise<Actor> {
   const key = req?.headers.get("x-api-key") ?? req?.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
   let userId: string | undefined;
   if (key) {
-    if (key !== process.env.DEMO_API_KEY) throw new ApiError(401, "unauthorized", "Invalid API key");
-    userId = "u_admin";
+    if (key === process.env.DEMO_API_KEY) userId = "u_admin";
+    else {
+      // keys created in Integrations act as their org's first admin
+      const k = await resolveApiKey(key);
+      if (!k) throw new ApiError(401, "unauthorized", "Invalid API key");
+      userId = (await firstAdmin(k.orgId))?.id;
+    }
   } else {
     userId = (await cookies()).get(DEMO_COOKIE)?.value;
   }

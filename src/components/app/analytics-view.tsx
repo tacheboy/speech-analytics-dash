@@ -18,10 +18,11 @@ import { AgentAvatar, Delta, EmptyState, PageHeader, Panel, Pill, ScoreBadge, Sp
 import { DurationChart, OutcomeBars, TrendChart } from "./charts";
 import { CallsTable } from "./calls-table";
 import { DateRangePicker, useDateRange } from "./date-range";
-import { KpiCard } from "./kpi";
+import { CallIntelligence } from "./intelligence";
+import { KpiCard, METRIC_HELP } from "./kpi";
 
 type Dimension = "org" | "category" | "team" | "agent";
-const TABS = ["overview", "quality", "agents"] as const;
+const TABS = ["overview", "quality", "intelligence", "agents"] as const;
 
 /** Builds a call-list URL for the current scope plus extra filters. */
 function callsHref(dimension: Dimension, id: string | null, extra: Record<string, string> = {}) {
@@ -56,10 +57,10 @@ function Kpis({ a }: { a: Analytics }) {
   const t = a.trend;
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <KpiCard label="Quality score" icon={<Gauge className="size-4 text-chart-1" />} value={fmtPct(a.kpis.quality.value, 1)} delta={a.kpis.quality.delta} hint="vs previous period" spark={t.map((d) => d.quality)} />
-      <KpiCard label="Success rate" icon={<Target className="size-4 text-chart-2" />} value={fmtPct(a.kpis.successRate.value, 1)} delta={a.kpis.successRate.delta} hint="vs previous period" spark={t.map((d) => d.successRate)} />
+      <KpiCard label="Quality score" info={METRIC_HELP.quality} icon={<Gauge className="size-4 text-chart-1" />} value={fmtPct(a.kpis.quality.value, 1)} delta={a.kpis.quality.delta} hint="vs previous period" spark={t.map((d) => d.quality)} />
+      <KpiCard label="Success rate" info={METRIC_HELP.success} icon={<Target className="size-4 text-chart-2" />} value={fmtPct(a.kpis.successRate.value, 1)} delta={a.kpis.successRate.delta} hint="vs previous period" spark={t.map((d) => d.successRate)} />
       <KpiCard label="Calls analyzed" icon={<Phone className="size-4 text-muted-foreground" />} value={a.kpis.volume.value.toLocaleString("en-IN")} delta={a.kpis.volume.delta} deltaSuffix="" hint={`avg ${fmtDuration(a.kpis.avgDurationSec.value)} per call`} spark={t.map((d) => d.volume)} />
-      <KpiCard label="Compliance flags" icon={<ShieldAlert className="size-4 text-danger" />} value={fmtPct(a.kpis.complianceRate.value, 1)} delta={a.kpis.complianceRate.delta} invertDelta hint="of calls" spark={t.map((d) => d.complianceRate)} />
+      <KpiCard label="Compliance flags" info={METRIC_HELP.compliance} icon={<ShieldAlert className="size-4 text-danger" />} value={fmtPct(a.kpis.complianceRate.value, 1)} delta={a.kpis.complianceRate.delta} invertDelta hint="of calls" spark={t.map((d) => d.complianceRate)} />
     </div>
   );
 }
@@ -260,6 +261,7 @@ function Profile({ a, id }: { a: Analytics; id: string }) {
         <Panel className="lg:col-span-3" title="Performance trends" description={`Per ${a.range.granularity}`}><TrendChart data={a.trend} granularity={a.range.granularity} /></Panel>
         <Panel className="lg:col-span-2" title="Outcomes"><OutcomeBars data={a.outcomes} /></Panel>
       </div>
+      <CallIntelligence intel={a.intelligence} href={(q) => callsHref("agent", id, q)} />
       <Panel title="Lowest-scoring recent calls" actions={<Link href={callsHref("agent", id)} className="flex items-center gap-1 text-sm text-primary hover:underline">All calls <ArrowRight className="size-3.5" /></Link>} bodyClassName="p-0">
         <CallsTable compact hideFilters pageSize={5} fixed={{ agentId: [id], sort: "score", order: "asc", status: "done", page: 1, from: a.range.from, to: a.range.to }} />
       </Panel>
@@ -280,7 +282,7 @@ export function AnalyticsView({ dimension, id, title, description }: { dimension
         actions={<><ScopeSwitcher dimension={dimension} id={id} /><DateRangePicker /></>} />
       {!isAgent && (
         <div className="mb-5 flex gap-1 border-b" role="tablist">
-          {([["overview", "Overview"], ["quality", "Quality analysis"], ["agents", "Agent performance"]] as const).map(([k, label]) => (
+          {([["overview", "Overview"], ["quality", "Quality analysis"], ["intelligence", "Call intelligence"], ["agents", "Agent performance"]] as const).map(([k, label]) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k === "overview" ? null : k)}
               className={cn("-mb-px border-b-2 px-3 py-2 text-sm font-medium transition", tab === k ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>{label}</button>
           ))}
@@ -296,6 +298,8 @@ export function AnalyticsView({ dimension, id, title, description }: { dimension
             <Profile a={a} id={id!} />
           ) : tab === "quality" ? (
             <Quality a={a} dimension={dimension} id={id} />
+          ) : tab === "intelligence" ? (
+            <CallIntelligence intel={a.intelligence} href={(q) => callsHref(dimension, id, q)} />
           ) : tab === "agents" ? (
             <AgentsTab a={a} />
           ) : (

@@ -8,7 +8,8 @@ export const listCallsQuery = z.object({
   agentId: list.optional(),
   teamId: list.optional(),
   outcome: list.optional(), // outcome labels
-  tag: list.optional(),
+  tag: list.optional(), // tag slugs; a parent slug matches every tag under it
+  ext: list.optional(), // extracted values as "field:value"
   status: z.enum(["all", "done", "processing", "failed"]).default("all"),
   scoreBucket: z.enum(Object.keys(SCORE_BUCKETS) as [keyof typeof SCORE_BUCKETS]).optional(),
   durationBucket: z.enum(Object.keys(DURATION_BUCKETS) as [keyof typeof DURATION_BUCKETS]).optional(),

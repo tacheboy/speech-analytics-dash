@@ -21,6 +21,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   role: text("role").$type<"admin" | "manager" | "agent">().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  deactivatedAt: timestamp("deactivated_at", { withTimezone: true }), // "deleted" agents keep their call history
 });
 
 export const categories = pgTable("categories", {
@@ -31,13 +32,18 @@ export const categories = pgTable("categories", {
   icon: text("icon").notNull(),
   rubric: jsonb("rubric").$type<Rubric>().notNull(),
   rubricVersion: integer("rubric_version").notNull().default(1),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Hierarchical tags: the slug path encodes the tree ("objection/financial/job-loss"). */
 export const tags = pgTable("tags", {
   id: text("id").primaryKey(),
   orgId: text("org_id").notNull().references(() => organizations.id),
   slug: text("slug").notNull(),
   displayName: text("display_name").notNull(),
+  description: text("description"),
+  assignable: boolean("assignable").notNull().default(false), // managers can apply it by hand
 });
 
 export const calls = pgTable(
@@ -50,6 +56,8 @@ export const calls = pgTable(
     uploadedBy: text("uploaded_by").references(() => users.id),
     status: text("status").$type<"processing" | "done" | "failed">().notNull(),
     readyAt: timestamp("ready_at", { withTimezone: true }),
+    ingestPending: boolean("ingest_pending").notNull().default(false), // remote recording still downloading
+    completedAt: timestamp("completed_at", { withTimezone: true }), // reached done / failed
     failureReason: text("failure_reason"),
     audioUrl: text("audio_url"),
     fileName: text("file_name"),
@@ -100,6 +108,7 @@ export const criterionResults = pgTable(
     evidenceQuote: text("evidence_quote"),
     evidenceStart: real("evidence_start"),
     confidence: real("confidence").notNull(),
+    naReason: text("na_reason"), // why the criterion is NA (rule description, or missing information)
   },
   (t) => [primaryKey({ columns: [t.callId, t.criterionId] }), index("cr_criterion_result").on(t.criterionId, t.finalResult)],
 );
@@ -109,6 +118,47 @@ export const callTags = pgTable(
   {
     callId: text("call_id").notNull().references(() => calls.id, { onDelete: "cascade" }),
     tagId: text("tag_id").notNull().references(() => tags.id),
+    source: text("source").$type<"rule" | "manual">().notNull().default("rule"),
   },
   (t) => [primaryKey({ columns: [t.callId, t.tagId] })],
+);
+
+/* ---------- external API ---------- */
+
+export const apiKeys = pgTable("api_keys", {
+  id: text("id").primaryKey(),
+  orgId: text("org_id").notNull().references(() => organizations.id),
+  name: text("name").notNull(),
+  prefix: text("prefix").notNull(), // first characters, shown in the UI
+  hash: text("hash").notNull().unique(), // sha256 of the full key; the key itself is shown once
+  createdBy: text("created_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+});
+
+export const webhooks = pgTable("webhooks", {
+  id: text("id").primaryKey(),
+  orgId: text("org_id").notNull().references(() => organizations.id),
+  url: text("url").notNull(),
+  events: jsonb("events").$type<string[]>().notNull(),
+  secret: text("secret").notNull(),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const webhookDeliveries = pgTable(
+  "webhook_deliveries",
+  {
+    id: text("id").primaryKey(),
+    webhookId: text("webhook_id").notNull().references(() => webhooks.id, { onDelete: "cascade" }),
+    event: text("event").notNull(),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
+    statusCode: integer("status_code"),
+    responseBody: text("response_body"),
+    error: text("error"),
+    durationMs: integer("duration_ms"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("deliveries_webhook_date").on(t.webhookId, t.createdAt)],
 );

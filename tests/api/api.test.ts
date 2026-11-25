@@ -53,6 +53,42 @@ describe("GET /calls", () => {
   });
 });
 
+describe("tags", () => {
+  it("filters by any level of the hierarchy", async () => {
+    const leaf = await json(await listCalls(req("/api/v1/calls?tag=objection/financial/medical&pageSize=100"), undefined as never));
+    const parent = await json(await listCalls(req("/api/v1/calls?tag=objection&pageSize=100"), undefined as never));
+    expect(leaf.body.data.total).toBeGreaterThan(0);
+    expect(parent.body.data.total).toBeGreaterThan(leaf.body.data.total);
+    expect(leaf.body.data.items.every((c: { tags: { slug: string }[] }) => c.tags.some((t) => t.slug === "objection/financial/medical"))).toBe(true);
+  });
+  it("filters by an extracted value", async () => {
+    const { body } = await json(await listCalls(req("/api/v1/calls?ext=delay_reason:job_loss&pageSize=5"), undefined as never));
+    expect(body.data.total).toBeGreaterThan(0);
+  });
+  it("review edits manual tags only and rejects rule tags", async () => {
+    const [c] = await db.execute<{ id: string }>(sql`select c.id from calls c join call_tags ct on ct.call_id = c.id where ct.source = 'rule' and c.status = 'done' limit 1`);
+    const send = (tagIds: string[]) => review(req(`/api/v1/calls/${c.id}/review`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ tagIds }) }), ctx(c.id));
+    const ok = await json(await send(["tag_coaching_example"]));
+    expect(ok.status).toBe(200);
+    expect(ok.body.data.tags.some((t: { source: string }) => t.source === "rule")).toBe(true);
+    expect(ok.body.data.tags.find((t: { slug: string }) => t.slug === "coaching/example").source).toBe("manual");
+    expect((await json(await send(["tag_compliance_threats"]))).status).toBe(400);
+  });
+});
+
+describe("analytics: call intelligence", () => {
+  it("returns a tag tree whose parents count every call beneath them", async () => {
+    const { body } = await json(await getAnalytics(req("/api/v1/analytics?from=2000-01-01&to=2100-01-01"), undefined as never));
+    const nodes = body.data.intelligence.tags as { slug: string; calls: number }[];
+    const objection = nodes.find((n) => n.slug === "objection")!.calls;
+    const fin = nodes.find((n) => n.slug === "objection/financial")!.calls;
+    expect(objection).toBeGreaterThanOrEqual(fin);
+    expect(body.data.intelligence.unsuccessfulReasons.length).toBeGreaterThan(0);
+    expect(body.data.intelligence.extractions.find((f: { fieldName: string }) => f.fieldName === "delay_reason").values.length).toBeGreaterThan(2);
+    expect(body.data.outcomes.every((o: { type: string }) => ["success", "standard", "na"].includes(o.type))).toBe(true);
+  });
+});
+
 describe("POST /calls → processing → done", () => {
   it("accepts a sample, returns 202 and completes lazily", async () => {
     const r = await json(await createCall(req("/api/v1/calls", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ categoryId: "early-bucket", agentId: "rahul.sharma@kaverifinance.in", sampleId: "eb-hi-good" }) }), undefined as never));

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { callScore, sectionScores, successRate } from "@/server/scoring";
 import { computeMetrics, wordLanguages } from "@/server/metrics";
-import { applicableSections } from "@/server/targeting";
+import { applicableSections, criterionApplicability, evaluateTags } from "@/server/targeting";
 import { loadRubrics } from "@/server/content";
 
 const r = (sectionId: string, finalResult: "pass" | "fail" | "na") => ({ sectionId, finalResult });
@@ -18,7 +18,7 @@ describe("scoring", () => {
   it("success rate excludes NA outcomes (48 / (65 − 8) → 84%)", () => {
     const rows = [
       ...Array(48).fill({ isSuccess: true, isNotApplicable: false }),
-      ...Array(8).fill({ isSuccess: null, isNotApplicable: true }),
+      ...Array(8).fill({ isSuccess: false, isNotApplicable: true }),
       ...Array(9).fill({ isSuccess: false, isNotApplicable: false }),
     ];
     expect(Math.round(successRate(rows)! * 100)).toBe(84);
@@ -26,9 +26,35 @@ describe("scoring", () => {
   });
 });
 
+describe("Voxxi product guide worked examples", () => {
+  it("success rate: 30 Success, 50 Standard, 20 NA → 37.5%", () => {
+    const rows = [
+      ...Array(30).fill({ isSuccess: true, isNotApplicable: false }),
+      ...Array(50).fill({ isSuccess: false, isNotApplicable: false }),
+      ...Array(20).fill({ isSuccess: false, isNotApplicable: true }),
+    ];
+    expect(successRate(rows)! * 100).toBe(37.5);
+  });
+  it("quality score: 6 Yes, 2 No, 2 NA → 75%", () => {
+    expect(callScore([...Array(6).fill(r("a", "pass")), ...Array(2).fill(r("a", "fail")), ...Array(2).fill(r("a", "na"))])).toBe(75);
+  });
+});
+
 describe("targeting", () => {
   const mid = loadRubrics().find((x) => x.id === "mid-bucket")!;
   const outcome = (id: string) => mid.outcomes.find((o) => o.id === id)!;
+  it("criterion rules make a single question NA with the rule as the reason", () => {
+    const early = loadRubrics().find((x) => x.id === "early-bucket")!;
+    const o = (id: string) => early.outcomes.find((x) => x.id === id)!;
+    const lateFee = (id: string) => criterionApplicability(early, { outcome: o(id), extractions: {} }).find((c) => c.criterionId === "pr_late_fee_info")!;
+    expect(lateFee("ptp").naReason).toBeNull();
+    expect(lateFee("paid")).toMatchObject({ ruleLevel: "criterion", naReason: "Not needed when the customer paid on the call" });
+  });
+  it("tags are applied from extractions, outcome and rubric answers", () => {
+    const tags = evaluateTags(mid, { outcome: outcome("refused"), extractions: { delay_reason: "medical", ptp_amount: 12000 }, criteria: { cp_no_threats: "fail", cp_respectful: "pass" } });
+    expect(tags).toEqual(expect.arrayContaining(["objection/financial/medical", "objection/unwilling/refused", "compliance/threats", "value/high"]));
+    expect(tags).not.toContain("compliance/abusive");
+  });
   it("dispute section only applies to disputes", () => {
     const ids = (o: string, reason: string) => applicableSections(mid, { outcome: outcome(o), extractions: { delay_reason: reason } }).map((s) => s.id);
     expect(ids("ptp", "medical")).not.toContain("dispute_handling");

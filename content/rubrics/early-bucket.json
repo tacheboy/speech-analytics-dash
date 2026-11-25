@@ -108,7 +108,7 @@
       "id": "callback",
       "label": "Callback Requested",
       "description": "Customer asked to be called later without a commitment.",
-      "isSuccess": null,
+      "isSuccess": false,
       "isNotApplicable": false
     },
     {
@@ -122,7 +122,7 @@
       "id": "wrong_party",
       "label": "Wrong Party",
       "description": "Borrower not reached; someone else answered or wrong number.",
-      "isSuccess": null,
+      "isSuccess": false,
       "isNotApplicable": true
     }
   ],
@@ -132,41 +132,269 @@
       "displayName": "Delay Reason",
       "fieldType": "enum",
       "description": "Primary reason the customer gives for missing the payment.",
-      "enumValues": [
-        "job_loss",
-        "medical",
-        "business_slowdown",
-        "salary_delay",
-        "forgot",
-        "dispute",
-        "other"
+      "required": true,
+      "enumOptions": [
+        {
+          "value": "job_loss"
+        },
+        {
+          "value": "medical"
+        },
+        {
+          "value": "business_slowdown"
+        },
+        {
+          "value": "salary_delay"
+        },
+        {
+          "value": "forgot"
+        },
+        {
+          "value": "dispute"
+        },
+        {
+          "value": "other",
+          "hint": "Use only when no listed reason fits"
+        }
       ]
     },
     {
       "fieldName": "ptp_amount",
       "displayName": "PTP Amount (₹)",
       "fieldType": "number",
-      "description": "Amount the customer promised to pay, in rupees. Null if no promise."
+      "description": "Amount the customer promised to pay, in rupees. Null if no promise.",
+      "required": false
     },
     {
       "fieldName": "ptp_date",
       "displayName": "PTP Date",
       "fieldType": "text",
-      "description": "Date the customer promised to pay, as said on the call."
+      "description": "Date the customer promised to pay, as said on the call.",
+      "required": false
     },
     {
       "fieldName": "payment_mode",
       "displayName": "Payment Mode",
       "fieldType": "enum",
       "description": "How the customer said they will pay.",
-      "enumValues": [
-        "upi",
-        "payment_link",
-        "branch",
-        "auto_debit",
-        "none"
+      "required": false,
+      "enumOptions": [
+        {
+          "value": "upi"
+        },
+        {
+          "value": "payment_link"
+        },
+        {
+          "value": "branch"
+        },
+        {
+          "value": "auto_debit"
+        },
+        {
+          "value": "none"
+        }
       ]
     }
   ],
-  "targetingRules": []
+  "targetingRules": [
+    {
+      "targetType": "criterion",
+      "targetId": "pr_late_fee_info",
+      "description": "Not needed when the customer paid on the call",
+      "expression": {
+        "!=": [
+          {
+            "var": "outcome.id"
+          },
+          "paid"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "compliance/threats",
+      "description": "Threat criterion answered No",
+      "expression": {
+        "==": [
+          {
+            "var": "criteria.cp_no_threats"
+          },
+          "fail"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "compliance/abusive",
+      "description": "Respect criterion answered No",
+      "expression": {
+        "==": [
+          {
+            "var": "criteria.cp_respectful"
+          },
+          "fail"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "compliance/third-party",
+      "description": "Third-party criterion answered No",
+      "expression": {
+        "==": [
+          {
+            "var": "criteria.cp_no_third_party"
+          },
+          "fail"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "compliance/no-recording-disclosure",
+      "description": "Recording disclosure answered No",
+      "expression": {
+        "==": [
+          {
+            "var": "criteria.op_recording_disclosure"
+          },
+          "fail"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "objection/financial/job-loss",
+      "description": "Delay reason is job loss",
+      "expression": {
+        "==": [
+          {
+            "var": "extractions.delay_reason"
+          },
+          "job_loss"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "objection/financial/medical",
+      "description": "Delay reason is medical",
+      "expression": {
+        "==": [
+          {
+            "var": "extractions.delay_reason"
+          },
+          "medical"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "objection/financial/business-slowdown",
+      "description": "Delay reason is business slowdown",
+      "expression": {
+        "==": [
+          {
+            "var": "extractions.delay_reason"
+          },
+          "business_slowdown"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "objection/financial/salary-delay",
+      "description": "Delay reason is salary delay",
+      "expression": {
+        "==": [
+          {
+            "var": "extractions.delay_reason"
+          },
+          "salary_delay"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "follow-up/callback",
+      "description": "Outcome is Callback Requested",
+      "expression": {
+        "==": [
+          {
+            "var": "outcome.id"
+          },
+          "callback"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "follow-up/ptp-due",
+      "description": "A PTP date was captured",
+      "expression": {
+        "!!": [
+          {
+            "var": "extractions.ptp_date"
+          }
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "follow-up/payment-link",
+      "description": "Customer will pay via payment link",
+      "expression": {
+        "==": [
+          {
+            "var": "extractions.payment_mode"
+          },
+          "payment_link"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "objection/unwilling/refused",
+      "description": "Outcome is Refused to Pay",
+      "expression": {
+        "==": [
+          {
+            "var": "outcome.id"
+          },
+          "refused"
+        ]
+      }
+    },
+    {
+      "targetType": "tag",
+      "targetId": "value/high",
+      "description": "PTP of ₹10,000 or more",
+      "expression": {
+        ">=": [
+          {
+            "var": "extractions.ptp_amount"
+          },
+          10000
+        ]
+      }
+    }
+  ],
+  "intendedPurpose": "Reminder calls to borrowers 1–30 days past due. Goal: a dated promise-to-pay.",
+  "additionalLLMContext": "Calls are code-mixed (Tamil/Kannada/Hindi with English). Judge intent, not exact wording. RBI Fair Practices Code applies: calls only 08:00–19:00, no threats, no disclosure to third parties.",
+  "tagTargets": [
+    "compliance/threats",
+    "compliance/abusive",
+    "compliance/third-party",
+    "compliance/no-recording-disclosure",
+    "objection/financial/job-loss",
+    "objection/financial/medical",
+    "objection/financial/business-slowdown",
+    "objection/financial/salary-delay",
+    "follow-up/callback",
+    "follow-up/ptp-due",
+    "follow-up/payment-link",
+    "objection/unwilling/refused",
+    "value/high"
+  ]
 }

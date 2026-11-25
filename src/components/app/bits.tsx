@@ -2,7 +2,8 @@
 
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { scoreTone } from "@/lib/domain";
+import { OUTCOME_TYPE_LABEL, outcomeType, scoreTone } from "@/lib/domain";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { initials } from "@/lib/format";
 
 const TONE = {
@@ -31,10 +32,22 @@ export function ScoreBadge({ score, className }: { score: number | null | undefi
   );
 }
 
+/** Outcome pill coloured by Voxxi's three outcome types: Success, Standard, NA. */
 export function OutcomeBadge({ label, isSuccess, isNotApplicable, className }: { label: string | null; isSuccess: boolean | null; isNotApplicable: boolean | null; className?: string }) {
   if (!label) return <span className="text-muted-foreground">—</span>;
-  const tone: Tone = isNotApplicable ? "muted" : isSuccess === true ? "success" : isSuccess === false ? "danger" : "info";
-  return <Pill tone={tone} className={cn("max-w-44", className)} title={label}>{label}</Pill>;
+  const type = outcomeType({ isSuccess, isNotApplicable });
+  const tone: Tone = type === "success" ? "success" : type === "na" ? "muted" : "info";
+  return <Pill tone={tone} className={cn("max-w-44", className)} title={`${label} · ${OUTCOME_TYPE_LABEL[type]} outcome`}>{label}</Pill>;
+}
+
+/** Small "?" with an explanation, for metric definitions. */
+export function InfoHint({ children }: { children: React.ReactNode }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger render={<button type="button" aria-label="How is this calculated?" className="inline-flex size-4 items-center justify-center rounded-full border text-[10px] text-muted-foreground hover:text-foreground" />}>?</TooltipTrigger>
+      <TooltipContent className="max-w-72 text-xs leading-relaxed">{children}</TooltipContent>
+    </Tooltip>
+  );
 }
 
 export function StatusBadge({ status, title }: { status: "processing" | "done" | "failed"; title?: string }) {

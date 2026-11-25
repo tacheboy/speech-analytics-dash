@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { rubricSchema, templateSchema, type CallTemplate, type Rubric } from "@/lib/domain";
+import { rubricSchema, tagSchema, templateSchema, type CallTemplate, type Rubric, type TagDef } from "@/lib/domain";
 
 const ROOT = path.join(process.cwd(), "content");
 
@@ -26,4 +26,8 @@ export function loadTemplates(): CallTemplate[] {
       if (!parsed.success) throw new Error(`${f}: ${parsed.error.message}`);
       return parsed.data;
     });
+}
+
+export function loadTagDefs(): TagDef[] {
+  return tagSchema.array().parse(JSON.parse(fs.readFileSync(path.join(ROOT, "tags.json"), "utf8")));
 }
