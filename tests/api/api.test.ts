@@ -47,7 +47,7 @@ describe("GET /calls", () => {
     expect((await json(await listCalls(req("/api/v1/calls?pageSize=500"), undefined as never))).status).toBe(400);
   });
   it("scopes agents to their own calls", async () => {
-    const res = await listCallsService({ userId: "u_rahul_sharma", orgId: "org_kaveri", role: "agent", name: "Rahul" }, { agentId: "u_neha_gupta", pageSize: 100 });
+    const res = await listCallsService({ userId: "u_rahul_sharma", orgId: "org_kaveri", role: "member", name: "Rahul" }, { agentId: "u_neha_gupta", pageSize: 100 });
     expect(res.items.length).toBeGreaterThan(0);
     expect(res.items.every((c) => c.agentId === "u_rahul_sharma")).toBe(true);
   });
@@ -137,7 +137,7 @@ describe("GET /analytics", () => {
     expect(body.data.outcomes.reduce((s: number, o: { count: number }) => s + o.count, 0)).toBe(raw.n);
   });
   it("forces agents onto their own numbers", async () => {
-    const a = await analyticsService({ userId: "u_rahul_sharma", orgId: "org_kaveri", role: "agent", name: "Rahul" }, { dimension: "org" });
+    const a = await analyticsService({ userId: "u_rahul_sharma", orgId: "org_kaveri", role: "member", name: "Rahul" }, { dimension: "org" });
     expect(a.scope).toMatchObject({ dimension: "agent", id: "u_rahul_sharma" });
     expect(a.profile).not.toBeNull();
   });

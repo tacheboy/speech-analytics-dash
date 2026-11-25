@@ -51,11 +51,11 @@ export function UploadDialog({ defaultCategoryId, trigger }: { defaultCategoryId
     try {
       if (mode === "sample") await create.mutateAsync({ categoryId, agentId, sampleId });
       else for (const file of files) await create.mutateAsync({ categoryId, agentId, file, durationSec: await readDuration(file) });
-      toast.success(mode === "sample" ? "Call uploaded — analysis takes a few seconds" : `${files.length} recording(s) uploaded — analysis takes a few seconds`);
+      toast.success(mode === "sample" ? "Conversation uploaded — analysis takes a few seconds" : `${files.length} recording(s) uploaded — analysis takes a few seconds`);
       setOpen(false);
       setFiles([]);
       setSampleId("");
-      router.push(`/calls/${categoryId}?sort=date&order=desc`);
+      router.push(`/conversations/${categoryId}?sort=date&order=desc`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     }
@@ -67,12 +67,12 @@ export function UploadDialog({ defaultCategoryId, trigger }: { defaultCategoryId
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={trigger ?? <Button className="gap-2" />}>
-        {!trigger && <><Upload className="size-4" /> Upload call</>}
+        {!trigger && <><Upload className="size-4" /> Upload conversation</>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Upload call recording</DialogTitle>
-          <DialogDescription>The call is scored against the category’s rubric. Status moves from Processing to Analyzed in a few seconds.</DialogDescription>
+          <DialogTitle>Upload conversation recording</DialogTitle>
+          <DialogDescription>The conversation is scored against the category’s rubric. Status moves from Processing to Analyzed in a few seconds.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -82,9 +82,9 @@ export function UploadDialog({ defaultCategoryId, trigger }: { defaultCategoryId
                 <SelectContent>{catItems.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
               </Select>
             </label>
-            <label className="grid gap-1.5 text-sm font-medium">Agent
+            <label className="grid gap-1.5 text-sm font-medium">Person
               <Select items={agentItems} value={agentId || null} onValueChange={(v) => setAgentId(String(v))}>
-                <SelectTrigger className="w-full"><SelectValue placeholder="Select an agent…" /></SelectTrigger>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Select a person…" /></SelectTrigger>
                 <SelectContent>{agentItems.map((a) => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}</SelectContent>
               </Select>
             </label>
@@ -104,7 +104,7 @@ export function UploadDialog({ defaultCategoryId, trigger }: { defaultCategoryId
               {samples.map((s) => (
                 <button key={s.id} onClick={() => setSampleId(s.id)} className={cn("flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left text-sm transition", sampleId === s.id ? "border-primary bg-primary/10" : "hover:bg-accent/40")}>
                   <FileAudio className="size-4 text-muted-foreground" />
-                  <span className="flex-1">Call with {s.customerName}<span className="block text-xs text-muted-foreground">{LANG[s.language]}{s.language === agentLang ? " · matches agent’s floor" : ""}</span></span>
+                  <span className="flex-1">Conversation with {s.customerName}<span className="block text-xs text-muted-foreground">{LANG[s.language]}{s.language === agentLang ? " · matches person’s floor" : ""}</span></span>
                   <span className="text-xs text-muted-foreground tabular">{fmtDuration(s.durationSec)}</span>
                 </button>
               ))}
@@ -124,7 +124,7 @@ export function UploadDialog({ defaultCategoryId, trigger }: { defaultCategoryId
                 <input ref={input} type="file" accept=".mp3,.wav,.m4a,audio/*" multiple hidden onChange={(e) => addFiles(e.target.files)} />
               </div>
               {files.length > 0 && <ul className="mt-2 space-y-1 text-sm">{files.map((f, i) => <li key={i} className="flex justify-between gap-2 text-muted-foreground"><span className="truncate">{f.name}</span><span>{(f.size / 1e6).toFixed(1)} MB</span></li>)}</ul>}
-              <p className="mt-2 text-xs text-muted-foreground">No speech-to-text runs in this demo build, so your recording plays back, but its transcript and scores come from a matching demo call and are labelled <em>Simulated</em>.</p>
+              <p className="mt-2 text-xs text-muted-foreground">No speech-to-text runs in this demo build, so your recording plays back, but its transcript and scores come from a matching demo conversation and are labelled <em>Simulated</em>.</p>
             </div>
           )}
         </div>

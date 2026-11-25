@@ -6,7 +6,7 @@ import { fmtDuration } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /** Speaker-labelled transcript synced to playback: active line highlights and auto-scrolls; click to seek. */
-export function Transcript({ segments, time, onSeek, highlight }: { segments: TranscriptSegment[]; time: number; onSeek: (t: number) => void; highlight?: number | null }) {
+export function Transcript({ segments, agentName, time, onSeek, highlight }: { segments: TranscriptSegment[]; agentName?: string; time: number; onSeek: (t: number) => void; highlight?: number | null }) {
   const [roman, setRoman] = useState(false);
   const [follow, setFollow] = useState(true);
   const box = useRef<HTMLDivElement>(null);
@@ -47,10 +47,10 @@ export function Transcript({ segments, time, onSeek, highlight }: { segments: Tr
                 i === active ? "bg-primary/12 ring-1 ring-primary/40" : highlight === i ? "bg-warning/10 ring-1 ring-warning/40" : "hover:bg-accent/40",
               )}
             >
-              <span className={cn("mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold", agent ? "bg-chart-1/20 text-chart-1" : "bg-chart-2/20 text-chart-2")}>{agent ? "A" : "C"}</span>
+              <span className={cn("mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold", agent ? "bg-chart-1/20 text-chart-1" : "bg-chart-2/20 text-chart-2")}>{agent ? (agentName?.[0] ?? "P") : "C"}</span>
               <span className="min-w-0 flex-1">
                 <span className="mb-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="font-medium">{agent ? "Agent" : "Customer"}</span>
+                  <span className="font-medium">{agent ? (agentName ?? "Person") : "Customer"}</span>
                   <span className="tabular">{fmtDuration(s.start)}</span>
                   <span className="rounded border px-1 text-[10px] uppercase">{s.lang}</span>
                 </span>

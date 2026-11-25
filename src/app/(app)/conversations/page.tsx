@@ -16,7 +16,7 @@ function CategoryCard({ id, name, description, icon }: { id: string; name: strin
   const Icon = ICONS[icon] ?? Layers;
   return (
     <div className="flex flex-col rounded-2xl border bg-card p-5 transition hover:border-primary/40">
-      <Link href={`/calls/${id}`} className="group flex-1">
+      <Link href={`/conversations/${id}`} className="group flex-1">
         <div className="flex items-start gap-3">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary"><Icon className="size-5" /></span>
           <div className="min-w-0">
@@ -25,14 +25,14 @@ function CategoryCard({ id, name, description, icon }: { id: string; name: strin
           </div>
         </div>
         <dl className="mt-5 grid grid-cols-3 gap-3 text-sm">
-          <div><dt className="text-xs text-muted-foreground">Calls · 30d</dt><dd className="mt-1 text-lg font-semibold tabular">{data ? data.kpis.volume.value : <Skeleton className="h-6 w-10" />}</dd></div>
+          <div><dt className="text-xs text-muted-foreground">Conversations · 30d</dt><dd className="mt-1 text-lg font-semibold tabular">{data ? data.kpis.volume.value : <Skeleton className="h-6 w-10" />}</dd></div>
           <div><dt className="text-xs text-muted-foreground">Avg score</dt><dd className="mt-1">{data ? <ScoreBadge score={data.kpis.quality.value == null ? null : Math.round(data.kpis.quality.value)} /> : <Skeleton className="h-6 w-12" />}</dd></div>
           <div><dt className="text-xs text-muted-foreground">Success rate</dt><dd className="mt-1 text-lg font-semibold tabular">{data ? fmtPct(data.kpis.successRate.value) : <Skeleton className="h-6 w-10" />}</dd></div>
         </dl>
       </Link>
       <div className="mt-5 flex gap-2 border-t pt-4">
         <Button variant="outline" size="sm" className="gap-1.5" nativeButton={false} render={<Link href={`/analytics/category/${id}`} />}><BarChart3 className="size-3.5" /> Analytics</Button>
-        <Button variant="ghost" size="sm" className="gap-1.5" nativeButton={false} render={<Link href={`/calls/${id}/configuration`} />}><Settings2 className="size-3.5" /> Configuration</Button>
+        <Button variant="ghost" size="sm" className="gap-1.5" nativeButton={false} render={<Link href={`/conversations/${id}/configuration`} />}><Settings2 className="size-3.5" /> Configuration</Button>
       </div>
     </div>
   );
@@ -42,7 +42,7 @@ export default function CallsIndexPage() {
   const { data: ws } = useWorkspace();
   return (
     <>
-      <PageHeader title="Calls" description="Pick a call category to browse its recordings, or view everything." actions={<><Button variant="outline" nativeButton={false} render={<Link href="/calls/all" />}>View all recordings</Button><UploadDialog /></>} />
+      <PageHeader title="Conversations" description="Pick a conversation category to browse its recordings, or view everything." actions={<><Button variant="outline" nativeButton={false} render={<Link href="/conversations/all" />}>View all recordings</Button><UploadDialog /></>} />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {ws ? ws.categories.map((c) => <CategoryCard key={c.id} {...c} />) : Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-64 rounded-2xl" />)}
       </div>

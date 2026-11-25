@@ -24,12 +24,12 @@ import { KpiCard, METRIC_HELP } from "./kpi";
 type Dimension = "org" | "category" | "team" | "agent";
 const TABS = ["overview", "quality", "intelligence", "agents"] as const;
 
-/** Builds a call-list URL for the current scope plus extra filters. */
+/** Builds a conversation-list URL for the current scope plus extra filters. */
 function callsHref(dimension: Dimension, id: string | null, extra: Record<string, string> = {}) {
   const sp = new URLSearchParams(extra);
   if (dimension === "team" && id) sp.set("teamId", id);
   if (dimension === "agent" && id) sp.set("agentId", id);
-  return `/calls/${dimension === "category" && id ? id : "all"}?${sp}`;
+  return `/conversations/${dimension === "category" && id ? id : "all"}?${sp}`;
 }
 
 function ScopeSwitcher({ dimension, id }: { dimension: Dimension; id: string | null }) {
@@ -37,7 +37,7 @@ function ScopeSwitcher({ dimension, id }: { dimension: Dimension; id: string | n
   const { data: ws } = useWorkspace();
   if (!ws || dimension === "agent") return null;
   const items = [
-    { value: "org/all", label: "All calls" },
+    { value: "org/all", label: "All conversations" },
     ...ws.categories.map((c) => ({ value: `category/${c.id}`, label: c.name })),
     ...ws.teams.map((t) => ({ value: `team/${t.id}`, label: t.name })),
   ];
@@ -45,9 +45,9 @@ function ScopeSwitcher({ dimension, id }: { dimension: Dimension; id: string | n
     <Select items={items} value={`${dimension}/${id ?? "all"}`} onValueChange={(v) => router.push(`/analytics/${v}`)}>
       <SelectTrigger className="h-9 min-w-52"><SelectValue /></SelectTrigger>
       <SelectContent>
-        <SelectItem value="org/all">All calls</SelectItem>
+        <SelectItem value="org/all">All conversations</SelectItem>
         <SelectGroup><SelectLabel>Categories</SelectLabel>{ws.categories.map((c) => <SelectItem key={c.id} value={`category/${c.id}`}>{c.name}</SelectItem>)}</SelectGroup>
-        <SelectGroup><SelectLabel>Teams</SelectLabel>{ws.teams.map((t) => <SelectItem key={t.id} value={`team/${t.id}`}>{t.name}</SelectItem>)}</SelectGroup>
+        <SelectGroup><SelectLabel>Cohorts</SelectLabel>{ws.teams.map((t) => <SelectItem key={t.id} value={`team/${t.id}`}>{t.name}</SelectItem>)}</SelectGroup>
       </SelectContent>
     </Select>
   );
@@ -59,8 +59,8 @@ function Kpis({ a }: { a: Analytics }) {
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <KpiCard label="Quality score" info={METRIC_HELP.quality} icon={<Gauge className="size-4 text-chart-1" />} value={fmtPct(a.kpis.quality.value, 1)} delta={a.kpis.quality.delta} hint="vs previous period" spark={t.map((d) => d.quality)} />
       <KpiCard label="Success rate" info={METRIC_HELP.success} icon={<Target className="size-4 text-chart-2" />} value={fmtPct(a.kpis.successRate.value, 1)} delta={a.kpis.successRate.delta} hint="vs previous period" spark={t.map((d) => d.successRate)} />
-      <KpiCard label="Calls analyzed" icon={<Phone className="size-4 text-muted-foreground" />} value={a.kpis.volume.value.toLocaleString("en-IN")} delta={a.kpis.volume.delta} deltaSuffix="" hint={`avg ${fmtDuration(a.kpis.avgDurationSec.value)} per call`} spark={t.map((d) => d.volume)} />
-      <KpiCard label="Compliance flags" info={METRIC_HELP.compliance} icon={<ShieldAlert className="size-4 text-danger" />} value={fmtPct(a.kpis.complianceRate.value, 1)} delta={a.kpis.complianceRate.delta} invertDelta hint="of calls" spark={t.map((d) => d.complianceRate)} />
+      <KpiCard label="Conversations analyzed" icon={<Phone className="size-4 text-muted-foreground" />} value={a.kpis.volume.value.toLocaleString("en-IN")} delta={a.kpis.volume.delta} deltaSuffix="" hint={`avg ${fmtDuration(a.kpis.avgDurationSec.value)} per conversation`} spark={t.map((d) => d.volume)} />
+      <KpiCard label="Risk flags" info={METRIC_HELP.compliance} icon={<ShieldAlert className="size-4 text-danger" />} value={fmtPct(a.kpis.complianceRate.value, 1)} delta={a.kpis.complianceRate.delta} invertDelta hint="of conversations" spark={t.map((d) => d.complianceRate)} />
     </div>
   );
 }
@@ -78,18 +78,18 @@ function Overview({ a, dimension, id }: { a: Analytics; dimension: Dimension; id
             {h.mostCommonFailure ? (
               <>
                 <p className="mt-2 line-clamp-2 font-medium">{h.mostCommonFailure.question}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{h.mostCommonFailure.failRate}% failure rate across {h.mostCommonFailure.evaluated} calls</p>
+                <p className="mt-1 text-sm text-muted-foreground">{h.mostCommonFailure.failRate}% failure rate across {h.mostCommonFailure.evaluated} conversations</p>
               </>
             ) : <p className="mt-2 text-sm text-muted-foreground">No significant failures detected.</p>}
           </div>
           <div className="rounded-2xl border bg-card p-5">
             <p className="flex items-center gap-2 text-sm font-medium text-warning"><Trophy className="size-4" /> Top performer</p>
             {h.topPerformer ? (
-              <Link href={`/agents/${h.topPerformer.agentId}`} className="mt-2 flex items-center gap-3 hover:underline">
+              <Link href={`/people/${h.topPerformer.agentId}`} className="mt-2 flex items-center gap-3 hover:underline">
                 <AgentAvatar name={h.topPerformer.name} size="sm" />
-                <span><span className="block font-medium">{h.topPerformer.name}</span><span className="text-sm text-muted-foreground">{fmtPct(h.topPerformer.quality)} quality · {h.topPerformer.calls} calls</span></span>
+                <span><span className="block font-medium">{h.topPerformer.name}</span><span className="text-sm text-muted-foreground">{fmtPct(h.topPerformer.quality)} quality · {h.topPerformer.calls} conversations</span></span>
               </Link>
-            ) : <p className="mt-2 text-sm text-muted-foreground">No agent data.</p>}
+            ) : <p className="mt-2 text-sm text-muted-foreground">No person data.</p>}
           </div>
           <div className={cn("rounded-2xl border bg-card p-5", h.attentionRequired.length > 0 && "border-primary/40")}>
             <p className="flex items-center gap-2 text-sm font-medium text-primary"><Activity className="size-4" /> Attention required</p>
@@ -100,7 +100,7 @@ function Overview({ a, dimension, id }: { a: Analytics; dimension: Dimension; id
         </div>
       )}
       <div className="grid gap-5 lg:grid-cols-5">
-        <Panel className="lg:col-span-2" title="Outcome distribution" description="Share of outcomes across analyzed calls — click to open them">
+        <Panel className="lg:col-span-2" title="Outcome distribution" description="Share of outcomes across analyzed conversations — click to open them">
           {a.outcomes.length ? <OutcomeBars data={a.outcomes} onSelect={(label) => router.push(callsHref(dimension, id, { outcome: label }))} /> : <EmptyState title="No outcomes in this period" />}
         </Panel>
         <Panel className="lg:col-span-3" title="Performance trends" description={`Quality score and success rate per ${a.range.granularity}`}>
@@ -108,15 +108,15 @@ function Overview({ a, dimension, id }: { a: Analytics; dimension: Dimension; id
         </Panel>
       </div>
       <div className="grid gap-5 lg:grid-cols-5">
-        <Panel className="lg:col-span-2" title="Call duration" description="How long conversations run" icon={<Clock className="size-4 text-muted-foreground" />}>
+        <Panel className="lg:col-span-2" title="Conversation duration" description="How long conversations run" icon={<Clock className="size-4 text-muted-foreground" />}>
           <DurationChart data={a.durations} />
         </Panel>
         {dimension !== "agent" ? (
-          <Panel className="lg:col-span-3" title="Agent leaderboard" description="Ranked by quality, then success rate, then volume" bodyClassName="p-0">
+          <Panel className="lg:col-span-3" title="Person leaderboard" description="Ranked by quality, then success rate, then volume" bodyClassName="p-0">
             <Leaderboard agents={a.agents.slice(0, 6)} compact />
           </Panel>
         ) : (
-          <Panel className="lg:col-span-3" title="Section scores" description="Where this agent wins and loses points">
+          <Panel className="lg:col-span-3" title="Section scores" description="Where this person wins and loses points">
             <SectionBars sections={a.sections} />
           </Panel>
         )}
@@ -140,19 +140,19 @@ function SectionBars({ sections }: { sections: Analytics["sections"] }) {
 
 function Leaderboard({ agents, compact }: { agents: Analytics["agents"]; compact?: boolean }) {
   const router = useRouter();
-  if (!agents.length) return <EmptyState title="No agent data in this period" />;
+  if (!agents.length) return <EmptyState title="No person data in this period" />;
   return (
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="w-12 pl-5">#</TableHead><TableHead>Agent</TableHead><TableHead className="text-right">Calls</TableHead><TableHead>Quality</TableHead>
+            <TableHead className="w-12 pl-5">#</TableHead><TableHead>Person</TableHead><TableHead className="text-right">Conversations</TableHead><TableHead>Quality</TableHead>
             <TableHead className="text-right">Success</TableHead>{!compact && <TableHead className="text-right">Flags</TableHead>}<TableHead>Trend</TableHead><TableHead className="pr-5 text-right">Δ</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {agents.map((r) => (
-            <TableRow key={r.agentId} className="cursor-pointer" onClick={() => router.push(`/agents/${r.agentId}`)}>
+            <TableRow key={r.agentId} className="cursor-pointer" onClick={() => router.push(`/people/${r.agentId}`)}>
               <TableCell className="pl-5 tabular text-muted-foreground">{r.rank <= 3 ? <Medal className={cn("size-4", r.rank === 1 ? "text-warning" : "text-muted-foreground")} /> : r.rank}</TableCell>
               <TableCell><div className="flex items-center gap-2.5"><AgentAvatar name={r.name} size="sm" /><span className="min-w-0"><span className="block truncate font-medium">{r.name}</span>{!compact && <span className="text-xs text-muted-foreground">{r.teamName}</span>}</span></div></TableCell>
               <TableCell className="text-right tabular">{r.calls}</TableCell>
@@ -177,7 +177,7 @@ function Quality({ a, dimension, id }: { a: Analytics; dimension: Dimension; id:
       <Panel title="Section scores" description="Pass rate of applicable criteria">
         <SectionBars sections={a.sections} />
       </Panel>
-      <Panel className="xl:col-span-2" title="Quality improvement hub" description="Every rubric criterion, worst first. Agents listed fail it most often." bodyClassName="p-0"
+      <Panel className="xl:col-span-2" title="Quality improvement hub" description="Every rubric criterion, worst first. People listed fail it most often." bodyClassName="p-0"
         actions={<div className="relative w-52"><Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" /><Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filter criteria…" className="h-8 pl-8 text-sm" aria-label="Filter criteria" /></div>}>
         <div className="overflow-x-auto">
           <Table>
@@ -209,7 +209,7 @@ function AgentsTab({ a }: { a: Analytics }) {
   const cards = [
     { label: "Highest quality", icon: Gauge, r: best("quality"), v: (r: Analytics["agents"][number]) => fmtPct(r.quality) },
     { label: "Highest success", icon: Target, r: best("successRate"), v: (r: Analytics["agents"][number]) => fmtPct(r.successRate) },
-    { label: "Highest volume", icon: BarChart3, r: best("calls"), v: (r: Analytics["agents"][number]) => `${r.calls} calls` },
+    { label: "Highest volume", icon: BarChart3, r: best("calls"), v: (r: Analytics["agents"][number]) => `${r.calls} conversations` },
   ];
   return (
     <div className="space-y-5">
@@ -217,11 +217,11 @@ function AgentsTab({ a }: { a: Analytics }) {
         {cards.map((c) => (
           <div key={c.label} className="rounded-2xl border bg-card p-5">
             <p className="flex items-center gap-2 text-sm text-muted-foreground"><c.icon className="size-4" />{c.label}</p>
-            {c.r ? <Link href={`/agents/${c.r.agentId}`} className="mt-2 flex items-center gap-3 hover:underline"><AgentAvatar name={c.r.name} size="sm" /><span className="font-medium">{c.r.name}</span><span className="ml-auto font-semibold tabular">{c.v(c.r)}</span></Link> : <p className="mt-2 text-sm text-muted-foreground">—</p>}
+            {c.r ? <Link href={`/people/${c.r.agentId}`} className="mt-2 flex items-center gap-3 hover:underline"><AgentAvatar name={c.r.name} size="sm" /><span className="font-medium">{c.r.name}</span><span className="ml-auto font-semibold tabular">{c.v(c.r)}</span></Link> : <p className="mt-2 text-sm text-muted-foreground">—</p>}
           </div>
         ))}
       </div>
-      <Panel title="Agents audited" description="Click an agent for their coaching profile" bodyClassName="p-0"><Leaderboard agents={a.agents} /></Panel>
+      <Panel title="People audited" description="Click a person for their coaching profile" bodyClassName="p-0"><Leaderboard agents={a.agents} /></Panel>
     </div>
   );
 }
@@ -248,12 +248,12 @@ function Profile({ a, id }: { a: Analytics; id: string }) {
     <div className="space-y-5">
       <Kpis a={a} />
       <div className="rounded-2xl border bg-card p-5 text-sm">
-        <span className="text-muted-foreground">Quality vs team average ({fmtPct(p.teamQuality, 1)}): </span>
+        <span className="text-muted-foreground">Quality vs cohort average ({fmtPct(p.teamQuality, 1)}): </span>
         <span className={cn("font-semibold tabular", (vsTeam ?? 0) >= 0 ? "text-success" : "text-danger")}>{vsTeam == null ? "—" : `${vsTeam > 0 ? "+" : ""}${vsTeam} pts`}</span>
       </div>
       <div className="grid gap-5 lg:grid-cols-2">
-        <Panel title="Consistent strengths" icon={<Sparkles className="size-4 text-success" />} description="Criteria met on 90%+ of calls"><CriteriaList items={p.strengths} empty="No consistent strengths yet." tone="success" /></Panel>
-        <Panel title="Needs work" icon={<AlertTriangle className="size-4 text-danger" />} description="Criteria missed on 35%+ of calls — coach these first"><CriteriaList items={p.needsWork} empty="Nothing consistently missed. 🎉" tone="danger" /></Panel>
+        <Panel title="Consistent strengths" icon={<Sparkles className="size-4 text-success" />} description="Criteria met on 90%+ of conversations"><CriteriaList items={p.strengths} empty="No consistent strengths yet." tone="success" /></Panel>
+        <Panel title="Needs work" icon={<AlertTriangle className="size-4 text-danger" />} description="Criteria missed on 35%+ of conversations — coach these first"><CriteriaList items={p.needsWork} empty="Nothing consistently missed. 🎉" tone="danger" /></Panel>
         <Panel title="Recent improvements" icon={<TrendingUp className="size-4 text-success" />} description="First half vs second half of the period"><CriteriaList items={p.improvements} empty="No significant improvements in this period." tone="success" /></Panel>
         <Panel title="Recent regressions" icon={<TrendingDown className="size-4 text-danger" />} description="First half vs second half of the period"><CriteriaList items={p.regressions} empty="No regressions in this period." tone="danger" /></Panel>
       </div>
@@ -262,7 +262,7 @@ function Profile({ a, id }: { a: Analytics; id: string }) {
         <Panel className="lg:col-span-2" title="Outcomes"><OutcomeBars data={a.outcomes} /></Panel>
       </div>
       <CallIntelligence intel={a.intelligence} href={(q) => callsHref("agent", id, q)} />
-      <Panel title="Lowest-scoring recent calls" actions={<Link href={callsHref("agent", id)} className="flex items-center gap-1 text-sm text-primary hover:underline">All calls <ArrowRight className="size-3.5" /></Link>} bodyClassName="p-0">
+      <Panel title="Lowest-scoring recent conversations" actions={<Link href={callsHref("agent", id)} className="flex items-center gap-1 text-sm text-primary hover:underline">All conversations <ArrowRight className="size-3.5" /></Link>} bodyClassName="p-0">
         <CallsTable compact hideFilters pageSize={5} fixed={{ agentId: [id], sort: "score", order: "asc", status: "done", page: 1, from: a.range.from, to: a.range.to }} />
       </Panel>
     </div>
@@ -273,16 +273,16 @@ export function AnalyticsView({ dimension, id, title, description }: { dimension
   const { from, to } = useDateRange();
   const [tab, setTab] = useQueryState("tab", parseAsStringLiteral(TABS).withDefault("overview"));
   const { data: a, isLoading, isError, isFetching } = useAnalytics({ dimension, id: id ?? undefined, from, to });
-  const isAgent = dimension === "agent";
-  const heading = useMemo(() => title ?? (a ? `${a.scope.name}${isAgent ? "" : " analytics"}` : "Analytics"), [title, a, isAgent]);
+  const isMember = dimension === "agent";
+  const heading = useMemo(() => title ?? (a ? `${a.scope.name}${isMember ? "" : " analytics"}` : "Analytics"), [title, a, isMember]);
 
   return (
     <>
       <PageHeader title={heading} description={description ?? (a ? `${a.range.from} → ${a.range.to} · compared with the previous period` : "Insights and performance trends")}
         actions={<><ScopeSwitcher dimension={dimension} id={id} /><DateRangePicker /></>} />
-      {!isAgent && (
+      {!isMember && (
         <div className="mb-5 flex gap-1 border-b" role="tablist">
-          {([["overview", "Overview"], ["quality", "Quality analysis"], ["intelligence", "Call intelligence"], ["agents", "Agent performance"]] as const).map(([k, label]) => (
+          {([["overview", "Overview"], ["quality", "Quality analysis"], ["intelligence", "Conversation intelligence"], ["agents", "People performance"]] as const).map(([k, label]) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k === "overview" ? null : k)}
               className={cn("-mb-px border-b-2 px-3 py-2 text-sm font-medium transition", tab === k ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>{label}</button>
           ))}
@@ -293,8 +293,8 @@ export function AnalyticsView({ dimension, id, title, description }: { dimension
       {a && (
         <div className={cn("transition-opacity", isFetching && "opacity-70")}>
           {a.kpis.volume.value === 0 ? (
-            <EmptyState title="No analyzed calls in this period" description="Pick a wider date range." />
-          ) : isAgent ? (
+            <EmptyState title="No analyzed conversations in this period" description="Pick a wider date range." />
+          ) : isMember ? (
             <Profile a={a} id={id!} />
           ) : tab === "quality" ? (
             <Quality a={a} dimension={dimension} id={id} />

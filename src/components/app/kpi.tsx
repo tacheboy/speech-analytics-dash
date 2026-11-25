@@ -5,9 +5,9 @@ import { Delta, InfoHint, Sparkline } from "./bits";
 
 /** Metric definitions, worded as in Voxxi's product guide. */
 export const METRIC_HELP = {
-  quality: "Quality score per call = criteria answered Yes ÷ (total criteria − NA) × 100, all criteria weighted equally. Shown here as the average across calls; calls with an NA outcome are excluded.",
+  quality: "Quality score per conversation = criteria answered Yes ÷ (total criteria − NA) × 100, all criteria weighted equally. Shown here as the average across conversations; conversations with an NA outcome are excluded.",
   success: "Success rate = Success outcomes ÷ (Success + Standard outcomes) × 100. NA outcomes (e.g. wrong party) are excluded entirely.",
-  compliance: "Share of calls where at least one RBI fair-practice criterion was answered No.",
+  compliance: "Share of conversations where at least one RBI fair-practice criterion was answered No.",
 };
 
 export function KpiCard({ label, value, delta, deltaSuffix, invertDelta, spark, icon, hint, info, className }: {

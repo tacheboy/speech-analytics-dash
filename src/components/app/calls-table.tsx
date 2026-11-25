@@ -67,7 +67,7 @@ function FilterSelect({ label, value, options, onChange }: { label: string; valu
 }
 
 /**
- * The call list used across the app. Filters live in the URL so every view is shareable.
+ * The conversation list used across the app. Filters live in the URL so every view is shareable.
  * `fixed` filters (e.g. category, or the review queue's "unreviewed") are applied but not shown as chips.
  */
 export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, compact }: { categoryId?: string; fixed?: Partial<ListCallsQuery>; hideFilters?: boolean; pageSize?: number; compact?: boolean }) {
@@ -89,7 +89,7 @@ export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, comp
     ...fixed,
   };
   const { data, isLoading, isFetching, refetch, isError } = useCalls(query);
-  const isAgent = ws?.me.role === "agent";
+  const isMember = ws?.me.role === "member";
 
   const outcomeOptions = useMemo(() => {
     const cats = ws?.categories.filter((c) => !categoryId || categoryId === "all" || c.id === categoryId) ?? [];
@@ -100,8 +100,8 @@ export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, comp
   const name = (list: { id: string; name?: string; displayName?: string }[] | undefined, id: string | null) => list?.find((x) => x.id === id)?.name ?? list?.find((x) => x.id === id)?.displayName ?? id;
 
   const chips: { label: string; clear: () => void }[] = [];
-  if (f.agentId) chips.push({ label: `Agent: ${name(ws?.agents, f.agentId)}`, clear: () => setF({ agentId: null, page: null }) });
-  if (f.teamId) chips.push({ label: `Team: ${name(ws?.teams, f.teamId)}`, clear: () => setF({ teamId: null, page: null }) });
+  if (f.agentId) chips.push({ label: `Person: ${name(ws?.agents, f.agentId)}`, clear: () => setF({ agentId: null, page: null }) });
+  if (f.teamId) chips.push({ label: `Cohort: ${name(ws?.teams, f.teamId)}`, clear: () => setF({ teamId: null, page: null }) });
   if (f.outcome) chips.push({ label: `Outcome: ${f.outcome}`, clear: () => setF({ outcome: null, page: null }) });
   if (f.status && f.status !== "all") chips.push({ label: `Status: ${f.status === "done" ? "Analyzed" : f.status}`, clear: () => setF({ status: null, page: null }) });
   if (f.scoreBucket) chips.push({ label: `Score: ${SCORE_BUCKETS[f.scoreBucket].label}`, clear: () => setF({ scoreBucket: null, page: null }) });
@@ -113,14 +113,14 @@ export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, comp
     chips.push({ label: `${def?.displayName ?? field}: ${rest.join(":").replace(/_/g, " ")}`, clear: () => setF({ ext: null, page: null }) });
   }
   if (f.reviewed) chips.push({ label: f.reviewed === "true" ? "Reviewed" : "Not reviewed", clear: () => setF({ reviewed: null, page: null }) });
-  if (f.compliance) chips.push({ label: "Compliance flagged", clear: () => setF({ compliance: null, page: null }) });
+  if (f.compliance) chips.push({ label: "Risk flagged", clear: () => setF({ compliance: null, page: null }) });
   if (f.from && f.to) chips.push({ label: `${fmtDate(f.from)} – ${fmtDate(f.to)}`, clear: () => setF({ from: null, to: null, page: null }) });
 
   const sortBy = (s: SortKey) =>
     setF({ sort: s, order: query.sort === s && query.order === "desc" ? "asc" : "desc", page: null });
 
   const copyLink = (id: string, cat: string) => {
-    navigator.clipboard.writeText(`${window.location.origin}/calls/${cat}/${id}`).then(() => toast.success("Call link copied"), () => toast.error("Could not copy the link"));
+    navigator.clipboard.writeText(`${window.location.origin}/conversations/${cat}/${id}`).then(() => toast.success("Conversation link copied"), () => toast.error("Could not copy the link"));
   };
   const total = data?.total ?? 0;
   const page = f.page ?? 1;
@@ -132,7 +132,7 @@ export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, comp
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-56 flex-1">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={isAgent ? "Search by call ID…" : "Search by agent name or call ID…"} className="h-9 pl-9" aria-label="Search calls" />
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={isMember ? "Search by conversation ID…" : "Search by person name or conversation ID…"} className="h-9 pl-9" aria-label="Search conversations" />
           </div>
           <Popover>
             <PopoverTrigger render={<Button variant="outline" className="h-9 gap-2" />}>
@@ -140,15 +140,15 @@ export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, comp
               {chips.length > 0 && <span className="rounded-full bg-primary px-1.5 text-xs text-primary-foreground tabular">{chips.length}</span>}
             </PopoverTrigger>
             <PopoverContent align="start" className="grid w-[min(92vw,560px)] grid-cols-1 gap-3 p-4 sm:grid-cols-2">
-              {!isAgent && <FilterSelect label="Agent" value={f.agentId} options={(ws?.agents ?? []).map((a) => ({ value: a.id, label: a.name }))} onChange={(v) => setF({ agentId: v, page: null })} />}
-              {!isAgent && <FilterSelect label="Team" value={f.teamId} options={(ws?.teams ?? []).map((t) => ({ value: t.id, label: t.name }))} onChange={(v) => setF({ teamId: v, page: null })} />}
+              {!isMember && <FilterSelect label="Person" value={f.agentId} options={(ws?.agents ?? []).map((a) => ({ value: a.id, label: a.name }))} onChange={(v) => setF({ agentId: v, page: null })} />}
+              {!isMember && <FilterSelect label="Cohort" value={f.teamId} options={(ws?.teams ?? []).map((t) => ({ value: t.id, label: t.name }))} onChange={(v) => setF({ teamId: v, page: null })} />}
               <FilterSelect label="Outcome" value={f.outcome} options={outcomeOptions} onChange={(v) => setF({ outcome: v, page: null })} />
               <FilterSelect label="Analysis status" value={f.status === "all" ? null : f.status} options={[{ value: "done", label: "Analyzed" }, { value: "processing", label: "Processing" }, { value: "failed", label: "Failed" }]} onChange={(v) => setF({ status: v as typeof f.status, page: null })} />
               <FilterSelect label="Quality score" value={f.scoreBucket} options={Object.entries(SCORE_BUCKETS).map(([k, b]) => ({ value: k, label: b.label }))} onChange={(v) => setF({ scoreBucket: v as typeof f.scoreBucket, page: null })} />
               <FilterSelect label="Duration" value={f.durationBucket} options={Object.entries(DURATION_BUCKETS).map(([k, b]) => ({ value: k, label: b.label }))} onChange={(v) => setF({ durationBucket: v as typeof f.durationBucket, page: null })} />
               <FilterSelect label="Tag (any level)" value={f.tag} options={tagOptions} onChange={(v) => setF({ tag: v, page: null })} />
               {!fixed?.reviewed && <FilterSelect label="Manager review" value={f.reviewed} options={[{ value: "true", label: "Reviewed" }, { value: "false", label: "Not reviewed" }]} onChange={(v) => setF({ reviewed: v as typeof f.reviewed, page: null })} />}
-              {!fixed?.compliance && <FilterSelect label="Compliance" value={f.compliance} options={[{ value: "true", label: "Flagged calls only" }]} onChange={(v) => setF({ compliance: v as typeof f.compliance, page: null })} />}
+              {!fixed?.compliance && <FilterSelect label="Risk flags" value={f.compliance} options={[{ value: "true", label: "Flagged conversations only" }]} onChange={(v) => setF({ compliance: v as typeof f.compliance, page: null })} />}
             </PopoverContent>
           </Popover>
           <DateRangePicker />
@@ -174,7 +174,7 @@ export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, comp
 
       {!hideFilters && (
         <p className="text-sm text-muted-foreground tabular">
-          {isLoading ? "Loading calls…" : total === 0 ? "No results" : `Showing ${(page - 1) * pageSize + 1} to ${Math.min(page * pageSize, total)} of ${total.toLocaleString("en-IN")} results`}
+          {isLoading ? "Loading conversations…" : total === 0 ? "No results" : `Showing ${(page - 1) * pageSize + 1} to ${Math.min(page * pageSize, total)} of ${total.toLocaleString("en-IN")} results`}
         </p>
       )}
 
@@ -182,7 +182,7 @@ export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, comp
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <SortHead s="agent" current={query.sort ?? "date"} order={query.order ?? "desc"} onSort={sortBy} className="pl-5">Agent</SortHead>
+              <SortHead s="agent" current={query.sort ?? "date"} order={query.order ?? "desc"} onSort={sortBy} className="pl-5">Person</SortHead>
               {!compact && (!categoryId || categoryId === "all") && <TableHead>Category</TableHead>}
               <SortHead s="duration" current={query.sort ?? "date"} order={query.order ?? "desc"} onSort={sortBy}>Duration</SortHead>
               <SortHead s="score" current={query.sort ?? "date"} order={query.order ?? "desc"} onSort={sortBy}>Score</SortHead>
@@ -199,13 +199,13 @@ export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, comp
                 <TableRow key={i}><TableCell colSpan={9} className="px-5"><Skeleton className="h-8 w-full" /></TableCell></TableRow>
               ))}
             {isError && (
-              <TableRow><TableCell colSpan={9}><EmptyState title="Calls could not be loaded" description="The API returned an error. Try again." action={<Button variant="outline" onClick={() => refetch()}>Retry</Button>} /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={9}><EmptyState title="Conversations could not be loaded" description="The API returned an error. Try again." action={<Button variant="outline" onClick={() => refetch()}>Retry</Button>} /></TableCell></TableRow>
             )}
             {data?.items.length === 0 && (
-              <TableRow><TableCell colSpan={9}><EmptyState title="No calls match these filters" description="Try widening the date range or clearing a filter." /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={9}><EmptyState title="No conversations match these filters" description="Try widening the date range or clearing a filter." /></TableCell></TableRow>
             )}
             {data?.items.map((c) => {
-              const href = `/calls/${c.categoryId}/${c.id}`;
+              const href = `/conversations/${c.categoryId}/${c.id}`;
               return (
                 <TableRow key={c.id} className="cursor-pointer" onClick={() => router.push(href)}>
                   <TableCell className="py-3 pl-5">
@@ -215,7 +215,7 @@ export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, comp
                         <Link href={href} onClick={(e) => e.stopPropagation()} className="block truncate font-medium hover:underline">{c.agentName}</Link>
                         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           {c.id.replace("call_", "#")}
-                          {c.complianceFlag && <span className="inline-flex items-center gap-0.5 text-danger" title="RBI compliance flag"><ShieldAlert className="size-3" /> flag</span>}
+                          {c.complianceFlag && <span className="inline-flex items-center gap-0.5 text-danger" title="RBI risk flag"><ShieldAlert className="size-3" /> flag</span>}
                           {c.reviewedAt && <span className="text-info">· reviewed</span>}
                         </span>
                       </div>
@@ -230,7 +230,7 @@ export function CallsTable({ categoryId, fixed, hideFilters, pageSize = 20, comp
                   {!compact && <TableCell className="text-muted-foreground">{c.uploadedByName ?? <span title="Ingested from the dialer integration">Dialer</span>}</TableCell>}
                   <TableCell className="pr-5 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="inline-flex gap-1">
-                      <Button variant="ghost" size="icon" className="size-8" aria-label="Copy call link" onClick={() => copyLink(c.id, c.categoryId)}><Link2 className="size-4" /></Button>
+                      <Button variant="ghost" size="icon" className="size-8" aria-label="Copy conversation link" onClick={() => copyLink(c.id, c.categoryId)}><Link2 className="size-4" /></Button>
                       {c.audioUrl && c.status !== "failed" && (
                         <Button variant="ghost" size="icon" className="size-8" aria-label="Download recording" nativeButton={false} render={<a href={c.audioUrl} download />}>
                           <Download className="size-4" />

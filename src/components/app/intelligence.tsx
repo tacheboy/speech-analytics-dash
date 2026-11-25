@@ -10,7 +10,7 @@ import { EmptyState, InfoHint, Panel } from "./bits";
 
 type Intel = Analytics["intelligence"];
 
-/** Hierarchical tag tree: each node counts calls carrying it or any tag beneath it. Click a node to open those calls. */
+/** Hierarchical tag tree: each node counts conversations carrying it or any tag beneath it. Click a node to open those calls. */
 function TagTree({ nodes, href }: { nodes: Intel["tags"]; href: (q: Record<string, string>) => string }) {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const children = (parent: string | null) => nodes.filter((n) => n.parent === parent).sort((a, b) => b.calls - a.calls);
@@ -28,7 +28,7 @@ function TagTree({ nodes, href }: { nodes: Intel["tags"]; href: (q: Record<strin
             <Link href={href({ tag: n.slug })} className={cn("min-w-0 flex-1 truncate text-sm hover:underline", n.depth === 0 && "font-medium")}>{n.displayName}</Link>
             <div className="hidden h-1.5 w-28 overflow-hidden rounded-full bg-muted sm:block"><div className="h-full rounded-full bg-chart-1" style={{ width: `${(n.calls / max) * 100}%` }} /></div>
             <span className="w-24 text-right text-xs tabular text-muted-foreground"><span className="font-medium text-foreground">{n.calls}</span> · {n.pct}%</span>
-            <span className="hidden w-24 text-right text-xs tabular text-muted-foreground md:block" title="Success rate of these calls">{fmtPct(n.successRate)} success</span>
+            <span className="hidden w-24 text-right text-xs tabular text-muted-foreground md:block" title="Success rate of these conversations">{fmtPct(n.successRate)} success</span>
           </div>
           {isOpen && kids.length > 0 && <ul>{render(n.slug)}</ul>}
         </li>
@@ -45,7 +45,7 @@ function ExtractionCard({ f, href }: { f: Intel["extractions"][number]; href: (q
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
           <p className="font-medium">{f.displayName}</p>
-          <p className="text-xs text-muted-foreground">{f.fieldType === "enum" ? "Choice" : f.fieldType === "boolean" ? "Yes / No" : f.fieldType === "number" ? "Number" : "Free text"} · captured on {f.captureRate}% of {f.calls} calls</p>
+          <p className="text-xs text-muted-foreground">{f.fieldType === "enum" ? "Choice" : f.fieldType === "boolean" ? "Yes / No" : f.fieldType === "number" ? "Number" : "Free text"} · captured on {f.captureRate}% of {f.calls} conversations</p>
         </div>
       </div>
       {f.stats ? (
@@ -77,10 +77,10 @@ export function CallIntelligence({ intel, href }: { intel: Intel; href: (q: Reco
   return (
     <div className="space-y-5">
       <div className="grid items-start gap-5 xl:grid-cols-5">
-        <Panel className="xl:col-span-3" icon={<Tags className="size-4 text-muted-foreground" />} title="Tags" description="Applied automatically from extracted data and rubric answers. A parent counts every call tagged anywhere beneath it.">
+        <Panel className="xl:col-span-3" icon={<Tags className="size-4 text-muted-foreground" />} title="Tags" description="Applied automatically from extracted data and rubric answers. A parent counts every conversation tagged anywhere beneath it.">
           <TagTree nodes={intel.tags} href={href} />
         </Panel>
-        <Panel className="xl:col-span-2" icon={<HelpCircle className="size-4 text-muted-foreground" />} title={<span className="flex items-center gap-2">Why calls weren’t successful <InfoHint>Tags on Standard-outcome calls — eligible calls that didn’t reach the objective. NA-outcome calls (e.g. wrong party) are excluded, as they are from success rate.</InfoHint></span>} description={`${intel.standardCalls} Standard-outcome calls in this period`}>
+        <Panel className="xl:col-span-2" icon={<HelpCircle className="size-4 text-muted-foreground" />} title={<span className="flex items-center gap-2">Why conversations weren’t successful <InfoHint>Tags on Standard-outcome conversations — eligible conversations that didn’t reach the objective. NA-outcome conversations (e.g. wrong party) are excluded, as they are from success rate.</InfoHint></span>} description={`${intel.standardCalls} Standard-outcome conversations in this period`}>
           {intel.unsuccessfulReasons.length ? (
             <ol className="space-y-3">
               {intel.unsuccessfulReasons.map((r, i) => (

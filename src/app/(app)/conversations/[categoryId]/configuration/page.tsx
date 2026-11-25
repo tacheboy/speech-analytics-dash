@@ -33,7 +33,7 @@ function Editor({ cat, tags }: { cat: Workspace["categories"][number]; tags: Wor
 
   return (
     <>
-      <PageHeader title={`${cat.name} · configuration`} description="The rubric every call in this category is scored against." actions={<><DemoBadge /><Button variant="outline" disabled={!dirty} onClick={() => { setDraft(structuredClone(cat.rubric)); setDirty(false); }}>Discard</Button><Button disabled={!dirty} onClick={() => { toast.success(`Published version ${cat.rubricVersion + 1} (demo — not persisted). New calls would use it.`); setDirty(false); }}>Publish version {cat.rubricVersion + 1}</Button></>}>
+      <PageHeader title={`${cat.name} · configuration`} description="The rubric every conversation in this category is scored against." actions={<><DemoBadge /><Button variant="outline" disabled={!dirty} onClick={() => { setDraft(structuredClone(cat.rubric)); setDirty(false); }}>Discard</Button><Button disabled={!dirty} onClick={() => { toast.success(`Published version ${cat.rubricVersion + 1} (demo — not persisted). New conversations would use it.`); setDirty(false); }}>Publish version {cat.rubricVersion + 1}</Button></>}>
         <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground"><GitBranch className="size-4" /> Active: version {cat.rubricVersion} {dirty ? <Pill tone="warning">Unpublished changes</Pill> : <Pill tone="success">Draft matches published</Pill>}</div>
       </PageHeader>
 
@@ -43,7 +43,7 @@ function Editor({ cat, tags }: { cat: Workspace["categories"][number]; tags: Wor
 
       {tab === "Sections & criteria" && (
         <div className="space-y-4">
-          <Panel title="About this category" description="Context the model receives with every call in this category.">
+          <Panel title="About this category" description="Context the model receives with every conversation in this category.">
             <div className="grid gap-3 md:grid-cols-2">
               <label className="grid gap-1.5 text-sm font-medium">Intended purpose<Textarea rows={3} value={draft.intendedPurpose} onChange={(e) => edit((r) => { r.intendedPurpose = e.target.value; })} /></label>
               <label className="grid gap-1.5 text-sm font-medium">Additional LLM context<Textarea rows={3} value={draft.additionalLLMContext} onChange={(e) => edit((r) => { r.additionalLLMContext = e.target.value; })} /></label>
@@ -66,7 +66,7 @@ function Editor({ cat, tags }: { cat: Workspace["categories"][number]; tags: Wor
                     </li>
                   ))}
                 </ul>
-                <Button variant="outline" size="sm" className="mt-3 gap-1.5" disabled={s.criteria.length >= 30} onClick={() => edit((r) => { r.sections[si].criteria.push({ id: `custom_${Date.now()}`, question: "Did the agent…?" }); })}><Plus className="size-3.5" /> Add criterion</Button>
+                <Button variant="outline" size="sm" className="mt-3 gap-1.5" disabled={s.criteria.length >= 30} onClick={() => edit((r) => { r.sections[si].criteria.push({ id: `custom_${Date.now()}`, question: "Did the person…?" }); })}><Plus className="size-3.5" /> Add criterion</Button>
               </Panel>
             );
           })}
@@ -74,7 +74,7 @@ function Editor({ cat, tags }: { cat: Workspace["categories"][number]; tags: Wor
       )}
 
       {tab === "Outcomes" && (
-        <Panel title="Possible outcomes" description="Exactly one per call. Success = objective achieved; Standard = valid but not successful; NA = tracked but excluded from quality score and success rate.">
+        <Panel title="Possible outcomes" description="Exactly one per conversation. Success = objective achieved; Standard = valid but not successful; NA = tracked but excluded from quality score and success rate.">
           <ul className="divide-y">
             {draft.outcomes.map((o, oi) => (
               <li key={o.id} className="grid gap-2 py-3 md:grid-cols-[14rem_1fr_auto] md:items-center">
@@ -93,7 +93,7 @@ function Editor({ cat, tags }: { cat: Workspace["categories"][number]; tags: Wor
       )}
 
       {tab === "Extraction fields" && (
-        <Panel title="Extraction fields" description="Structured data the model pulls from every call. Fields can drive targeting rules.">
+        <Panel title="Extraction fields" description="Structured data the model pulls from every conversation. Fields can drive targeting rules.">
           <ul className="divide-y">
             {draft.extractionFields.map((f) => (
               <li key={f.fieldName} className="grid gap-1 py-3 md:grid-cols-[14rem_7rem_1fr]">
@@ -134,7 +134,7 @@ function Editor({ cat, tags }: { cat: Workspace["categories"][number]; tags: Wor
       )}
 
       {tab === "Versions" && (
-        <Panel title="Config versions" description="Published snapshots. Each call stores the version it was scored with, so trends stay comparable.">
+        <Panel title="Config versions" description="Published snapshots. Each conversation stores the version it was scored with, so trends stay comparable.">
           <ul className="divide-y text-sm">
             <li className="flex items-center justify-between py-3"><span>Version {cat.rubricVersion} <Pill tone="success" className="ml-2">Active</Pill></span><span className="text-muted-foreground">Published at seed time</span></li>
             {dirty && <li className="flex items-center justify-between py-3"><span>Draft <Pill tone="warning" className="ml-2">Unpublished</Pill></span><span className="text-muted-foreground">Local changes</span></li>}

@@ -32,7 +32,7 @@ export async function listCalls(actor: Actor, raw: unknown) {
 
   const where: SQL[] = [eq(calls.orgId, actor.orgId)];
   // agents only ever see their own calls; agent/team filters don't apply to them
-  if (actor.role === "agent") where.push(eq(calls.agentId, actor.userId));
+  if (actor.role === "member") where.push(eq(calls.agentId, actor.userId));
   else {
     if (q.agentId?.length) where.push(inArray(calls.agentId, q.agentId));
     if (q.teamId?.length) where.push(inArray(users.teamId, q.teamId));
@@ -114,7 +114,7 @@ const AUDIO_TYPES: Record<string, string> = { "audio/mpeg": "mp3", "audio/mp3": 
 const MAX_BYTES = 50 * 1024 * 1024;
 
 export async function createCall(actor: Actor, req: Request) {
-  if (actor.role === "agent") throw new ApiError(403, "forbidden", "Agents cannot upload calls");
+  if (actor.role === "member") throw new ApiError(403, "forbidden", "Members cannot upload conversations");
   const isMultipart = req.headers.get("content-type")?.includes("multipart/form-data");
   let file: File | null = null;
   let input: z.infer<typeof createCallBody>;
@@ -128,7 +128,7 @@ export async function createCall(actor: Actor, req: Request) {
 
   const [cat] = await db.select().from(categories).where(and(eq(categories.id, input.categoryId), eq(categories.orgId, actor.orgId)));
   if (!cat) throw new ApiError(404, "not_found", "Unknown categoryId");
-  const [agent] = await db.select().from(users).where(and(or(eq(users.id, input.agentId), eq(users.email, input.agentId)), eq(users.orgId, actor.orgId), eq(users.role, "agent")));
+  const [agent] = await db.select().from(users).where(and(or(eq(users.id, input.agentId), eq(users.email, input.agentId)), eq(users.orgId, actor.orgId), eq(users.role, "member")));
   if (!agent) throw new ApiError(404, "not_found", "Unknown agentId (pass an agent id or email)");
   const id = `call_${crypto.randomUUID().slice(0, 8)}`;
   let audio: IngestAudio;
@@ -156,7 +156,7 @@ export async function getCall(actor: Actor, id: string) {
     .leftJoin(uploader, eq(uploader.id, calls.uploadedBy))
     .leftJoin(reviewer, eq(reviewer.id, calls.reviewedBy))
     .where(and(eq(calls.id, id), eq(calls.orgId, actor.orgId)));
-  if (!row || (actor.role === "agent" && row.call.agentId !== actor.userId)) throw new ApiError(404, "not_found", "Call not found");
+  if (!row || (actor.role === "member" && row.call.agentId !== actor.userId)) throw new ApiError(404, "not_found", "Call not found");
   const [cat] = await db.select().from(categories).where(eq(categories.id, row.call.categoryId));
   const [results, callTagRows] = await Promise.all([
     db.select().from(criterionResults).where(eq(criterionResults.callId, id)),
@@ -193,7 +193,7 @@ export type CallDetail = Awaited<ReturnType<typeof getCall>>;
 /* ---------------- review (manager override) ---------------- */
 
 export async function reviewCall(actor: Actor, id: string, raw: unknown) {
-  if (actor.role === "agent") throw new ApiError(403, "forbidden", "Only managers and admins can review calls");
+  if (actor.role === "member") throw new ApiError(403, "forbidden", "Only managers and admins can audit conversations");
   const body = reviewBody.parse(raw);
   const [call] = await db.select().from(calls).where(and(eq(calls.id, id), eq(calls.orgId, actor.orgId)));
   if (!call) throw new ApiError(404, "not_found", "Call not found");

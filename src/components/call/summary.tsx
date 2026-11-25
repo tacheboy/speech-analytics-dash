@@ -33,10 +33,10 @@ function Block({ title, children }: { title: string; children: React.ReactNode }
 export function Summary({ call }: { call: CallDetail }) {
   const m = call.metrics;
   const stats = m ? [
-    { label: "Agent talk share", value: `${Math.round(m.talkRatio * 100)}%`, hint: "of speaking time" },
+    { label: "Person talk share", value: `${Math.round(m.talkRatio * 100)}%`, hint: "of speaking time" },
     { label: "Longest monologue", value: fmtDuration(m.longestMonologueSec), hint: "single speaker" },
-    { label: "Silence", value: `${Math.round(m.silencePct * 100)}%`, hint: "of the call" },
-    { label: "Questions asked", value: String(m.questionsAsked), hint: "by the agent" },
+    { label: "Silence", value: `${Math.round(m.silencePct * 100)}%`, hint: "of the conversation" },
+    { label: "Questions asked", value: String(m.questionsAsked), hint: "by the person" },
   ] : [];
   return (
     <div className="space-y-5">
@@ -45,7 +45,7 @@ export function Summary({ call }: { call: CallDetail }) {
         <div className="mb-1.5"><OutcomeBadge label={call.outcome?.label ?? null} isSuccess={call.isSuccess} isNotApplicable={call.isNotApplicable} /></div>
         <p className="text-muted-foreground">{call.outcomeRationale}</p>
       </Block>
-      <Block title="Call observations">{call.observations}</Block>
+      <Block title="Conversation observations">{call.observations}</Block>
       <Block title="Areas for improvement">{call.improvements}</Block>
       {m && (
         <Block title="Conversation metrics">

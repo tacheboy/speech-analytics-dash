@@ -24,9 +24,9 @@ function AgentList({ title, rows, empty }: { title: string; rows: Analytics["age
   return (
     <Panel title={title} bodyClassName="p-2">
       {rows.length ? rows.map((r) => (
-        <Link key={r.agentId} href={`/agents/${r.agentId}`} className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-accent/40">
+        <Link key={r.agentId} href={`/people/${r.agentId}`} className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-accent/40">
           <AgentAvatar name={r.name} size="sm" />
-          <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{r.name}</span><span className="text-xs text-muted-foreground">{r.teamName} · {r.calls} calls{r.complianceFlags ? ` · ${r.complianceFlags} flags` : ""}</span></span>
+          <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{r.name}</span><span className="text-xs text-muted-foreground">{r.teamName} · {r.calls} conversations{r.complianceFlags ? ` · ${r.complianceFlags} risk flags` : ""}</span></span>
           <ScoreBadge score={r.quality == null ? null : Math.round(r.quality)} />
         </Link>
       )) : <p className="p-4 text-sm text-muted-foreground">{empty}</p>}
@@ -34,12 +34,12 @@ function AgentList({ title, rows, empty }: { title: string; rows: Analytics["age
   );
 }
 
-export default function DashboardPage() {
+export default function PlatformPage() {
   const router = useRouter();
   const { data: ws } = useWorkspace();
   const { from, to } = useDateRange();
   const { data: a } = useAnalytics({ dimension: "org", from, to }, !!ws);
-  const isAgent = ws?.me.role === "agent";
+  const isMember = ws?.me.role === "member";
   const first = ws?.me.name.split(" ")[0];
   const ranked = (a?.agents ?? []).filter((x) => x.calls >= 3);
 
@@ -47,21 +47,21 @@ export default function DashboardPage() {
     <>
       <PageHeader
         title={ws ? `${greeting()}, ${first}` : <Skeleton className="h-9 w-72" />}
-        description={isAgent ? "Your personal performance for the selected period." : `Here’s how ${ws?.org.name ?? "the floor"} is doing.`}
-        actions={<><DateRangePicker />{!isAgent && <UploadDialog />}</>}
+        description={isMember ? "Your personal performance for the selected period." : `Here’s how ${ws?.org.name ?? "the floor"} is doing.`}
+        actions={<><DateRangePicker />{!isMember && <UploadDialog />}</>}
       />
       {!a ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-36 rounded-2xl" />)}</div>
       ) : (
         <div className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <KpiCard label={isAgent ? "My quality score" : "Quality score"} info={METRIC_HELP.quality} icon={<Gauge className="size-4 text-chart-1" />} value={fmtPct(a.kpis.quality.value, 1)} delta={a.kpis.quality.delta} hint="vs previous period" spark={a.trend.map((d) => d.quality)} />
+            <KpiCard label={isMember ? "My quality score" : "Quality score"} info={METRIC_HELP.quality} icon={<Gauge className="size-4 text-chart-1" />} value={fmtPct(a.kpis.quality.value, 1)} delta={a.kpis.quality.delta} hint="vs previous period" spark={a.trend.map((d) => d.quality)} />
             <KpiCard label="Success rate" info={METRIC_HELP.success} icon={<Target className="size-4 text-chart-2" />} value={fmtPct(a.kpis.successRate.value, 1)} delta={a.kpis.successRate.delta} hint="vs previous period" spark={a.trend.map((d) => d.successRate)} />
-            <KpiCard label={isAgent ? "My calls" : "Calls analyzed"} icon={<Phone className="size-4 text-muted-foreground" />} value={a.kpis.volume.value.toLocaleString("en-IN")} delta={a.kpis.volume.delta} deltaSuffix="" hint={`avg ${fmtDuration(a.kpis.avgDurationSec.value)}`} spark={a.trend.map((d) => d.volume)} />
-            {isAgent && a.profile ? (
-              <KpiCard label="Score vs team average" icon={<ClipboardCheck className="size-4 text-primary" />} value={a.kpis.quality.value != null && a.profile.teamQuality != null ? `${a.kpis.quality.value - a.profile.teamQuality > 0 ? "+" : ""}${(a.kpis.quality.value - a.profile.teamQuality).toFixed(1)}` : "—"} hint={`team avg ${fmtPct(a.profile.teamQuality, 1)}`} />
+            <KpiCard label={isMember ? "My conversations" : "Conversations analyzed"} icon={<Phone className="size-4 text-muted-foreground" />} value={a.kpis.volume.value.toLocaleString("en-IN")} delta={a.kpis.volume.delta} deltaSuffix="" hint={`avg ${fmtDuration(a.kpis.avgDurationSec.value)}`} spark={a.trend.map((d) => d.volume)} />
+            {isMember && a.profile ? (
+              <KpiCard label="Score vs cohort average" icon={<ClipboardCheck className="size-4 text-primary" />} value={a.kpis.quality.value != null && a.profile.teamQuality != null ? `${a.kpis.quality.value - a.profile.teamQuality > 0 ? "+" : ""}${(a.kpis.quality.value - a.profile.teamQuality).toFixed(1)}` : "—"} hint={`cohort avg ${fmtPct(a.profile.teamQuality, 1)}`} />
             ) : (
-              <KpiCard label="Compliance flags" info={METRIC_HELP.compliance} icon={<ShieldAlert className="size-4 text-danger" />} value={fmtPct(a.kpis.complianceRate.value, 1)} delta={a.kpis.complianceRate.delta} invertDelta hint="of calls" spark={a.trend.map((d) => d.complianceRate)} />
+              <KpiCard label="Risk flags" info={METRIC_HELP.compliance} icon={<ShieldAlert className="size-4 text-danger" />} value={fmtPct(a.kpis.complianceRate.value, 1)} delta={a.kpis.complianceRate.delta} invertDelta hint="of conversations" spark={a.trend.map((d) => d.complianceRate)} />
             )}
           </div>
 
@@ -69,29 +69,29 @@ export default function DashboardPage() {
             <Panel className="lg:col-span-3" title="Performance trends" description="Quality score and success rate">
               <TrendChart data={a.trend} granularity={a.range.granularity} />
             </Panel>
-            <Panel className="lg:col-span-2" title="Outcomes" description="Click an outcome to open those calls">
-              <OutcomeBars data={a.outcomes} onSelect={(label) => router.push(`/calls/all?outcome=${encodeURIComponent(label)}`)} />
+            <Panel className="lg:col-span-2" title="Outcomes" description="Click an outcome to open those conversations">
+              <OutcomeBars data={a.outcomes} onSelect={(label) => router.push(`/conversations/all?outcome=${encodeURIComponent(label)}`)} />
             </Panel>
           </div>
 
-          {isAgent ? (
+          {isMember ? (
             <div className="grid gap-5 lg:grid-cols-2">
               <Panel title="Coach yourself on" description="Criteria you miss most often">
                 {a.profile?.needsWork.length ? (
                   <ul className="divide-y">{a.profile.needsWork.slice(0, 4).map((c) => <li key={c.criterionId} className="flex justify-between gap-3 py-2.5 text-sm"><span>{c.question}</span><span className="shrink-0 font-medium text-danger tabular">{c.failRate}% missed</span></li>)}</ul>
                 ) : <p className="text-sm text-muted-foreground">Nothing consistently missed — keep it up.</p>}
-                <Button variant="link" className="mt-2 px-0" nativeButton={false} render={<Link href={`/agents/${ws?.me.id}`} />}>Open my report card <ArrowRight className="size-3.5" /></Button>
+                <Button variant="link" className="mt-2 px-0" nativeButton={false} render={<Link href={`/people/${ws?.me.id}`} />}>Open my report card <ArrowRight className="size-3.5" /></Button>
               </Panel>
-              <Panel title="My recent calls" bodyClassName="p-0"><CallsTable compact hideFilters pageSize={5} fixed={{ page: 1, sort: "date", order: "desc", status: "all" }} /></Panel>
+              <Panel title="My recent conversations" bodyClassName="p-0"><CallsTable compact hideFilters pageSize={5} fixed={{ page: 1, sort: "date", order: "desc", status: "all" }} /></Panel>
             </div>
           ) : (
             <>
               <div className="grid gap-5 lg:grid-cols-2">
-                <AgentList title="Top performers" rows={ranked.slice(0, 5)} empty="Not enough calls yet." />
-                <AgentList title="Needs coaching" rows={[...ranked].reverse().slice(0, 5)} empty="Not enough calls yet." />
+                <AgentList title="Top performers" rows={ranked.slice(0, 5)} empty="Not enough conversations yet." />
+                <AgentList title="Needs coaching" rows={[...ranked].reverse().slice(0, 5)} empty="Not enough conversations yet." />
               </div>
-              <Panel title="Recent calls" description="The latest calls from the dialer feed and uploads" bodyClassName="p-0"
-                actions={<Link href="/calls/all" className="flex items-center gap-1 text-sm text-primary hover:underline">All calls <ArrowRight className="size-3.5" /></Link>}>
+              <Panel title="Recent conversations" description="The latest conversations from the dialer feed and uploads" bodyClassName="p-0"
+                actions={<Link href="/conversations/all" className="flex items-center gap-1 text-sm text-primary hover:underline">All conversations <ArrowRight className="size-3.5" /></Link>}>
                 <CallsTable compact hideFilters pageSize={6} fixed={{ page: 1, sort: "date", order: "desc", status: "all" }} />
               </Panel>
             </>

@@ -10,7 +10,7 @@ import { generateApiKey } from "./auth";
 const { apiKeys, webhooks, webhookDeliveries, users } = schema;
 
 function requireManager(actor: Actor) {
-  if (actor.role === "agent") throw new ApiError(403, "forbidden", "Only admins and managers can manage integrations");
+  if (actor.role === "member") throw new ApiError(403, "forbidden", "Only admins and managers can manage integrations");
 }
 
 /* ---------- API keys ---------- */

@@ -59,8 +59,8 @@ export async function getAnalytics(actor: Actor, raw: unknown) {
   await advancePipeline(actor.orgId);
 
   // agents only ever see their own numbers
-  const dimension = actor.role === "agent" ? "agent" : q.dimension;
-  const id = actor.role === "agent" ? actor.userId : q.id;
+  const dimension = actor.role === "member" ? "agent" : q.dimension;
+  const id = actor.role === "member" ? actor.userId : q.id;
   if (dimension !== "org" && !id) throw new ApiError(400, "invalid_request", "id is required for this dimension");
 
   const to = q.to ? new Date(`${q.to}T23:59:59.999+05:30`) : new Date();
@@ -72,7 +72,7 @@ export async function getAnalytics(actor: Actor, raw: unknown) {
   const [cats, teamRows, agentRows] = await Promise.all([
     db.select().from(categories).where(eq(categories.orgId, actor.orgId)),
     db.select().from(teams).where(eq(teams.orgId, actor.orgId)),
-    db.select().from(users).where(and(eq(users.orgId, actor.orgId), eq(users.role, "agent"))),
+    db.select().from(users).where(and(eq(users.orgId, actor.orgId), eq(users.role, "member"))),
   ]);
 
   const filters: SQL[] = [];

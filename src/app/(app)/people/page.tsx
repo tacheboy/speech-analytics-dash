@@ -23,16 +23,16 @@ export default function AgentsPage() {
   const agents = (ws?.agents ?? []).filter((x) => !q || x.name.toLowerCase().includes(q.toLowerCase()) || x.email.includes(q.toLowerCase()));
   return (
     <>
-      <PageHeader title="Agents" description="Performance of every agent on the floor for the selected period." actions={<><DateRangePicker /><Button className="gap-2" onClick={() => toast.info("Agents are created automatically from the dialer feed in this demo.")}><Plus className="size-4" /> Add agent</Button></>} />
+      <PageHeader title="People" description="Performance of every person on the floor for the selected period." actions={<><DateRangePicker /><Button className="gap-2" onClick={() => toast.info("People are created automatically from the dialer feed in this demo.")}><Plus className="size-4" /> Add person</Button></>} />
       <div className="relative mb-4 max-w-sm">
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search agents…" className="h-9 pl-9" aria-label="Search agents" />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search people…" className="h-9 pl-9" aria-label="Search people" />
       </div>
       <div className="overflow-x-auto rounded-2xl border bg-card">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="pl-5">Agent</TableHead><TableHead>Team</TableHead><TableHead className="text-right">Calls</TableHead><TableHead>Avg quality</TableHead>
+              <TableHead className="pl-5">Person</TableHead><TableHead>Cohort</TableHead><TableHead className="text-right">Conversations</TableHead><TableHead>Avg quality</TableHead>
               <TableHead className="text-right">Success</TableHead><TableHead>Performance trend</TableHead><TableHead>Δ vs prev.</TableHead><TableHead className="pr-5">Date added</TableHead>
             </TableRow>
           </TableHeader>
@@ -41,7 +41,7 @@ export default function AgentsPage() {
             {ws && agents.map((ag) => {
               const s = stats.get(ag.id);
               return (
-                <TableRow key={ag.id} className="cursor-pointer" onClick={() => router.push(`/agents/${ag.id}`)}>
+                <TableRow key={ag.id} className="cursor-pointer" onClick={() => router.push(`/people/${ag.id}`)}>
                   <TableCell className="py-3 pl-5"><div className="flex items-center gap-3"><AgentAvatar name={ag.name} /><div><p className="font-medium">{ag.name}</p><p className="text-xs text-muted-foreground">{ag.email}</p></div></div></TableCell>
                   <TableCell className="text-muted-foreground">{ws.teams.find((t) => t.id === ag.teamId)?.name}</TableCell>
                   <TableCell className="text-right tabular">{s?.calls ?? 0}</TableCell>

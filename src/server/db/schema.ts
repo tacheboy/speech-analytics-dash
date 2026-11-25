@@ -19,7 +19,7 @@ export const users = pgTable("users", {
   teamId: text("team_id").references(() => teams.id),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  role: text("role").$type<"admin" | "manager" | "agent">().notNull(),
+  role: text("role").$type<"admin" | "manager" | "member">().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   deactivatedAt: timestamp("deactivated_at", { withTimezone: true }), // "deleted" agents keep their call history
 });

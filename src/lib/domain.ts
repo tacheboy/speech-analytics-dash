@@ -136,7 +136,7 @@ export type CallTemplate = z.infer<typeof templateSchema>;
 
 /* ---------- Shared UI helpers ---------- */
 
-export type Role = "admin" | "manager" | "agent";
+export type Role = "admin" | "manager" | "member";
 
 export function scoreTone(score: number | null | undefined): "success" | "warning" | "danger" | "muted" {
   if (score == null) return "muted";

@@ -19,23 +19,23 @@ export function AppSidebar({ me, demoUsers }: { me: Me; demoUsers: DemoUser[] })
   const pathname = usePathname();
   const router = useRouter();
   const qc = useQueryClient();
-  const isAgent = me.role === "agent";
+  const isMember = me.role === "member";
 
-  const main: NavItem[] = isAgent
+  const main: NavItem[] = isMember
     ? [
-        { href: "/dashboard", label: "My dashboard", icon: LayoutDashboard },
-        { href: "/calls/all", label: "My calls", icon: Phone },
-        { href: `/agents/${me.id}`, label: "My report card", icon: ClipboardCheck },
+        { href: "/platform", label: "My platform", icon: LayoutDashboard },
+        { href: "/conversations/all", label: "My conversations", icon: Phone },
+        { href: `/people/${me.id}`, label: "My report card", icon: ClipboardCheck },
       ]
     : [
-        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/calls", label: "Calls", icon: Phone },
+        { href: "/platform", label: "Platform", icon: LayoutDashboard },
+        { href: "/conversations", label: "Conversations", icon: Phone },
         { href: "/analytics", label: "Analytics", icon: BarChart3 },
-        { href: "/agents", label: "Agents", icon: Users },
-        { href: "/teams", label: "Teams", icon: UsersRound },
-        { href: "/review", label: "Review queue", icon: ClipboardCheck },
+        { href: "/people", label: "People", icon: Users },
+        { href: "/cohorts", label: "Cohorts", icon: UsersRound },
+        { href: "/audits", label: "Audits", icon: ClipboardCheck },
       ];
-  const workspace: NavItem[] = isAgent
+  const workspace: NavItem[] = isMember
     ? []
     : [
         { href: "/workspace/users", label: "Users", icon: UserCog },
@@ -43,12 +43,12 @@ export function AppSidebar({ me, demoUsers }: { me: Me; demoUsers: DemoUser[] })
         { href: "/workspace/billing", label: "Billing", icon: CreditCard },
         { href: "/workspace/integrations", label: "Integrations", icon: KeyRound },
       ];
-  const active = (href: string) => pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`)) || (href === "/calls" && pathname.startsWith("/calls"));
+  const active = (href: string) => pathname === href || (href !== "/platform" && pathname.startsWith(`${href}/`)) || (href === "/conversations" && pathname.startsWith("/conversations"));
 
   const switchTo = (id: string) => {
     signInAs(id);
     qc.clear();
-    router.push("/dashboard");
+    router.push("/platform");
     router.refresh();
   };
 
@@ -65,13 +65,13 @@ export function AppSidebar({ me, demoUsers }: { me: Me; demoUsers: DemoUser[] })
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-3 py-4">
-        <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
+        <Link href="/platform" className="flex items-center gap-3 overflow-hidden">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <AudioWaveform className="size-5" />
           </span>
           <span className="min-w-0 group-data-[collapsible=icon]:hidden">
             <span className="block truncate font-semibold leading-tight">{BRAND.name}</span>
-            <span className="block text-[11px] uppercase tracking-[0.14em] text-muted-foreground">Call analytics</span>
+            <span className="block text-[11px] uppercase tracking-[0.14em] text-muted-foreground">Conversation analytics</span>
           </span>
         </Link>
       </SidebarHeader>

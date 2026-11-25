@@ -18,13 +18,13 @@ const MOMENT_STYLE: Record<Moment["type"], { label: string; cls: string }> = {
   objection: { label: "Objection", cls: "bg-warning" },
   hardship: { label: "Hardship", cls: "bg-info" },
   dispute: { label: "Dispute", cls: "bg-info" },
-  compliance_risk: { label: "Compliance risk", cls: "bg-danger" },
+  compliance_risk: { label: "Risk flag", cls: "bg-danger" },
 };
 const SPEEDS = [1, 1.25, 1.5, 2, 0.75];
 const cssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-/** Dual-channel waveform (agent above, customer below) with moment markers. */
-export const AudioPlayer = forwardRef<PlayerHandle, { url: string; moments: Moment[]; onTime: (t: number) => void; stereo: boolean }>(function AudioPlayer({ url, moments, onTime, stereo }, ref) {
+/** Dual-channel waveform (person above, customer below) with moment markers. */
+export const AudioPlayer = forwardRef<PlayerHandle, { url: string; moments: Moment[]; onTime: (t: number) => void; stereo: boolean; agentName?: string }>(function AudioPlayer({ url, moments, onTime, stereo, agentName }, ref) {
   const container = useRef<HTMLDivElement>(null);
   const ws = useRef<WaveSurfer | null>(null);
   const [ready, setReady] = useState(false);
@@ -78,8 +78,8 @@ export const AudioPlayer = forwardRef<PlayerHandle, { url: string; moments: Mome
     <div className="rounded-2xl border bg-card p-4">
       {stereo && (
         <div className="mb-2 flex gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-chart-1" />Agent channel</span>
-          <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-chart-2" />Customer channel</span>
+          <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-chart-1" />{agentName ?? "Person"}</span>
+          <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-chart-2" />Customer</span>
         </div>
       )}
       <div className="relative">

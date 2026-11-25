@@ -13,15 +13,15 @@ export default function CategoryCallsPage() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const { data: ws } = useWorkspace();
   const cat = ws?.categories.find((c) => c.id === categoryId);
-  const isAgent = ws?.me.role === "agent";
-  const title = categoryId === "all" ? (isAgent ? "My calls" : "All recordings") : cat?.name ?? "Calls";
-  const description = categoryId === "all" ? (isAgent ? "Every call of yours that has been analyzed." : "Every call across categories.") : cat?.description;
+  const isMember = ws?.me.role === "member";
+  const title = categoryId === "all" ? (isMember ? "My conversations" : "All recordings") : cat?.name ?? "Conversations";
+  const description = categoryId === "all" ? (isMember ? "Every conversation of yours that has been analyzed." : "Every conversation across categories.") : cat?.description;
   return (
     <>
       <PageHeader
         title={title}
         description={description}
-        actions={!isAgent && (
+        actions={!isMember && (
           <>
             <Button variant="outline" className="gap-2" nativeButton={false} render={<Link href={categoryId === "all" ? "/analytics" : `/analytics/category/${categoryId}`} />}><BarChart3 className="size-4" /> View analytics</Button>
             <UploadDialog defaultCategoryId={categoryId} />

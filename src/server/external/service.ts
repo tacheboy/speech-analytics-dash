@@ -18,7 +18,7 @@ const name = z.string().trim().min(1, "name is required").max(200);
 /* ---------- agents ---------- */
 
 const activeAgent = (orgId: string, id: string) =>
-  and(eq(users.id, id), eq(users.orgId, orgId), eq(users.role, "agent"), isNull(users.deactivatedAt));
+  and(eq(users.id, id), eq(users.orgId, orgId), eq(users.role, "member"), isNull(users.deactivatedAt));
 
 async function emailTaken(addr: string, exceptId?: string) {
   const [u] = await db.select({ id: users.id }).from(users).where(and(sql`lower(${users.email}) = ${addr}`, exceptId ? ne(users.id, exceptId) : undefined)).limit(1);
@@ -26,7 +26,7 @@ async function emailTaken(addr: string, exceptId?: string) {
 }
 
 export async function listAgents(c: ExternalCaller) {
-  const rows = await db.select().from(users).where(and(eq(users.orgId, c.orgId), eq(users.role, "agent"), isNull(users.deactivatedAt))).orderBy(asc(users.name));
+  const rows = await db.select().from(users).where(and(eq(users.orgId, c.orgId), eq(users.role, "member"), isNull(users.deactivatedAt))).orderBy(asc(users.name));
   return { data: rows.map((u) => ({ id: u.id, userId: u.id, name: u.name, email: u.email, image: null, createdAt: u.createdAt.toISOString() })) };
 }
 
@@ -35,7 +35,7 @@ export async function createAgent(c: ExternalCaller, raw: unknown) {
   if (await emailTaken(body.email)) throw new ExternalError(409, "Email already in use");
   const id = `u_${crypto.randomUUID().replaceAll("-", "").slice(0, 12)}`;
   try {
-    await db.insert(users).values({ id, orgId: c.orgId, teamId: null, name: body.name, email: body.email, role: "agent" });
+    await db.insert(users).values({ id, orgId: c.orgId, teamId: null, name: body.name, email: body.email, role: "member" });
   } catch (e) {
     if ((e as { code?: string; cause?: { code?: string } }).cause?.code === "23505" || (e as { code?: string }).code === "23505") throw new ExternalError(409, "Email already in use");
     throw e;
@@ -105,7 +105,7 @@ export async function createExternalCall(c: ExternalCaller, raw: unknown, origin
   if (!category) throw new ExternalError(404, "Category not found");
   const [agent] = await db.select().from(users).where(and(
     or(eq(users.id, body.memberId), sql`lower(${users.email}) = ${body.memberId.toLowerCase()}`),
-    eq(users.orgId, c.orgId), eq(users.role, "agent"), isNull(users.deactivatedAt),
+    eq(users.orgId, c.orgId), eq(users.role, "member"), isNull(users.deactivatedAt),
   ));
   if (!agent) throw new ExternalError(404, "Agent not found");
 

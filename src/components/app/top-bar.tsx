@@ -11,9 +11,9 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useWorkspace } from "@/lib/api-client";
 
 const LABELS: Record<string, string> = {
-  dashboard: "Dashboard", calls: "Calls", analytics: "Analytics", agents: "Agents", teams: "Teams", review: "Review queue",
+  platform: "Platform", conversations: "Conversations", analytics: "Analytics", people: "People", cohorts: "Cohorts", audits: "Audits",
   workspace: "Workspace", users: "Users", tags: "Tags", billing: "Billing", integrations: "Integrations", settings: "Settings",
-  configuration: "Configuration", all: "All calls", org: "Organization", category: "Category", team: "Team", agent: "Agent",
+  configuration: "Configuration", all: "All conversations", org: "Organization", category: "Category", team: "Cohort", agent: "Person",
 };
 
 export function TopBar() {
@@ -22,7 +22,7 @@ export function TopBar() {
   const { resolvedTheme, setTheme } = useTheme();
   const parts = pathname.split("/").filter(Boolean);
   const name = (seg: string) =>
-    LABELS[seg] ?? ws?.categories.find((c) => c.id === seg)?.name ?? ws?.teams.find((t) => t.id === seg)?.name ?? ws?.agents.find((a) => a.id === seg)?.name ?? (seg.startsWith("call_") ? seg.replace("call_", "Call ") : seg);
+    LABELS[seg] ?? ws?.categories.find((c) => c.id === seg)?.name ?? ws?.teams.find((t) => t.id === seg)?.name ?? ws?.agents.find((a) => a.id === seg)?.name ?? (seg.startsWith("call_") ? seg.replace("call_", "Conversation ") : seg);
   const crumbs = parts
     .map((seg, i) => ({ seg, href: "/" + parts.slice(0, i + 1).join("/") }))
     .filter((c, i) => !(parts[0] === "analytics" && i === 1)); // hide the dimension segment
@@ -34,7 +34,7 @@ export function TopBar() {
       <Breadcrumb className="min-w-0 flex-1">
         <BreadcrumbList className="flex-nowrap">
           <BreadcrumbItem>
-            <BreadcrumbLink render={<Link href="/dashboard" aria-label="Home" />}><Home className="size-4" /></BreadcrumbLink>
+            <BreadcrumbLink render={<Link href="/platform" aria-label="Home" />}><Home className="size-4" /></BreadcrumbLink>
           </BreadcrumbItem>
           {crumbs.map((c, i) => (
             <Fragment key={c.href}>

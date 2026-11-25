@@ -63,13 +63,13 @@ async function main() {
     { id: "u_mgr_north", name: "Ritika Saxena", role: "manager" as const, teamId: null },
   ];
   const agents = TEAMS.flatMap((t) =>
-    t.agents.map((name, i) => ({ id: `u_${slug(name).replace(/\./g, "_")}`, name, role: "agent" as const, teamId: t.id, language: t.language, persona: PERSONA_ORDER[i] })),
+    t.agents.map((name, i) => ({ id: `u_${slug(name).replace(/\./g, "_")}`, name, role: "member" as const, teamId: t.id, language: t.language, persona: PERSONA_ORDER[i] })),
   );
   await db.insert(schema.users).values(
     [...staff, ...agents].map((u, i) => ({
       id: u.id, orgId: ORG, teamId: u.teamId, name: u.name, role: u.role,
       email: `${slug(u.name)}@kaverifinance.in`.replace(/\.@/, "@"),
-      createdAt: daysAgo(u.role === "agent" && "persona" in u && u.persona === "newhire" ? 58 : 120 - i),
+      createdAt: daysAgo(u.role === "member" && "persona" in u && u.persona === "newhire" ? 58 : 120 - i),
     })),
   );
   await db.insert(schema.categories).values(rubrics.map((r) => ({ id: r.id, orgId: ORG, name: r.name, description: r.description, icon: r.icon, rubric: r })));

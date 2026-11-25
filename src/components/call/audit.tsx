@@ -19,7 +19,7 @@ const RESULT = {
   fail: { icon: X, label: "No", cls: "bg-danger/15 text-danger" },
   na: { icon: CircleSlash, label: "NA", cls: "bg-muted text-muted-foreground" },
 } as const;
-const INSUFFICIENT = "Not enough information in the call";
+const INSUFFICIENT = "Not enough information in the conversation";
 
 export function Audit({ call, canReview, onSeek, assignableTags }: { call: CallDetail; canReview: boolean; onSeek: (t: number, line?: number) => void; assignableTags: { id: string; displayName: string }[] }) {
   const [open, setOpen] = useState<Record<string, boolean>>(() => Object.fromEntries(call.sections.map((s) => [s.id, s.met < s.total])));
@@ -128,8 +128,8 @@ export function Audit({ call, canReview, onSeek, assignableTags }: { call: CallD
               </div>
             </div>
           )}
-          <label className="grid gap-1.5 text-sm font-medium">Coaching note for the agent
-            <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="What should the agent do differently next time?" rows={3} />
+          <label className="grid gap-1.5 text-sm font-medium">Coaching note for the person
+            <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="What should the person do differently next time?" rows={3} />
           </label>
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs text-muted-foreground">{Object.keys(draft).length} answer change(s). Overrides become calibration data.</span>

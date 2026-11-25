@@ -15,7 +15,7 @@ export default function AgentProfilePage() {
       dimension="agent"
       id={agentId}
       title={self ? "My report card" : agent?.name}
-      description={self ? "Your strengths, the habits to work on, and how you’re trending." : agent ? `${team?.name ?? ""} · ${agent.email}` : undefined}
+      description={self ? "Your strengths, the habits to work on, and how you’re trending." : agent ? `Report card · ${team?.name ?? "No cohort"} · ${agent.email}` : undefined}
     />
   );
 }

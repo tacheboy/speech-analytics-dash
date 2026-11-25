@@ -21,7 +21,7 @@ export default async function LoginPage() {
           </div>
         </div>
         <h1 className="text-2xl font-semibold">Sign in to the demo</h1>
-        <p className="mt-1 mb-6 text-sm text-muted-foreground">Pick a seeded user. Each role sees a different product: admins and managers see the whole floor; agents only see their own calls.</p>
+        <p className="mt-1 mb-6 text-sm text-muted-foreground">Pick a seeded user. Each role sees a different product: admins and managers see the whole floor; members only see their own conversations.</p>
         <LoginPicker users={users} teams={teams.map((t) => ({ id: t.id, name: t.name }))} />
       </div>
     </div>

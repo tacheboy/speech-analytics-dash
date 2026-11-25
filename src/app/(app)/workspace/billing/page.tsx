@@ -13,7 +13,7 @@ const CREDITS = [
   { date: "2026-10-01", minutes: 30000, note: "Top-up · PO #KF-2291" },
 ];
 
-/** Mockup billing: minute balance and usage, derived from analyzed call volume. */
+/** Mockup billing: minute balance and usage, derived from analyzed conversation volume. */
 export default function BillingPage() {
   const { data: a } = useAnalytics({ dimension: "org" });
   const minutesUsed = a ? Math.round((a.kpis.volume.value * a.kpis.avgDurationSec.value) / 60) : 0;

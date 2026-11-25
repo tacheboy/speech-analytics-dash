@@ -44,7 +44,7 @@ export function TrendChart({ data, granularity }: { data: Analytics["trend"]; gr
                 return <TipBox title={p.label} rows={[
                   { label: "Quality", value: p.quality == null ? "—" : `${p.quality}%`, color: "var(--chart-1)" },
                   { label: "Success", value: p.successRate == null ? "—" : `${p.successRate}%`, color: "var(--chart-2)" },
-                  { label: "Calls", value: String(p.volume) },
+                  { label: "Conversations", value: String(p.volume) },
                 ]} />;
               }}
             />
@@ -72,7 +72,7 @@ export function OutcomeBars({ data: all, onSelect, limit = 7 }: { data: Analytic
     <ul className="space-y-3">
       {data.map((o) => (
         <li key={o.label}>
-          <button type="button" disabled={o.label.startsWith("Other (")} onClick={() => onSelect?.(o.label)} className="group w-full text-left disabled:cursor-default" title={`View ${o.label} calls`}>
+          <button type="button" disabled={o.label.startsWith("Other (")} onClick={() => onSelect?.(o.label)} className="group w-full text-left disabled:cursor-default" title={`View ${o.label} conversations`}>
             <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
               <span className="truncate group-hover:underline">{o.label}
                 <span className="ml-2 text-xs text-muted-foreground">{TYPE_TEXT[o.type] ?? ""}</span>
@@ -99,7 +99,7 @@ export function DurationChart({ data }: { data: Analytics["durations"] }) {
           <YAxis allowDecimals={false} {...AXIS} />
           <Tooltip cursor={{ fill: "var(--muted)", opacity: 0.4 }} content={({ active, payload }) => {
             const p = payload?.[0]?.payload as Analytics["durations"][number] | undefined;
-            return active && p ? <TipBox title={p.label} rows={[{ label: "Calls", value: String(p.count) }]} /> : null;
+            return active && p ? <TipBox title={p.label} rows={[{ label: "Conversations", value: String(p.count) }]} /> : null;
           }} />
           <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={48}>
             {data.map((d) => <Cell key={d.key} fill="var(--chart-1)" />)}

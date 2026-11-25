@@ -41,17 +41,17 @@ export default function CallDetailPage() {
   const [highlight, setHighlight] = useState<number | null>(null);
   const onTime = useCallback((t: number) => setTime(t), []);
   const seek = (t: number, line?: number) => { player.current?.seek(t); setHighlight(line ?? null); };
-  const canReview = ws?.me.role !== "agent";
+  const canReview = ws?.me.role !== "member";
 
   if (isLoading) return <div className="space-y-4"><Skeleton className="h-24 rounded-2xl" /><div className="grid gap-4 lg:grid-cols-12"><Skeleton className="h-96 rounded-2xl lg:col-span-7" /><Skeleton className="h-96 rounded-2xl lg:col-span-5" /></div></div>;
-  if (error || !call) return <EmptyState title="Call not found" description="This call doesn’t exist or you don’t have access to it." action={<Button variant="outline" nativeButton={false} render={<Link href={`/calls/${categoryId}`} />}>Back to calls</Button>} />;
+  if (error || !call) return <EmptyState title="Conversation not found" description="This conversation doesn’t exist or you don’t have access to it." action={<Button variant="outline" nativeButton={false} render={<Link href={`/conversations/${categoryId}`} />}>Back to conversations</Button>} />;
 
-  const copy = () => navigator.clipboard.writeText(window.location.href).then(() => toast.success("Call link copied"));
+  const copy = () => navigator.clipboard.writeText(window.location.href).then(() => toast.success("Conversation link copied"));
   const stereo = !call.isSimulated && !!call.templateId;
 
   return (
     <div className="space-y-5">
-      <Link href={`/calls/${call.categoryId}`} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> {call.category.name}</Link>
+      <Link href={`/conversations/${call.categoryId}`} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> {call.category.name}</Link>
 
       <header className="flex flex-col gap-4 rounded-2xl border bg-card p-5 lg:flex-row lg:items-center">
         <div className="flex min-w-0 flex-1 items-center gap-4">
@@ -61,9 +61,9 @@ export default function CallDetailPage() {
             <p className="text-sm text-muted-foreground">{fmtDateTime(call.callAt)} · {fmtDuration(call.durationSec)} · {call.id.replace("call_", "#")} · {call.uploadedByName ? `uploaded by ${call.uploadedByName}` : "from dialer"}</p>
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <OutcomeBadge label={call.outcome?.label ?? null} isSuccess={call.isSuccess} isNotApplicable={call.isNotApplicable} />
-              {call.complianceFlag && <Pill tone="danger"><ShieldAlert className="size-3" /> RBI compliance flag</Pill>}
+              {call.complianceFlag && <Pill tone="danger"><ShieldAlert className="size-3" /> RBI risk flag</Pill>}
               {call.tags.map((t) => (
-                <Link key={t.id} href={`/calls/all?tag=${encodeURIComponent(t.slug)}`} title={`${t.slug}${t.source === "manual" ? " · added by a manager" : " · applied by rule"}`}>
+                <Link key={t.id} href={`/conversations/all?tag=${encodeURIComponent(t.slug)}`} title={`${t.slug}${t.source === "manual" ? " · added by a manager" : " · applied by rule"}`}>
                   <Pill tone={t.source === "manual" ? "primary" : "muted"} className="hover:border-primary/50"><Tag className="size-3" />{t.displayName}</Pill>
                 </Link>
               ))}
@@ -83,14 +83,14 @@ export default function CallDetailPage() {
       {call.isSimulated && call.status === "done" && (
         <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/8 px-4 py-3 text-sm">
           <FlaskConical className="mt-0.5 size-4 shrink-0 text-warning" />
-          <p><span className="font-medium">Simulated analysis.</span> This build has no speech-to-text, so the transcript and scores below come from a matching demo call, not from your recording. The audio is yours.</p>
+          <p><span className="font-medium">Simulated analysis.</span> This build has no speech-to-text, so the transcript and scores below come from a matching demo conversation, not from your recording. The audio is yours.</p>
         </div>
       )}
 
       {call.status === "processing" && (
         <div className="flex items-center gap-3 rounded-2xl border bg-card p-6">
           <Loader2 className="size-5 animate-spin text-primary" />
-          <div><p className="font-medium">Analyzing this call…</p><p className="text-sm text-muted-foreground">Transcribing, extracting fields and scoring against the {call.category.name} rubric. This page updates automatically.</p></div>
+          <div><p className="font-medium">Analyzing this conversation…</p><p className="text-sm text-muted-foreground">Transcribing, extracting fields and scoring against the {call.category.name} rubric. This page updates automatically.</p></div>
         </div>
       )}
       {call.status === "failed" && (
@@ -103,14 +103,14 @@ export default function CallDetailPage() {
       {call.status === "done" && (
         <div className="grid items-start gap-5 lg:grid-cols-12">
           <div className="space-y-5 lg:sticky lg:top-20 lg:col-span-7">
-            {call.audioUrl && <AudioPlayer ref={player} url={call.audioUrl} moments={call.isSimulated ? [] : call.moments ?? []} onTime={onTime} stereo={stereo} />}
-            <Transcript segments={call.transcript ?? []} time={call.isSimulated ? -1 : time} onSeek={(t) => seek(t)} highlight={highlight} />
+            {call.audioUrl && <AudioPlayer ref={player} url={call.audioUrl} agentName={call.agentName} moments={call.isSimulated ? [] : call.moments ?? []} onTime={onTime} stereo={stereo} />}
+            <Transcript segments={call.transcript ?? []} agentName={call.agentName} time={call.isSimulated ? -1 : time} onSeek={(t) => seek(t)} highlight={highlight} />
           </div>
           <div className="rounded-2xl border bg-card p-5 lg:col-span-5">
             <Tabs defaultValue="audit">
               <TabsList className="mb-4 w-full">
                 <TabsTrigger value="summary">Summary</TabsTrigger>
-                <TabsTrigger value="audit">Audit</TabsTrigger>
+                <TabsTrigger value="audit">Scorecard</TabsTrigger>
                 <TabsTrigger value="data">Data</TabsTrigger>
               </TabsList>
               <TabsContent value="summary"><Summary call={call} /></TabsContent>

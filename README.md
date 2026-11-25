@@ -1,8 +1,8 @@
-# Vocobase Insights: speech analytics dashboard
+# Vocobase Insights: speech analytics platform
 
-A working speech-analytics dashboard for collections and sales floors. The information architecture follows Voxxi's product (see `docs/01-voxxi-teardown.md`), under our own brand.
+A working speech-analytics platform for collections and sales floors. The information architecture follows Voxxi's product (see `docs/01-voxxi-teardown.md`), under our own brand.
 
-It runs on a real Postgres database, **6 dashboard APIs** and a **Voxxi-compatible external API with webhooks**. There is **no AI in this build**: transcription and LLM scoring are replaced by pre-authored analyses behind an `Analyzer` interface, so a real pipeline can drop in without touching the UI or the API.
+It runs on a real Postgres database, **6 platform APIs** and a **Voxxi-compatible external API with webhooks**. There is **no AI in this build**: transcription and LLM scoring are replaced by pre-authored analyses behind an `Analyzer` interface, so a real pipeline can drop in without touching the UI or the API.
 
 Demo story: **Kaveri Finance** (a fictional NBFC) runs three collections floors that speak Tamil–English, Kannada–English and Hindi–English. Calls are scored against RBI fair-practice rubrics. This is the wedge the research doc recommends.
 
@@ -21,10 +21,14 @@ npm run dev                   # http://localhost:3000 → pick a demo user
 
 **Demo users** (no passwords; the login page lets you pick one):
 - **Ananya Iyer**: admin, sees everything.
-- **Suresh Menon** / **Ritika Saxena**: managers, can review and override scores.
-- **Any agent** (e.g. Rahul Sharma): sees only their own calls, dashboard and report card.
+- **Suresh Menon** / **Ritika Saxena**: managers, can audit conversations and override scores.
+- **Any member** (e.g. Rahul Sharma): sees only their own conversations, platform view and report card.
 
 You can switch users from the menu at the bottom of the sidebar.
+
+## Naming
+
+The UI uses: **Platform** (home), **Conversations** (calls), **People** (agents), **Cohorts** (teams), **Audits** (review queue), **Scorecard** (the per-conversation rubric tab), **Risk flags** (compliance flags), **Report card**. Roles are **admin, manager, member**. Internal code, the database and both APIs keep `call` / `agent` / `team` identifiers; the external API must match docs.voxxi.ai.
 
 ## The product model (as in Voxxi's product guide)
 
@@ -42,14 +46,14 @@ You can switch users from the menu at the bottom of the sidebar.
 
 | Area | Status |
 |---|---|
-| Dashboard: KPIs with deltas and sparklines, trends, outcomes, top / needs-coaching agents, recent calls | ✅ live data |
-| Calls: category index, list with URL-synced filters (agent, team, outcome, status, score/duration buckets, tag at any level, extracted value, reviewed, compliance, dates), sort, pagination, live processing status | ✅ live data |
+| Platform: KPIs with deltas and sparklines, trends, outcomes, top / needs-coaching people, recent conversations | ✅ live data |
+| Conversations: category index, list with URL-synced filters (person, cohort, outcome, status, score/duration buckets, tag at any level, extracted value, reviewed, risk flags, dates), sort, pagination, live processing status | ✅ live data |
 | Upload: demo recording or your own MP3/WAV/M4A file; status goes processing → analyzed (~10 s) | ✅ live, but uploads of your own audio get a *simulated* analysis |
-| Call detail: dual-channel waveform, moment markers, synced transcript (native script / romanised), Summary / Audit / Data tabs, evidence quotes that seek the audio, confidence | ✅ live data |
-| Manager review: per-criterion Yes/No/NA override, manual tags, coaching note; score recomputes, AI score kept | ✅ live data |
-| Analytics (org / category / team / agent): overview, quality improvement hub, **call intelligence** (tag tree, reasons for unsuccessful calls, extracted-data reports), agent leaderboard, coaching profile | ✅ live data |
+| Conversation detail: dual-channel waveform, moment markers, synced transcript (native script / romanised), Summary / Scorecard / Data tabs, evidence quotes that seek the audio, confidence | ✅ live data |
+| Manager audit: per-criterion Yes/No/NA override, manual tags, coaching note; score recomputes, AI score kept | ✅ live data |
+| Analytics (org / category / cohort / person): overview, quality improvement hub, **call intelligence** (tag tree, reasons for unsuccessful calls, extracted-data reports), people leaderboard, coaching profile | ✅ live data |
 | Tags (taxonomy, rule vs manual, live counts) · Integrations (API keys, webhooks with delivery log, external API reference) | ✅ live data |
-| Agents, Teams, Review queue (lowest-scoring unreviewed, compliance flags, reviewed) | ✅ live data |
+| People, Cohorts, Audits (lowest-scoring unreviewed, risk flags, reviewed) | ✅ live data |
 | Rubric configuration editor (sections, outcome types, extraction fields, section/criterion/tag rules, versions), Users & invites, Billing, Settings | 🟡 **mockups**: show the live configuration; edits are not persisted; marked "Demo" |
 
 Every number on the working screens is computed from the database. Uploads, overrides and date-range changes all move them.
@@ -74,7 +78,7 @@ curl -s -H "$K" -H "content-type: application/json" -d '{"categoryId":"early-buc
 curl -s -H "$K" "localhost:3000/api/v1/analytics?dimension=team&id=team_chennai"
 ```
 
-Agents are role-scoped at the service layer: they only ever get their own calls and numbers.
+Members are role-scoped at the service layer: they only ever get their own calls and numbers.
 
 ## External API (Voxxi-compatible)
 

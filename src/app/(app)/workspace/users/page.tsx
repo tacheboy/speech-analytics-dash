@@ -25,7 +25,7 @@ export default function UsersPage() {
           <DialogContent>
             <DialogHeader><DialogTitle>Invite a user</DialogTitle></DialogHeader>
             <Input type="email" placeholder="name@company.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <p className="text-sm text-muted-foreground">Managers can review calls and see all analytics. Agents only see their own calls.</p>
+            <p className="text-sm text-muted-foreground">Managers can review conversations and see all analytics. Members only see their own conversations.</p>
             <DialogFooter><Button disabled={!/.+@.+\..+/.test(email)} onClick={() => { setInvites((i) => [...i, { email, role: "manager" }]); setEmail(""); setOpen(false); toast.success("Invitation created (demo — no email sent)"); }}>Send invite</Button></DialogFooter>
           </DialogContent>
         </Dialog></>} />
@@ -33,7 +33,7 @@ export default function UsersPage() {
         <Panel title="Members" description={`${users.length} people`} bodyClassName="p-0">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader><TableRow className="hover:bg-transparent"><TableHead className="pl-5">User</TableHead><TableHead>Role</TableHead><TableHead>Team</TableHead><TableHead className="pr-5">Joined</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow className="hover:bg-transparent"><TableHead className="pl-5">User</TableHead><TableHead>Role</TableHead><TableHead>Cohort</TableHead><TableHead className="pr-5">Joined</TableHead></TableRow></TableHeader>
               <TableBody>
                 {users.map((u) => (
                   <TableRow key={u.id}>
